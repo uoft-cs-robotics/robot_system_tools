@@ -1,0 +1,17 @@
+version: "2.2"
+services:
+  docker_realtime:
+    build:
+      context: ..
+      dockerfile: realtime_computer/Dockerfile
+    container_name: realtime_docker
+    tty: true
+    cap_add:
+      - SYS_NICE
+    ulimits:
+      rtprio: 99
+      rttime: -1
+      memlock: 8428281856
+    network_mode: host
+    volumes:
+      - ../franka_control_suite:/git/franka_control_suite
