@@ -1,0 +1,19 @@
+version: "3"
+services:
+  docker_control_computer:
+    build:
+      context: ..
+      dockerfile: control_computer/Dockerfile
+    #hostname: docker_control_computer
+    #domainname: docker_control_computer.local
+    container_name: control_computer_docker
+    ports:
+      - "192.168.0.1:5900:5900"
+      - "192.168.0.1:2222:22"
+    environment:
+      #VNC_PASSWORD: ubuntu
+      #PASSWORD: ubuntu
+      RESOLUTION: 1920x1080
+#    network_mode: host
+#    volumes:
+#      - ../franka_control_suite:/git/franka_control_suite

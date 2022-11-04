@@ -15,6 +15,13 @@ Build docker container for the real time computer directly connected to Franka's
 sudo docker-compose --log-level ERROR  -f docker/realtime_computer/docker-compose-gui.yml build
 ```
 
+# contrl Computer 
+Build docker container for the control computer directly connected to Franka's control 
+```
+sudo docker-compose --log-level ERROR  -f docker/control_computer/docker-compose-gui.yml build
+```
+
+
 ## Usage Instructions 
 # Real time Computer 
 Bring the built docker container up 
