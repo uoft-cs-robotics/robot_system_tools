@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     python3-distutils \
     gnuplot-qt\
     iproute2 \
+    sshpass 
 # Dependencies for Bash unit-tests
 RUN apt-get update && apt-get install -y \
     bats \

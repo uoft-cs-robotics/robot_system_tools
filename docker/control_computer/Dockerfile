@@ -1,13 +1,34 @@
-#FROM osrf/ros:noetic-desktop-full
-FROM tiryoh/ros-desktop-vnc
+#FROM ubuntu:focal
 
-ENV WS_DIR="/"
+FROM osrf/ros:noetic-desktop-full
+
+
+ENV WS_DIR="/root"
 WORKDIR ${WS_DIR}
 
 SHELL ["/bin/bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Dependencies for latency plot
+RUN apt-get update && apt-get install -y \
+    curl \
+    grep \
+    build-essential \
+    make \
+    libnuma-dev \
+    python3 \
+    python3-distutils \
+    gnuplot-qt \ 
+    sshpass 
+# Dependencies for Bash unit-tests
+RUN apt-get update && apt-get install -y \
+    bats \
+    dialog \
+    tmux \
+    iputils-ping 	
+
+# Fetch most recent version of rt-tests and mklatencyplot
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
     curl \
@@ -39,7 +60,8 @@ RUN apt-get update && apt-get install -y \
     make \
     g++ \
     unzip \
-    python3-catkin-tools
+    python3-catkin-tools \ 
+    python3-tk
 # Build and install Protobuf 
 RUN cd \
     && mkdir git \
@@ -84,9 +106,13 @@ RUN apt-get install -y \
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
  
-# RUN echo "export ROS_HOSTNAME=192.168.0.1" >> ~/.bashrc
-# RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
+RUN echo "export ROS_HOSTNAME=192.168.0.1" >> ~/.bashrc
+RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
 RUN echo "export ROS_MASTER_URI=http://192.168.0.1:11311" >> ~/.bashrc
+
+RUN sudo pip3 install --upgrade protobuf
+
+RUN sudo pip3 install numpy --force-reinstall
 
 ARG DEBIAN_FRONTEND=dialog
 
