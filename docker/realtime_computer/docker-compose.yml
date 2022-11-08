@@ -14,4 +14,4 @@ services:
       memlock: 8428281856
     network_mode: host
     volumes:
-      - ../franka_control_suite:/git/franka_control_suite
+      - ../../franka_control_suite:/root/git/franka_control_suite
