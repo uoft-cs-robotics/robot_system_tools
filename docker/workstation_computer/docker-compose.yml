@@ -1,10 +1,10 @@
 version: "2.2"
 services:
-  docker_control_computer:
+  docker_workstation_computer:
     build:
       context: ..
-      dockerfile: control_computer/Dockerfile
-    container_name: control_computer_docker
+      dockerfile: workstation_computer/Dockerfile
+    container_name: workstation_computer_docker
     tty: true
     cap_add:
       - SYS_NICE

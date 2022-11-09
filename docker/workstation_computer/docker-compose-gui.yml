@@ -1,9 +1,9 @@
 version: "2.2"
 services:
-  docker_control_computer:
+  docker_workstation_computer:
     extends:
       file: docker-compose.yml
-      service: docker_control_computer
+      service: docker_workstation_computer
     environment:
      - DISPLAY=${DISPLAY}
      - QT_X11_NO_MITSHM=1

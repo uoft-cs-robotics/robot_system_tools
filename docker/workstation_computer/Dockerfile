@@ -114,10 +114,10 @@ RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
 
-RUN cd /root/git/franka_arm_infra/franka_control_suite \
-    && mkdir build \
-    && cd build \ 
-    && cmake .. \
-    && make
+# RUN cd /root/git/franka_arm_infra/franka_control_suite \
+#     && mkdir build \
+#     && cd build \ 
+#     && cmake .. \
+#     && make
 ARG DEBIAN_FRONTEND=dialog
 

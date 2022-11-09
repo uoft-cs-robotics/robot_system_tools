@@ -57,7 +57,7 @@ class CameraRobotCalibration:
         #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 
         self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
-        #img = cv2.aruco.drawPlanarBoard(board, (2550,3300)) for printing on A4 paper
+        #img = cv2.aruco.drawPlanarBoard(board, (2550,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
 
         self.arucoParams = cv2.aruco.DetectorParameters_create()
