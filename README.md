@@ -76,10 +76,20 @@ docker exec -it workstation_computer_docker bash
 cd /root/git/frankapy 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
+to test, run
+```
+python3 scripts/reset_arm.py
+```
 If directly using host workstation and not docker, 
 ```
 cd (frankapy path)/frankapy 
 source catkin_ws/devel/setup.bash 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
+to test, run
+```
+python3 scripts/reset_arm.py
+```
+
+
 
