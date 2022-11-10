@@ -65,7 +65,7 @@ Optionally, if you are using workstation docker, start it with,
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
 
-Make sure to setup your workstation/workstation docker's ssh key to ssh without a password(this is needed for frankapy) following instructions [here](https://github.com/Ruthrash/frankapy#:~:text=Setting%20Up%20SSH%20Key%20to%20Control%20PC)
+Make sure to setup your workstation/workstation docker's ssh key to ssh without a password(this is needed for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc)
 
 start frankapy by 
 
