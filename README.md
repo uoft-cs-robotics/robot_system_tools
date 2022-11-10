@@ -21,7 +21,7 @@ sudo docker-compose --log-level ERROR  -f docker/realtime_computer/docker-compos
 ```
 
 # Workstation Computer 
-Build docker container for the workstation computer directly connected to Franka's control 
+Build docker container for the workstation computer that has GPU/nvidia drivers
 ```
 sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-compose-gui.yml build
 ```
