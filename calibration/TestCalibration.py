@@ -22,32 +22,97 @@ import tf.transformations as tf_utils
 
 # test aruco marker objects 
 
-
-
+eye_in_hand = False
 
 # input calibration result here 
-# R_cam2gripper = np.array([[ 0.03540295, -0.99904906,  0.02544817],
-#  [ 0.99937248,  0.03536256 ,-0.00203574],
-#  [ 0.00113389 , 0.02550427,  0.99967407]])
 
-R_cam2gripper = np.array([[ 2.12889303e-02, -9.99406626e-01 , 2.70772296e-02],
- [ 9.99773198e-01,  2.12967822e-02,  1.60199835e-06],
- [-5.78258911e-04 , 2.70710544e-02,  9.99633345e-01]])
+R_cam2gripper = np.array([[ 0.00362766, -0.99968572,  0.02480507],
+ [ 0.9999841,   0.00351939, -0.00440687],
+ [ 0.00431818 , 0.02482066,  0.99968259]])
+t_cam2gripper = np.array([ 0.05521061, -0.03504399, -0.05588912])
 
-                        
-# t_cam2gripper = np.array([ 0.04918928 ,-0.03774242 ,-0.05317044])
-t_cam2gripper = np.array([0.04823794 ,-0.03761049, -0.05464881])
+
+#tsai
+# R_cam2gripper = np.array([[ 0.00555508, -0.99973669,  0.02226396],
+#  [ 0.99985955,  0.00520096, -0.0159319 ],
+#  [ 0.01581191 , 0.02234934 , 0.99962518]])
+# t_cam2gripper = np.array([ 0.0610764,  -0.02725983, -0.06051241])
+
+# #park 
+# R_cam2gripper = np.array([[ 0.00406973, -0.99969235,  0.02446718],
+#  [ 0.9998532,   0.00366071, -0.01673859],
+#  [ 0.01664387 , 0.02453171 , 0.99956049]])
+# t_cam2gripper = np.array([0.06024891 ,-0.02663721 ,-0.06075412])
+
+# #horaud 
+# R_cam2gripper = np.array([[ 0.00405254, -0.99969247 , 0.02446506],
+#  [ 0.99985166 , 0.00364119, -0.01683466],
+#  [ 0.0167404 ,  0.02452965 , 0.99955893]])
+# t_cam2gripper = np.array([ 0.06024806, -0.02659598, -0.06075694])
+
+
+# #andreff
+# R_cam2gripper = np.array([[ 2.28728086e-04, -9.99675590e-01,  2.54688687e-02],
+#  [ 9.99871854e-01, -1.79055587e-04 ,-1.60076319e-02],
+#  [ 1.60069992e-02 , 2.54692664e-02 , 9.99547444e-01]])
+# t_cam2gripper = np.array([0.05703949, -0.02572831 ,-0.04573494])
+
+# #daniilidis
+# R_cam2gripper = np.array([[-0.001155,   -0.99963885,  0.02684832],
+#  [ 0.99989996, -0.00153297, -0.01406162],
+#  [ 0.0140977 ,  0.02682939,  0.99954061]])
+# t_cam2gripper = np.array([0.06018967, -0.02653409 ,-0.06085566])
+#####################RANSAC####################33
+#tsai
+# R_cam2gripper = np.array([[-0.02469115, -0.99935464,  0.02608922],
+#  [ 0.9995544 , -0.02511714, -0.01612843],
+#  [ 0.01677331 , 0.02567937 , 0.9995295 ]])
+# t_cam2gripper = np.array([0.05925489, -0.02886778, -0.0480761])
+
+# # # park 
+# R_cam2gripper = np.array([[ 0.01043955, -0.99911444 , 0.04075958],
+#  [ 0.99994138 , 0.01031375 ,-0.0032954 ],
+#  [ 0.0028721  , 0.04079159,  0.99916355]])
+# t_cam2gripper = np.array([ 0.04151907, -0.029871,   -0.05880735])
+
+# # #horaud 
+# R_cam2gripper = np.array([[ 0.00958403, -0.99915697 , 0.03991863],
+#  [ 0.99994929 , 0.00945294 ,-0.00347133],
+#  [ 0.00309106 , 0.03994987 , 0.9991969 ]])
+# t_cam2gripper = np.array([0.04407418, -0.03598013,-0.05371199])
+
+# #andreff
+# R_cam2gripper = np.array([[-0.02247551, -0.99940345,  0.0262221 ],
+#  [ 0.99967142, -0.02278941, -0.01173394],
+#  [ 0.01232453 , 0.02594976,  0.99958727]])
+# t_cam2gripper = np.array([  0.05898052, -0.02831087, -0.0456534])
+
+# #daniilidis
+# R_cam2gripper = np.array([[-0.01577934, -0.9992651,   0.03493251],
+#  [ 0.99946251, -0.01676724, -0.02817019],
+#  [ 0.02873521 , 0.03446923,  0.99899257]])
+# t_cam2gripper = np.array([0.05009148, -0.02226693, -0.05529808])
+
+
 cam2gripper_pose = np.eye(4)
 cam2gripper_pose[0:3, 0:3] = R_cam2gripper
 cam2gripper_pose[0:3, -1] = t_cam2gripper
 print(cam2gripper_pose)
-
+print("##")
 
 #create frankapy object
 fa = FrankaArm()
-#fa.reset_joints()
-
-
+print("##")
+fa.reset_joints()
+print("##")
+ini_rot = np.array([[ 9.99594570e-01,  3.34527642e-04, -2.81308566e-02],
+       [ 7.10455485e-04, -9.99900943e-01,  1.33547364e-02],
+       [-2.81236025e-02, -1.33693077e-02, -9.99515035e-01]])
+trans = np.array([ 0.37498208, -0.37560099,  0.3584032 ])
+ini_pose = fa.get_pose() 
+ini_pose.translation = trans; ini_pose.rotation = ini_rot
+if(eye_in_hand):    
+    fa.goto_pose(ini_pose)
 ip = input("Press Enter to continue collecting current sample....else space bar to stop")
 
 # realsense sensor 
@@ -64,12 +129,50 @@ color_im_, depth_im_ = sensor.frames()
 color_im = color_im_.raw_data
 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
 
-markerLength = 0.015
+
+markerLength = 0.025
 aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_5X5_1000 )
 arucoParams = cv2.aruco.DetectorParameters_create()
 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict, parameters=arucoParams,)  # First, detect markers
 
+tvecs = []
+rvecs = []
+r_offset = R.from_euler('z', 45, degrees=True)
 
+if ids is not None: 
+    for i in range(0, len(ids)):
+        # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
+        rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerLength, camera_matrix, dist_coeffs)
+        #print(i, rvec)
+        rotation_matrix = np.zeros(shape=(3,3))
+        cv2.Rodrigues(rvec, rotation_matrix) 
+        t = np.eye(4); t[0:3, 0:3] = rotation_matrix 
+        print(i, (np.array(tf_utils.euler_from_matrix(t))*180.0/np.pi))
+        print(rotation_matrix)
+        #new = np.matmul(np.array(rotation_matrix), r_offset.as_matrix())    
+        # rvec = None 
+        # tvec = None
+        #retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)  # posture estimation from a diamond
+        # Draw a square around the markers
+        
+        tvecs.append(tvec)
+        # Draw Axisimport rospy
+
+avg_tvec = None
+for tvec in tvecs: 
+    if (avg_tvec is None):
+        avg_tvec = tvec
+    else:
+        avg_tvec += tvec
+avg_tvec = avg_tvec/len(tvecs)
+print(tvecs)
+print(avg_tvec) 
+
+cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec, avg_tvec, 0.03)
+cv2.imshow('Estimated Pose', color_im)
+key = cv2.waitKey(0)  
+cv2.destroyAllWindows()
+'''
 markerLength = 0.0265
 markerSeparation = 0.0056
 aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
@@ -83,26 +186,29 @@ corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict
 
 
 if ids is not None: 
-    for i in range(0, len(ids)):
-        # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
-        #rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerLength, camera_matrix, dist_coeffs)
-        rvec = None 
-        tvec = None
-        retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)  # posture estimation from a diamond
+    
+    # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
+    #rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerLength, camera_matrix, dist_coeffs)
+    rvec = None 
+    tvec = None
+    retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)  # posture estimation from a diamond
 
-        rotation_matrix = np.zeros(shape=(3,3))
-        cv2.Rodrigues(rvec, rotation_matrix)
-        # rotation_matrix[:, 2] = - rotation_matrix[:, 2]
-        # t = rotation_matrix[:, 1].copy()
-        # rotation_matrix[:, 1] = rotation_matrix[:, 0]
-        # rotation_matrix[:, 0] = t
-        # rvec_new = cv2.Rodrigues(rotation_matrix)
-        # Draw a square around the markers
-        cv2.aruco.drawDetectedMarkers(image_gray, corners) 
-
-        # Draw Axis
-        #cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec_new[0], tvec, 0.03)  
-        cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec, tvec, 0.03)  
+    rotation_matrix = np.zeros(shape=(3,3))
+    cv2.Rodrigues(rvec, rotation_matrix)
+    print(rotation_matrix)
+    # print(rvec)
+    # rotation_matrix[:, 2] = -1* rotation_matrix[:, 2]
+    # t = rotation_matrix[:, 1].copy()
+    # rotation_matrix[:, 1] = rotation_matrix[:, 0].copy()
+    # rotation_matrix[:, 0] = t
+    # rvec_new = cv2.Rodrigues(rotation_matrix)
+    print(rotation_matrix)
+    #print(rvec, rvec_new[0])
+    # Draw a square around the markers
+    cv2.aruco.drawDetectedMarkers(image_gray, corners) 
+    # Draw Axis
+    #cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec_new[0], tvec, 0.03)  
+    cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec, tvec, 0.03)  
 else:
     print('No aruco markers detected')
     #exit()
@@ -110,6 +216,9 @@ else:
 cv2.imshow('Estimated Pose', color_im)
 key = cv2.waitKey(0)  
 cv2.destroyAllWindows()
+'''
+
+
 
 ee2base_ = fa.get_pose()
 
@@ -118,23 +227,72 @@ ee2base_ = fa.get_pose()
 tag2cam = np.eye(4)
 ee2base = np.eye(4)
 cam2ee = np.eye(4)
+cam2base = np.eye(4)
 
-
-tag2cam[0:3, 0:3] = rotation_matrix; tag2cam[0:3, -1] = tvec[:,0]
+tag2cam[0:3, 0:3] = rotation_matrix; 
+#tag2cam[0:3, -1] = tvec[:, 0]
+tag2cam[0:3, -1] = avg_tvec
 cam2ee = cam2gripper_pose
-ee2base[0:3, 0:3] = ee2base_.rotation; ee2base[0:3, -1] = ee2base_.translation
-# goal_matrix = np.matmul(np.matmul(tag2cam, cam2ee),ee2base)
-goal_matrix = np.matmul(ee2base, np.matmul(cam2ee, tag2cam ))
+
+
+if(eye_in_hand):
+    ee2base[0:3, 0:3] = ee2base_.rotation; ee2base[0:3, -1] = ee2base_.translation
+    goal_matrix = np.matmul(ee2base, np.matmul(cam2ee, tag2cam ))
+
+else: 
+    cam2base[0:3, 0:3] = np.array([[-0.06493062 ,-0.68077015 , 0.7296136 ],
+                                [-0.99759733,  0.02658313, -0.0639758 ],
+                                [ 0.02415741, -0.73201457 ,-0.68086055]])
+    cam2base[0:3, -1] = np.array([-0.10220491, -0.37519443,  1.06997212])
+    goal_matrix = np.matmul(cam2base, tag2cam )
+
+
+
+
 goal = fa.get_pose()
 # print(tag2cam)
-# print(cam2ee)
+# print(cam2ee)goal.translation[2]-= 0.15
+# goal.translation[2]+= 0.042
+
+# fa.goto_pose(goal)
 # print(ee2base)
 
-goal.rotation = goal_matrix[0:3, 0:3]; goal.translation = goal_matrix[0:3, -1]; goal.translation[2]+= 0.3   
+
+print("before")
+rot = goal_matrix[0:3, 0:3]
+print(rot)
+rot[:, 2] = -1* rot[:, 2]
+t = rot[:, 1].copy()
+rot[:, 1] = rot[:, 0].copy()
+rot[:, 0] = t
+print("after")
+print(rot)
+
+rot = np.array([[ 0.99917425,  0.03336863, -0.02276219],
+       [ 0.03386373, -0.99918069,  0.02172426],
+       [-0.02201863, -0.02247713, -0.99950485]])
+
+goal.rotation = rot
+goal.translation = goal_matrix[0:3, -1]; goal.translation[2]+= 0.15
 print("goal_pose")
+
 print(goal)
 fa.goto_pose(goal)
-print(fa.get_pose())
+
+
+goal.translation[2]-= 0.15
+goal.translation[2]+= 0.042
+
+# fa.goto_pose(goal)
+current_pose = fa.get_pose()
+#error = np.linalg.norm(np.array(goal.translation[:2])- np.array(current_pose.translation[:2]))
+
+true = np.array([ 0.44471988, -0.37676389])
+error = np.linalg.norm(np.array(goal.translation[:2])- true)
+print('error', error)
+print(current_pose)
+
+    
 # goal.translation[2] -= 0.1
 # fa.goto_pose(goal)
 # R_tag2cam = 

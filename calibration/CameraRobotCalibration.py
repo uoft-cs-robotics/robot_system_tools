@@ -56,13 +56,13 @@ class CameraRobotCalibration:
         return zmq_rot, zmq_position
 
     def create_aruco_objects(self):
-        markerLength = 0.0265
-        markerSeparation = 0.0056
+        markerLength = 0.0262
+        markerSeparation = 0.0054
         self.aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
         #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 
         self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
-        #img = cv2.aruco.drawPlanarBoard(board, (2550,3300))# for printing on A4 paper
+        #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
         self.arucoParams = cv2.aruco.DetectorParameters_create()
 
@@ -133,20 +133,49 @@ class CameraRobotCalibration:
                                 float(data[11]))))
             ee_pose_tf = np.eye(4)
             tag_pose_tf = np.eye(4)
-            ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
-            tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1]
+
             # self.calib_data.append(tuple((ee_pose, tag_pose)))
             # self.calib_data_tf.append(tuple((ee_pose_tf, tag_pose_tf)))
-            self.calib_data_As.append(ee_pose)
-            self.calib_data_As_tf.append(ee_pose_tf)
-            self.calib_data_Bs.append(tag_pose)
-            self.calib_data_Bs_tf.append(tag_pose_tf)            
+            ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
+            tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1]  
 
-        rs = RANSAC(As=self.calib_data_As, 
-                    As_tf=self.calib_data_As_tf, 
-                    Bs=self.calib_data_Bs, 
-                    Bs_tf=self.calib_data_Bs_tf)
-        rs.Run()
+            if(self.args.camera_in_hand):          
+                self.calib_data_As.append(ee_pose)
+                self.calib_data_As_tf.append(ee_pose_tf)
+                self.calib_data_Bs.append(tag_pose)
+                self.calib_data_Bs_tf.append(tag_pose_tf)     
+            else:
+                ee_pose_tf_inv = tf_utils.inverse_matrix(ee_pose_tf)
+                ee_pose = list(ee_pose)
+                ee_pose[0] = cv2.Rodrigues(ee_pose_tf_inv[0:3, 0:3])[0]
+                ee_pose[1] = ee_pose_tf_inv[0:3, -1]
+                ee_pose = tuple(ee_pose)
+                self.calib_data_As.append(ee_pose)
+                self.calib_data_As_tf.append(ee_pose_tf_inv)
+                self.calib_data_Bs.append(tag_pose)
+                self.calib_data_Bs_tf.append(tag_pose_tf)                
+
+
+        
+        solvers = [cv2.CALIB_HAND_EYE_TSAI,
+                    cv2.CALIB_HAND_EYE_PARK,
+                    cv2.CALIB_HAND_EYE_HORAUD,
+                    cv2.CALIB_HAND_EYE_ANDREFF,
+                    cv2.CALIB_HAND_EYE_DANIILIDIS]
+        
+        
+        
+        
+        
+        
+        for solver in solvers: 
+            print("solver = ", solver)
+            rs = RANSAC(As=self.calib_data_As, 
+                        As_tf=self.calib_data_As_tf, 
+                        Bs=self.calib_data_Bs, 
+                        Bs_tf=self.calib_data_Bs_tf,
+                        solver=solver)
+            rs.Run()
         # best_x, best_error= rs.Run()
         # print(best_x[0:3, 0:3], best_x[0:3, -1] )
 
