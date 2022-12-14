@@ -24,7 +24,9 @@ def callback(data):
 
     board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, aruco_dict)
     dist_coeffs = np.array([0.0,0.0,0.0,0.0])
-    camera_matrix = np.array([[909.341796875, 0.0, 643.876220703125], [0.0, 908.0641479492188, 348.6051330566406],[0.0,0.0,1.0]])
+
+    camera_matrix = np.array([[908.7789916992188, 0.0, 638.7603149414062], [0.0, 907.6327514648438,341.215576171875],[0.0,0.0,1.0]])
+    
     arucoParams = cv2.aruco.DetectorParameters_create()    
     image_gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict, parameters=arucoParams)  # First, detect markers
@@ -33,7 +35,14 @@ def callback(data):
     rotation_matrix = np.zeros(shape=(3,3))
     cv2.Rodrigues(rvec, rotation_matrix)
     tf_rot = np.eye(4); tf_rot[0:3, 0:3] = rotation_matrix
-    br.sendTransform(tvec, tf_utils.quaternion_from_matrix(tf_rot), rospy.Time.now(), 'board', 'camera_depth_optical_frame')
+    br.sendTransform(tvec, tf_utils.quaternion_from_matrix(tf_rot), rospy.Time.now(), 'board', 'camera_color_optical_frame')
+
+    camera_matrix = np.array([[1.36316846e+03, 0.00000000e+00, 9.58140503e+02], [0.00000000e+00, 1.36144910e+03, 5.11823364e+02],[0.0,0.0,1.0]])
+    retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)  # posture estimation from a diamond
+    rotation_matrix = np.zeros(shape=(3,3))
+    cv2.Rodrigues(rvec, rotation_matrix)
+    tf_rot = np.eye(4); tf_rot[0:3, 0:3] = rotation_matrix
+    br.sendTransform(tvec, tf_utils.quaternion_from_matrix(tf_rot), rospy.Time.now(), 'board_test', 'camera_color_optical_frame')
 def listener():
 
     # In ROS, nodes are uniquely named. If two nodes with the same

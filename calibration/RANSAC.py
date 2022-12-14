@@ -1,6 +1,6 @@
 import random
 import numpy as np
-import baldor as br
+#import baldor as br
 import tf.transformations as tf_utils
 random.seed(10)
 import cv2
@@ -100,16 +100,21 @@ class RANSAC:
         rot, trans = cv2.calibrateHandEye(A_rot, A_trans, B_rot, B_trans,method=self.solver)
         X_full = tf_from_rvectvec(rot, trans)
         print("full dataset error", self.compute_estimation_error_fulldataset(X_full))
-        # print(np.array(X_full[0:3, 0:3]))
+        print(X_full)
+        print(np.array(X_full[0:3, 0:3]))
+        print(np.array(X_full[0:3, -1]))
         inverse_matrix = tf_utils.inverse_matrix(X_full)
         print(tf_utils.quaternion_from_matrix(inverse_matrix))
         print(np.array(inverse_matrix[0:3, -1]))
-        return 
+        # print(cv2.Rodrigues(inverse_matrix[0:3, 0:3])[0])
+        return
         for i in range(self.iterations):
+            if(i %500 ==0):
+                print(i)
             inliers = []
             index_list = range(len(self.As_tf))
-            # maybe_inliers_idxs = random.sample(index_list, k=int(len(self.As_tf)/2))
-            maybe_inliers_idxs = random.sample(index_list, k=self.min_pts)
+            maybe_inliers_idxs = random.sample(index_list, k=int(len(self.As_tf)/2))
+            #maybe_inliers_idxs = random.sample(index_list, k=self.min_pts)
 
             A_rot = [self.As[i][0] for i in maybe_inliers_idxs]
             A_trans = [self.As[i][1] for i in maybe_inliers_idxs]
@@ -125,7 +130,7 @@ class RANSAC:
                     this_error = (t_error+r_error)/2.0                 
                     if (this_error) < self.thresh:
                         maybe_inliers_idxs.append(idx)
-            if len(maybe_inliers_idxs) > 15:
+            if len(maybe_inliers_idxs) > 5:
                 inlierAs_rot = [self.As[i][0] for i in maybe_inliers_idxs]
                 inlierAs_trans = [self.As[i][1] for i in maybe_inliers_idxs]
 
@@ -145,6 +150,10 @@ class RANSAC:
         print('best error', self.besterr)
         print(np.array(best_X[0:3, 0:3]))
         print(np.array(best_X[0:3,-1]))
+        print(best_X)
+        inverse_matrix = tf_utils.inverse_matrix(best_X)
+        print(tf_utils.quaternion_from_matrix(inverse_matrix))
+        print(np.array(inverse_matrix[0:3, -1]))        
         return best_X, self.besterr
 
 

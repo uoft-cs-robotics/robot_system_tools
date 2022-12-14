@@ -70,6 +70,25 @@ class CameraRobotCalibration:
         #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
         self.arucoParams = cv2.aruco.DetectorParameters_create()
+    
+    def refine_corners(self, image, corners):
+        winSize = [5, 5]
+        zeroZone = [-1, -1]
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 40, 0.001)
+        for corner in corners: 
+            cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
+
+    def reprojection_error(self, all_corners, ids,  rvec, tvec): 
+        mean_error = 0.0 
+        for id_, corners in zip(ids, all_corners):
+            #print(id_[0])
+            proj_img_point, _ = cv2.projectPoints(self.board.objPoints[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
+            #print(self.board.objPoints[id_[0]], corners)
+            #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+            # print(corners[0], proj_img_point[:,0,:])
+            error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
+            mean_error += error
+        return mean_error/len(self.board.objPoints)
 
     def WaitAndCollectData(self):
         self.context = zmq.Context()
@@ -94,6 +113,7 @@ class CameraRobotCalibration:
                 color_im = color_im_.raw_data
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, self.aruco_dict, parameters=self.arucoParams)  # First, detect markers
+                self.refine_corners(image_gray, corners)
                 cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
 
                 if ids is not None: 
@@ -101,14 +121,16 @@ class CameraRobotCalibration:
                     rvec = None 
                     tvec = None
                     retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, self.board, self.camera_matrix, self.dist_coeffs, rvec, tvec)  # posture estimation from a diamond
-                    #print(retval, rvec, tvec)
+                    
+                    
+
                     cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                     file_name = "data/image/image_"+str(detections_count)+".jpg"
                     cv2.imwrite(file_name, color_im)
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
                     print("tag", rvec, tvec, retval )
                     print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
-                    
+                    print("reprojection error", self.reprojection_error(corners,ids, rvec, tvec))
                     R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
                     t_gripper2base.append(ee_position) 
                     R_tag2cam.append(rvec)

@@ -22,14 +22,19 @@ import tf.transformations as tf_utils
 
 # test aruco marker objects 
 
-eye_in_hand = False
+eye_in_hand = True
 
 # input calibration result here 
+# R_cam2gripper = np.array([[ 0.01284593, -0.99982531,  0.01357677],
+#  [ 0.99991016 , 0.01279266 ,-0.00400265],
+#  [ 0.00382827 , 0.01362697 , 0.99989982]])
+# t_cam2gripper = np.array([0.05031603, -0.03004549, -0.03017308])
 
-R_cam2gripper = np.array([[ 0.00362766, -0.99968572,  0.02480507],
- [ 0.9999841,   0.00351939, -0.00440687],
- [ 0.00431818 , 0.02482066,  0.99968259]])
-t_cam2gripper = np.array([ 0.05521061, -0.03504399, -0.05588912])
+
+R_cam2gripper = np.array([[-0.00541318, -0.9998231,   0.01801276],
+ [ 0.99998455, -0.0053896 ,  0.00135735],
+ [-0.00126003,  0.01801983,  0.99983684]])
+t_cam2gripper = np.array([ 0.05957773, -0.03766937, -0.02767681])
 
 
 #tsai
@@ -103,7 +108,7 @@ print("##")
 #create frankapy object
 fa = FrankaArm()
 print("##")
-fa.reset_joints()
+# fa.reset_joints()
 print("##")
 ini_rot = np.array([[ 9.99594570e-01,  3.34527642e-04, -2.81308566e-02],
        [ 7.10455485e-04, -9.99900943e-01,  1.33547364e-02],
@@ -111,8 +116,8 @@ ini_rot = np.array([[ 9.99594570e-01,  3.34527642e-04, -2.81308566e-02],
 trans = np.array([ 0.37498208, -0.37560099,  0.3584032 ])
 ini_pose = fa.get_pose() 
 ini_pose.translation = trans; ini_pose.rotation = ini_rot
-if(eye_in_hand):    
-    fa.goto_pose(ini_pose)
+# if(eye_in_hand):    
+#     fa.goto_pose(ini_pose)
 ip = input("Press Enter to continue collecting current sample....else space bar to stop")
 
 # realsense sensor 
@@ -281,13 +286,13 @@ fa.goto_pose(goal)
 
 
 goal.translation[2]-= 0.15
-goal.translation[2]+= 0.042
+goal.translation[2]+= 0.052
 
 # fa.goto_pose(goal)
 current_pose = fa.get_pose()
 #error = np.linalg.norm(np.array(goal.translation[:2])- np.array(current_pose.translation[:2]))
 
-true = np.array([ 0.44471988, -0.37676389])
+true = np.array([0.44400216, -0.42633635])
 error = np.linalg.norm(np.array(goal.translation[:2])- true)
 print('error', error)
 print(current_pose)
