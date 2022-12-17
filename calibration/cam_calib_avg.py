@@ -86,9 +86,10 @@ class CameraRobotCalibration:
             #print(self.board.objPoints[id_[0]], corners)
             #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
             # print(corners[0], proj_img_point[:,0,:])
+            # print(len(proj_img_point))
             error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
             mean_error += error
-        return mean_error/len(self.board.objPoints)
+        return mean_error/len(ids)
 
     def WaitAndCollectData(self):
         self.context = zmq.Context()
@@ -130,11 +131,21 @@ class CameraRobotCalibration:
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
                     print("tag", rvec, tvec, retval )
                     print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
-                    print("reprojection error", self.reprojection_error(corners,ids, rvec, tvec))
-                    R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
-                    t_gripper2base.append(ee_position) 
-                    R_tag2cam.append(rvec)
-                    t_tag2cam.append(tvec)
+                    reproj_error =  self.reprojection_error(corners,ids, rvec, tvec)
+                    print("reprojection error",reproj_error)
+                    if self.args.camera_in_hand:
+                        thresh = 0.3
+                    else: 
+                        thresh = 0.3
+                    if reproj_error >  thresh:
+                        print("#### Very high reprojection error ####")
+                        continue
+                        
+                    else:
+                        R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
+                        t_gripper2base.append(ee_position) 
+                        R_tag2cam.append(rvec)
+                        t_tag2cam.append(tvec)
                     
                 print(detections_count, i)
                 cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))

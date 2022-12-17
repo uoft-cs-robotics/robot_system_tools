@@ -88,7 +88,7 @@ class CameraRobotCalibration:
             tag_poses = []
             ee_poses = []
             if (ip==""):
-                time.sleep(0.5)
+                time.sleep(3.0)
 
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data

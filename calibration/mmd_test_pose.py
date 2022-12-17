@@ -6,8 +6,15 @@ import time
 import math
 from scipy.spatial.transform import Rotation as R
 
+import rospy
 import tf.transformations as tf_utils
+from CalibrationUtils import * 
+import tf
+camera_in_hand = True 
 
+# if camera_in_hand: 
+#     from frankapy import FrankaArm
+#     fa = FrankaArm() 
 
 def tf_from_rvectvec(rvec, tvec):
     out = np.eye(4)
@@ -43,7 +50,7 @@ def save_board(board, fname):
 
 class Camera:
     def __init__(self):
-        device_id = "148122060186"  # Lab: "828112071102" home:"829212070352"
+        device_id = "148122060186"  # Lab: "828112071102" home:"829212070352" handcamera="148122061435" mountcamera=""148122060186""
         # Configure streams
 
         pipeline = None
@@ -97,16 +104,19 @@ def detect(color_frame, board, draw_on=None):
 
     # Aruco marker part
     # Detect the markers in the image
-    markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(color_image, board.dictionary, parameters=parameters)
+    image_gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
+    markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(image_gray, board.dictionary, parameters=parameters)
+    refine_corners(image_gray, markerCorners)
     rvec = None
     tvec = None
     if markerIds is not None:
         retval, rvec, tvec = cv2.aruco.estimatePoseBoard(markerCorners, markerIds, board, camera_matrix, dist_coeffs, rvec, tvec)
-        rot_tag = np.array(cv2.Rodrigues(rvec)[0])
-        offset_direction = rot_tag[:, 0] + rot_tag[:,1]
-        offset_direction = offset_direction/np.linalg.norm(offset_direction)
-        offset = (np.sqrt(50.0)/200.0)*offset_direction #+ 0.025*rot_tag[:,2]
-        tvec[0] += offset[0]; tvec[1] += offset[1]; tvec[2] += offset[2]
+        print("reproj_error", reprojection_error(markerCorners, markerIds, rvec, tvec, board, camera_matrix, dist_coeffs))
+        # rot_tag = np.array(cv2.Rodrigues(rvec)[0])
+        # offset_direction = rot_tag[:, 0] + rot_tag[:,1]
+        # offset_direction = offset_direction/np.linalg.norm(offset_direction)
+        # offset = (np.sqrt(50.0)/200.0)*offset_direction #+ 0.025*rot_tag[:,2]
+        # tvec[0] += offset[0]; tvec[1] += offset[1]; tvec[2] += offset[2]
     if draw_on is not None and tvec is not None:
 
         cv2.drawFrameAxes(draw_on, camera_matrix, dist_coeffs, rvec, tvec, 0.03)
@@ -181,12 +191,22 @@ def get_cube_pose(detection):
     assert p_CO_C[2] > p_CB_C[2]
     return R_CO.as_mrp(), p_CO_C.reshape((3, 1))
 
+# if camera_in_hand: 
+#     R_cam2gripper = np.array([[-0.00776021, -0.99987852,  0.01351743],
+#  [ 0.9999001,  -0.00791866, -0.01170802],
+#  [ 0.01181364 , 0.01342522 , 0.99984009]])
+#     t_cam2gripper = np.array([ 0.05970745, -0.0319058,  -0.06840195])
+#     Tcam2gripper = np.eye(4); Tcam2gripper[0:3, 0:3] = R_cam2gripper; Tcam2gripper[0:3, -1] = t_cam2gripper
+#     ee2base_ = fa.get_pose()
+#     Tgripper2base = np.eye(4); Tgripper2base[0:3, 0:3] = ee2base_.rotation; Tgripper2base[0:3, -1] = ee2base_.translation
+#     Tcamera2base = np.matmul(Tgripper2base, Tcam2gripper)
+#     print(Tcamera2base)
 
-
-T_camera_in_base = np.array([[-0.10301954, -0.94251086,  0.31789974, -0.09129307],
- [-0.9942128 ,  0.08778318, -0.06192753, -0.48345847],
- [ 0.03046112, -0.32243974, -0.94609975 , 1.1155266 ],
- [ 0.    ,      0.   ,       0.       ,   1.        ]])
+# else: 
+#     Tcamera2base = np.array([[-0.10301954, -0.94251086,  0.31789974, -0.09129307],
+#     [-0.9942128 ,  0.08778318, -0.06192753, -0.48345847],
+#     [ 0.03046112, -0.32243974, -0.94609975 , 1.1155266 ],
+#     [ 0.    ,      0.   ,       0.       ,   1.        ]])
 
 if __name__ == '__main__':
     poses = run_loop(10, display=True)
@@ -196,6 +216,27 @@ if __name__ == '__main__':
         i = 0 
         #for i in range(len(poses[tidx])):
         print(poses[tidx][i][0], poses[tidx][i][1].flatten())
-        T_block = tf_from_rvectvec(poses[tidx][0][0], poses[tidx][0][1])
+        T_block = tf_from_rvectvec(cv2.Rodrigues(poses[tidx][0][0])[0], poses[tidx][0][1])
         print(T_block)
-        print('in robot frame', np.matmul(T_camera_in_base, T_block))
+        # Tblock2base = np.matmul(Tcamera2base, T_block)
+        # print('in robot frame', Tblock2base)
+        # pose = fa.get_pose() 
+        # pose.translation = Tblock2base[0:3, -1]
+        # pose.translation[2]+= 0.1
+        # fa.goto_pose(pose)
+        # pose.translation[2]-= 0.1
+        # fa.goto_pose(pose)
+    rospy.init_node('cube', anonymous=True)
+    try:
+        while not rospy.core.is_shutdown():
+            print("in while loop")
+            br = tf.TransformBroadcaster() 
+            br.sendTransform(T_block[0:3,-1],
+                    tf_utils.quaternion_from_matrix(T_block),
+                    rospy.Time.now(),
+                    'cube',
+                    'camera_color_optical_frame'
+                    )   
+
+    except KeyboardInterrupt:
+            rospy.core.signal_shutdown('keyboard interrupt')                      

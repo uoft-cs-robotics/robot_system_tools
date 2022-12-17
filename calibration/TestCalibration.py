@@ -18,7 +18,7 @@ import pyrealsense2 as rs
 from frankapy import FrankaArm
 from scipy.spatial.transform import Rotation as R
 import tf.transformations as tf_utils
-
+from CalibrationUtils import *
 
 # test aruco marker objects 
 
@@ -31,10 +31,10 @@ eye_in_hand = True
 # t_cam2gripper = np.array([0.05031603, -0.03004549, -0.03017308])
 
 
-R_cam2gripper = np.array([[-0.00541318, -0.9998231,   0.01801276],
- [ 0.99998455, -0.0053896 ,  0.00135735],
- [-0.00126003,  0.01801983,  0.99983684]])
-t_cam2gripper = np.array([ 0.05957773, -0.03766937, -0.02767681])
+R_cam2gripper = np.array([[ 0.00269485, -0.99983267,  0.01809318],
+                        [ 0.99993556 , 0.00249471, -0.0110751 ],
+                        [ 0.01102811 , 0.01812186 , 0.99977496]])
+t_cam2gripper = np.array([ 0.05493054, -0.03262165, -0.06812028])
 
 
 #tsai
@@ -108,16 +108,16 @@ print("##")
 #create frankapy object
 fa = FrankaArm()
 print("##")
-# fa.reset_joints()
+fa.reset_joints()
 print("##")
-ini_rot = np.array([[ 9.99594570e-01,  3.34527642e-04, -2.81308566e-02],
-       [ 7.10455485e-04, -9.99900943e-01,  1.33547364e-02],
-       [-2.81236025e-02, -1.33693077e-02, -9.99515035e-01]])
-trans = np.array([ 0.37498208, -0.37560099,  0.3584032 ])
+ini_rot = np.array([[ 0.99984526,  0.00864872, -0.01467651],
+       [ 0.00810089, -0.99927337, -0.03698498],
+       [-0.01498572,  0.03686036, -0.99920804]])
+trans = np.array([0.55879714, 0.03248001, 0.27579337])
 ini_pose = fa.get_pose() 
 ini_pose.translation = trans; ini_pose.rotation = ini_rot
-# if(eye_in_hand):    
-#     fa.goto_pose(ini_pose)
+if(eye_in_hand):    
+    fa.goto_pose(ini_pose)
 ip = input("Press Enter to continue collecting current sample....else space bar to stop")
 
 # realsense sensor 
@@ -135,10 +135,12 @@ color_im = color_im_.raw_data
 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
 
 
-markerLength = 0.025
-aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_5X5_1000 )
+markerLength = 0.040
+aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 arucoParams = cv2.aruco.DetectorParameters_create()
 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict, parameters=arucoParams,)  # First, detect markers
+
+refine_corners(image_gray, corners)
 
 tvecs = []
 rvecs = []
@@ -273,9 +275,9 @@ rot[:, 0] = t
 print("after")
 print(rot)
 
-rot = np.array([[ 0.99917425,  0.03336863, -0.02276219],
-       [ 0.03386373, -0.99918069,  0.02172426],
-       [-0.02201863, -0.02247713, -0.99950485]])
+rot = np.array([[ 9.97775978e-01, -5.61477743e-02, -3.56552590e-02],
+       [-5.60788130e-02, -9.98412398e-01,  2.93206582e-03],
+       [-3.57632816e-02, -9.26040242e-04, -9.99359848e-01]])
 
 goal.rotation = rot
 goal.translation = goal_matrix[0:3, -1]; goal.translation[2]+= 0.15
@@ -288,11 +290,11 @@ fa.goto_pose(goal)
 goal.translation[2]-= 0.15
 goal.translation[2]+= 0.052
 
-# fa.goto_pose(goal)
+fa.goto_pose(goal)
 current_pose = fa.get_pose()
 #error = np.linalg.norm(np.array(goal.translation[:2])- np.array(current_pose.translation[:2]))
 
-true = np.array([0.44400216, -0.42633635])
+true = np.array([0.64751079, 0.02023949])
 error = np.linalg.norm(np.array(goal.translation[:2])- true)
 print('error', error)
 print(current_pose)

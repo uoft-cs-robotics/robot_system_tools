@@ -5,21 +5,7 @@ import tf.transformations as tf_utils
 random.seed(10)
 import cv2
 
-def rotationmatrix_error(R2, R1):
-    rc1 = R1[0:3, 0]
-    rc2 = R1[0:3, 1]
-    rc3 = R1[0:3, 2]
-    rd1 = R2[0:3, 0]
-    rd2 = R2[0:3, 1]
-    rd3 = R2[0:3, 2]    
-    error = 0.5 * (np.cross(rc1, rd1) + np.cross(rc2, rd2) + np.cross(rc3, rd3))
-    return  error
-
-def tf_from_rvectvec(rvec, tvec):
-    out = np.eye(4)
-    out[0:3, -1] = tvec[:,0]
-    out[0:3, 0:3] = rvec
-    return out
+from CalibrationUtils import *
 
 class RANSAC:
     def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0) -> None:
@@ -107,7 +93,7 @@ class RANSAC:
         print(tf_utils.quaternion_from_matrix(inverse_matrix))
         print(np.array(inverse_matrix[0:3, -1]))
         # print(cv2.Rodrigues(inverse_matrix[0:3, 0:3])[0])
-        return
+        #return
         for i in range(self.iterations):
             if(i %500 ==0):
                 print(i)
