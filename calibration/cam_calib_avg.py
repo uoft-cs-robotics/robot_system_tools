@@ -63,10 +63,14 @@ class CameraRobotCalibration:
     def create_aruco_objects(self):
         markerLength = 0.0265
         markerSeparation = 0.0057
+
+        # markerLength = 0.0387
+        # markerSeparation = 0.0057        
         self.aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
         #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 
         self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
+        #self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
         #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
         self.arucoParams = cv2.aruco.DetectorParameters_create()
@@ -115,7 +119,7 @@ class CameraRobotCalibration:
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, self.aruco_dict, parameters=self.arucoParams)  # First, detect markers
                 self.refine_corners(image_gray, corners)
-                cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
 
                 if ids is not None: 
                     detections_count +=1
@@ -125,8 +129,8 @@ class CameraRobotCalibration:
                     
                     
 
-                    cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
-                    file_name = "data/image/image_"+str(detections_count)+".jpg"
+                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                    file_name = "data/image/image_"+str(detections_count-1)+".jpg"
                     cv2.imwrite(file_name, color_im)
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
                     print("tag", rvec, tvec, retval )
@@ -139,7 +143,7 @@ class CameraRobotCalibration:
                         thresh = 0.3
                     if reproj_error >  thresh:
                         print("#### Very high reprojection error ####")
-                        continue
+                        #continue
                         
                     else:
                         R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
@@ -148,7 +152,7 @@ class CameraRobotCalibration:
                         t_tag2cam.append(tvec)
                     
                 print(detections_count, i)
-                cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
             else:
                 print("stopping data collection")
                 if i ==0 :

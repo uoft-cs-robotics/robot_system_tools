@@ -39,7 +39,7 @@ camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[
 dist_coeffs =np.array([0.0,0.0,0.0,0.0])
 #######
 
-eye_in_hand = False
+eye_in_hand = True
 fa = FrankaArm()
 
 
@@ -49,10 +49,19 @@ if not eye_in_hand:
 
 if eye_in_hand: 
     
-    R_cam2gripper = np.array([[ 3.01473874e-04, -9.99535968e-01 , 3.04591042e-02],
-                            [ 9.99999331e-01 , 3.35343425e-04 , 1.10686584e-03],
-                            [-1.11656648e-03 , 3.04587502e-02 , 9.99535401e-01]])
-    t_cam2gripper = np.array([ 0.04466579, -0.03646603, -0.06275917])    
+    R_cam2gripper = np.array([[ 0.00593383, -0.99943719,  0.03301643],
+                                [ 0.99997778 , 0.00603086,  0.00284006],
+                                [-0.00303758 , 0.03299884,  0.99945077]])
+    t_cam2gripper = np.array([0.04309507, -0.03661075, -0.05638443]) 
+
+    # R_cam2gripper = np.array([[ 3.01473874e-04, -9.99535968e-01 , 3.04591042e-02],
+    #                         [ 9.99999331e-01 , 3.35343425e-04 , 1.10686584e-03],
+    #                         [-1.11656648e-03 , 3.04587502e-02 , 9.99535401e-01]])
+    # t_cam2gripper = np.array([ 0.04466579, -0.03646603, -0.06275917]) ##most correct yet
+    # R_cam2gripper = np.array([[ 0.01840936, -0.99965802,  0.01857263],
+    #                         [ 0.99980491 , 0.01827272, -0.00749979],
+    #                         [ 0.00715785,  0.01870707 , 0.99979939]])
+    # t_cam2gripper = np.array([ 0.05071377, -0.03182113, -0.04429567])        
     Tcam2gripper = np.eye(4); Tcam2gripper[0:3, 0:3] = R_cam2gripper; Tcam2gripper[0:3, -1] = t_cam2gripper
     
     ee2base_fa = fa.get_pose() 
@@ -61,8 +70,8 @@ if eye_in_hand:
     print("current height: ", Tcam2base[2, -1])
 else: 
     R_cam2base = np.array([[-0.14252794, -0.87081441,  0.47049766],
-                            [-0.98855273,  0.1490066 , -0.02367556],
-                            [-0.04949023, -0.46848618, -0.88208357]])
+                    [-0.98855273,  0.1490066 , -0.02367556],
+                    [-0.04949023, -0.46848618, -0.88208357]])
     t_cam2base = np.array([-0.27909548, -0.56676275,  0.87199486])        
     # R_cam2base = np.array([[-0.17833759, -0.86612861 , 0.46692283],
     #                     [-0.98123311 , 0.19190743, -0.01879162],
@@ -126,10 +135,27 @@ rotation_matrix[:,0] = rotation_matrix[:,1]
 rotation_matrix[:,1] = t; print(rotation_matrix)
 Ttag2base[0:3, 0:3] = rotation_matrix
 pose = fa.get_pose() 
-pose.translation = Ttag2base[0:3, -1]; pose.rotation = np.array([[ 0.99774194, -0.04250232,  0.05182053],
-       [-0.04126788, -0.99883403, -0.02466388],
-       [ 0.05280838,  0.02246966, -0.9983518 ]])#pose.rotation = Ttag2base[0:3, 0:3]
+pose.translation = Ttag2base[0:3, -1]; 
 
+# pose.rotation = np.array([[ 0.99774194, -0.04250232,  0.05182053],
+#        [-0.04126788, -0.99883403, -0.02466388],
+#        [ 0.05280838,  0.02246966, -0.9983518 ]])
+       
+pose.rotation = Ttag2base[0:3, 0:3]
+
+
+Tright2left = np.array([[ 0.99849453,  0.01417743, -0.05298756,  0.02435545],
+       [-0.01404807,  0.99989736,  0.00281301,  0.97666475],
+       [ 0.053022  , -0.0020644 ,  0.99859122, -0.02058212],
+       [ 0.        ,  0.        ,  0.        ,  1.        ]])
+# Tright2left = np.array([[ 1.0,  0.0, 0.0,  0.0],
+#                         [0.0,  1.0,  0.0,  0.97666475],
+#                         [ 0.0  , 0.0 ,  1.0, -0.0],
+#                          [ 0.        ,  0.        ,  0.        ,  1.        ]])
+Tcube2right = np.eye(4); Tcube2right[0:3, 0:3] = pose.rotation; Tcube2right[0:3, -1] = pose.translation
+T = np.matmul(  Tright2left,Tcube2right)
+print("in left", T)
+print("in left", np.array(tf_utils.euler_from_matrix(T))*180.0/np.pi)
 
 pose.translation[2] += 0.2
 print(pose)
@@ -138,3 +164,26 @@ fa.goto_pose(pose)
 pose.translation[2] -= 0.2
 print(pose)
 fa.goto_pose(pose)
+
+
+
+'''
+import numpy as np 
+import tf.transformations as tf_utils 
+
+Tee2right  = np.eye(4)
+Tee2right[0:3, 0:3] = np.array([[ 0.99912148,  0.00342975, -0.0415366 ],
+                                [ 0.00304987, -0.99994335, -0.00920581],
+                                [-0.04156582,  0.00907104, -0.99909457]])
+Tee2right[0:3, -1] = np.array([ 0.44321501, -0.45064716,  0.03013582])
+
+Tee2left = np.eye(4)
+Tee2left[0:3, 0:3] = np.array([[ 0.99986304, -0.01123269,  0.011335  ],
+                                [-0.0111031 , -0.99986338, -0.01143182],
+                                [ 0.01146186,  0.0113044 , -0.99987041]])
+Tee2left[0:3, -1] =   np.array([0.45891737, 0.5199223 , 0.03394171])                              
+
+
+
+Tright2left = np.matmul(Tee2left, tf_utils.inverse_matrix(Tee2right))
+'''

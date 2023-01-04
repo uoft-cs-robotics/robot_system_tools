@@ -31,20 +31,23 @@ color_im_, depth_im_ = sensor.frames()
 color_im = color_im_.raw_data
 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
 
-markerLength = 0.0404
+markerLength = 0.0454
 aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 arucoParams = cv2.aruco.DetectorParameters_create()
 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict, parameters=arucoParams,)  # First, detect markers
 
-rvec = None; tvec = None
+
 
 refine_corners(image_gray, corners)
+
 cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+rvec = None; tvec = None
 if ids is not None: 
     for i in range(0, len(ids)):
         # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
         rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerLength, camera_matrix, dist_coeffs)
 
+print(reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs))
 cv2.drawFrameAxes(color_im, camera_matrix, dist_coeffs, rvec, tvec, 0.03)
 cv2.imshow('Estimated Pose', color_im)
 key = cv2.waitKey(0)  

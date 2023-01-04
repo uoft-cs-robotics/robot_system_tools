@@ -22,7 +22,7 @@ def tf_from_rvectvec(rvec, tvec):
     out[0:3, 0:3] = rvec
     return out
 
-def create_aruco_boards(save=False):
+def create_aruco_boards(save=True):
     boards = []
     aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
     for i in range(10):
@@ -51,6 +51,7 @@ def save_board(board, fname):
 class Camera:
     def __init__(self):
         device_id = "148122060186"  # Lab: "828112071102" home:"829212070352" handcamera="148122061435" mountcamera=""148122060186""
+        #device_id = "148122061435"
         # Configure streams
 
         pipeline = None
@@ -106,7 +107,7 @@ def detect(color_frame, board, draw_on=None):
     # Detect the markers in the image
     image_gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
     markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(image_gray, board.dictionary, parameters=parameters)
-    refine_corners(image_gray, markerCorners)
+    #refine_corners(image_gray, markerCorners)
     rvec = None
     tvec = None
     if markerIds is not None:
@@ -180,7 +181,8 @@ def get_cube_pose(detection):
 
     assert R_CB.apply([0, 0, 1])[2] >= 0
 
-    p_BO_B = np.array([2.5 / 100, 2.5 / 100, 2.5 / 100])
+    #p_BO_B = np.array([2.5 / 100, 2.5 / 100, 2.5 / 100])
+    p_BO_B = np.array([0.0, 0.0, 0.0])
     p_BO_C = R_CB.apply(p_BO_B)
 
     p_CO_C = p_CB_C + p_BO_C
@@ -188,8 +190,8 @@ def get_cube_pose(detection):
 
     R_CO = R_CB * R_BO
 
-    assert p_CO_C[2] > p_CB_C[2]
-    return R_CO.as_mrp(), p_CO_C.reshape((3, 1))
+    # assert p_CO_C[2] > p_CB_C[2]
+    return R_CO.as_mrp(), p_CB_C.reshape((3, 1))
 
 # if camera_in_hand: 
 #     R_cam2gripper = np.array([[-0.00776021, -0.99987852,  0.01351743],

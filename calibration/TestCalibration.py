@@ -31,17 +31,17 @@ eye_in_hand = True
 # t_cam2gripper = np.array([0.05031603, -0.03004549, -0.03017308])
 
 
-R_cam2gripper = np.array([[ 0.00269485, -0.99983267,  0.01809318],
-                        [ 0.99993556 , 0.00249471, -0.0110751 ],
-                        [ 0.01102811 , 0.01812186 , 0.99977496]])
-t_cam2gripper = np.array([ 0.05493054, -0.03262165, -0.06812028])
+# R_cam2gripper = np.array([[ 0.00593383, -0.99943719,  0.03301643],
+#                             [ 0.99997778 , 0.00603086,  0.00284006],
+#                             [-0.00303758 , 0.03299884,  0.99945077]])
+# t_cam2gripper = np.array([0.04309507, -0.03661075, -0.05638443]) 
 
 
 #tsai
-# R_cam2gripper = np.array([[ 0.00555508, -0.99973669,  0.02226396],
-#  [ 0.99985955,  0.00520096, -0.0159319 ],
-#  [ 0.01581191 , 0.02234934 , 0.99962518]])
-# t_cam2gripper = np.array([ 0.0610764,  -0.02725983, -0.06051241])
+R_cam2gripper = np.array([[ 0.00555508, -0.99973669,  0.02226396],
+ [ 0.99985955,  0.00520096, -0.0159319 ],
+ [ 0.01581191 , 0.02234934 , 0.99962518]])
+t_cam2gripper = np.array([ 0.0610764,  -0.02725983, -0.06051241])
 
 # #park 
 # R_cam2gripper = np.array([[ 0.00406973, -0.99969235,  0.02446718],
@@ -108,7 +108,7 @@ print("##")
 #create frankapy object
 fa = FrankaArm()
 print("##")
-fa.reset_joints()
+# fa.reset_joints()
 print("##")
 ini_rot = np.array([[ 0.99984526,  0.00864872, -0.01467651],
        [ 0.00810089, -0.99927337, -0.03698498],
@@ -116,8 +116,8 @@ ini_rot = np.array([[ 0.99984526,  0.00864872, -0.01467651],
 trans = np.array([0.55879714, 0.03248001, 0.27579337])
 ini_pose = fa.get_pose() 
 ini_pose.translation = trans; ini_pose.rotation = ini_rot
-if(eye_in_hand):    
-    fa.goto_pose(ini_pose)
+# if(eye_in_hand):    
+#     fa.goto_pose(ini_pose)
 ip = input("Press Enter to continue collecting current sample....else space bar to stop")
 
 # realsense sensor 
@@ -135,11 +135,10 @@ color_im = color_im_.raw_data
 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
 
 
-markerLength = 0.040
-aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
+markerLength = 0.025
+aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_5X5_1000 )
 arucoParams = cv2.aruco.DetectorParameters_create()
 corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, aruco_dict, parameters=arucoParams,)  # First, detect markers
-
 refine_corners(image_gray, corners)
 
 tvecs = []
@@ -150,6 +149,7 @@ if ids is not None:
     for i in range(0, len(ids)):
         # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
         rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], markerLength, camera_matrix, dist_coeffs)
+        print(reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs, id=i))
         #print(i, rvec)
         rotation_matrix = np.zeros(shape=(3,3))
         cv2.Rodrigues(rvec, rotation_matrix) 
@@ -293,8 +293,8 @@ goal.translation[2]+= 0.052
 fa.goto_pose(goal)
 current_pose = fa.get_pose()
 #error = np.linalg.norm(np.array(goal.translation[:2])- np.array(current_pose.translation[:2]))
-
-true = np.array([0.64751079, 0.02023949])
+time.sleep(2)
+true = np.array([ 0.42233412, -0.07618003])
 error = np.linalg.norm(np.array(goal.translation[:2])- true)
 print('error', error)
 print(current_pose)

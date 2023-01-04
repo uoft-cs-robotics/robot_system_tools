@@ -213,10 +213,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
         mean_error += error
     return mean_error/len(ids)
 
-def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs ):
+def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs, id=0):
     mean_error = 0.0
-    print(corners[0][0])
-    for point, corner in zip(markerPoints, corners[0][0]):
+    for point, corner in zip(markerPoints, corners[id][0]):
         # print('pt', point)
         # print('corner', corner)
         proj_img_point, _ = cv2.projectPoints(point, rvec, tvec, camera_matrix, dist_coeffs )
