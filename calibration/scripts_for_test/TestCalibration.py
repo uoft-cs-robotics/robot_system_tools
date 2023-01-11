@@ -22,13 +22,13 @@ from CalibrationUtils import *
 
 # test aruco marker objects 
 
-eye_in_hand = True
+eye_in_hand = False
 
-# input calibration result here 
-# R_cam2gripper = np.array([[ 0.01284593, -0.99982531,  0.01357677],
-#  [ 0.99991016 , 0.01279266 ,-0.00400265],
-#  [ 0.00382827 , 0.01362697 , 0.99989982]])
-# t_cam2gripper = np.array([0.05031603, -0.03004549, -0.03017308])
+# input calibration result here _infr
+R_cam2gripper = np.array([[-0.00402702, -0.99981337 , 0.01889491],
+ [ 0.99998761, -0.00397101,  0.00300087],
+ [-0.00292527 , 0.01890676,  0.99981697]])
+t_cam2gripper = np.array([0.05175527 ,-0.03809756 ,-0.0656922])
 
 
 # R_cam2gripper = np.array([[ 0.00593383, -0.99943719,  0.03301643],
@@ -37,11 +37,11 @@ eye_in_hand = True
 # t_cam2gripper = np.array([0.04309507, -0.03661075, -0.05638443]) 
 
 
-#tsai
-R_cam2gripper = np.array([[ 0.00555508, -0.99973669,  0.02226396],
- [ 0.99985955,  0.00520096, -0.0159319 ],
- [ 0.01581191 , 0.02234934 , 0.99962518]])
-t_cam2gripper = np.array([ 0.0610764,  -0.02725983, -0.06051241])
+#tsai good
+# R_cam2gripper = np.array([[ 0.00555508, -0.99973669,  0.02226396],
+#  [ 0.99985955,  0.00520096, -0.0159319 ],
+#  [ 0.01581191 , 0.02234934 , 0.99962518]])
+# t_cam2gripper = np.array([ 0.0610764,  -0.02725983, -0.06051241])
 
 # #park 
 # R_cam2gripper = np.array([[ 0.00406973, -0.99969235,  0.02446718],
@@ -157,7 +157,7 @@ if ids is not None:
         print(i, (np.array(tf_utils.euler_from_matrix(t))*180.0/np.pi))
         print(rotation_matrix)
         #new = np.matmul(np.array(rotation_matrix), r_offset.as_matrix())    
-        # rvec = None 
+        # rvec = None _infr
         # tvec = None
         #retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)  # posture estimation from a diamond
         # Draw a square around the markers
@@ -247,10 +247,10 @@ if(eye_in_hand):
     goal_matrix = np.matmul(ee2base, np.matmul(cam2ee, tag2cam ))
 
 else: 
-    cam2base[0:3, 0:3] = np.array([[-0.06493062 ,-0.68077015 , 0.7296136 ],
-                                [-0.99759733,  0.02658313, -0.0639758 ],
-                                [ 0.02415741, -0.73201457 ,-0.68086055]])
-    cam2base[0:3, -1] = np.array([-0.10220491, -0.37519443,  1.06997212])
+    cam2base[0:3, 0:3] = np.array([[ 0.08861417, -0.98142376,  0.17016149],
+ [-0.99490778 ,-0.07897396 , 0.06262292],
+ [-0.04802129, -0.17484427 ,-0.98342434]])
+    cam2base[0:3, -1] = np.array([-0.13302803 ,-0.53626061 , 0.88775049 ])
     goal_matrix = np.matmul(cam2base, tag2cam )
 
 
@@ -275,26 +275,30 @@ rot[:, 0] = t
 print("after")
 print(rot)
 
-rot = np.array([[ 9.97775978e-01, -5.61477743e-02, -3.56552590e-02],
-       [-5.60788130e-02, -9.98412398e-01,  2.93206582e-03],
-       [-3.57632816e-02, -9.26040242e-04, -9.99359848e-01]])
+rot = np.array([[ 9.99482884e-01, -3.16529914e-02,  3.57765231e-03],
+       [-3.16538109e-02, -9.99489246e-01,  1.72674924e-04],
+       [ 3.57035933e-03, -2.85831961e-04, -9.99993585e-01]])
 
 goal.rotation = rot
-goal.translation = goal_matrix[0:3, -1]; goal.translation[2]+= 0.15
+goal.translation = goal_matrix[0:3, -1]; #goal.translation[2]+= 0.25
 print("goal_pose")
 
 print(goal)
 fa.goto_pose(goal)
 
 
-goal.translation[2]-= 0.15
-goal.translation[2]+= 0.052
+#goal.translation[2]-= 0.25
+
+print("goal_pose")
+
+print(goal)
+goal.translation[2]= 0.04
 
 fa.goto_pose(goal)
 current_pose = fa.get_pose()
 #error = np.linalg.norm(np.array(goal.translation[:2])- np.array(current_pose.translation[:2]))
 time.sleep(2)
-true = np.array([ 0.42233412, -0.07618003])
+true = np.array([ 0.39388669, -0.00274216])
 error = np.linalg.norm(np.array(goal.translation[:2])- true)
 print('error', error)
 print(current_pose)

@@ -39,7 +39,7 @@ camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[
 dist_coeffs =np.array([0.0,0.0,0.0,0.0])
 #######
 
-eye_in_hand = True
+eye_in_hand = False
 fa = FrankaArm()
 
 
@@ -69,15 +69,16 @@ if eye_in_hand:
     Tcam2base = np.matmul(Tgripper2base, Tcam2gripper)
     print("current height: ", Tcam2base[2, -1])
 else: 
-    R_cam2base = np.array([[-0.14252794, -0.87081441,  0.47049766],
-                    [-0.98855273,  0.1490066 , -0.02367556],
-                    [-0.04949023, -0.46848618, -0.88208357]])
-    t_cam2base = np.array([-0.27909548, -0.56676275,  0.87199486])        
+    Tcam2base = np.eye(4); 
+    Tcam2base[0:3, 0:3] = np.array([[ 3.55710140e-01, -7.52908289e-01,  5.53714191e-01],
+                                    [-9.34595965e-01 ,-2.87081277e-01 , 2.10035051e-01],
+                                    [ 8.23846442e-04, -5.92210645e-01, -8.05782770e-01]])
+    Tcam2base[0:3, -1] = np.array([-0.15937439, -0.51703974 , 0.8664317 ])      
     # R_cam2base = np.array([[-0.17833759, -0.86612861 , 0.46692283],
     #                     [-0.98123311 , 0.19190743, -0.01879162],
     #                     [-0.07333  ,  -0.46151139, -0.88409838]])
     # t_cam2base = np.array([-0.27941828, -0.56453168,  0.87719238])    
-    Tcam2base = np.eye(4); Tcam2base[0:3, 0:3] = R_cam2base; Tcam2base[0:3, -1] = t_cam2base  
+    #Tcam2base = np.eye(4); Tcam2base[0:3, 0:3] = R_cam2base; Tcam2base[0:3, -1] = t_cam2base  
 
 rvecs = []
 tvecs = []
@@ -161,6 +162,7 @@ pose.translation[2] += 0.2
 print(pose)
 fa.goto_pose(pose)
 
+print(goal)
 pose.translation[2] -= 0.2
 print(pose)
 fa.goto_pose(pose)

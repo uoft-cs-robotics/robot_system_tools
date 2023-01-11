@@ -89,11 +89,8 @@ class RANSAC:
         print(X_full)
         print(np.array(X_full[0:3, 0:3]))
         print(np.array(X_full[0:3, -1]))
-        inverse_matrix = tf_utils.inverse_matrix(X_full)
-        print(tf_utils.quaternion_from_matrix(inverse_matrix))
-        print(np.array(inverse_matrix[0:3, -1]))
-        # print(cv2.Rodrigues(inverse_matrix[0:3, 0:3])[0])
-        #return
+
+        return
         for i in range(self.iterations):
             if(i %500 ==0):
                 print(i)
