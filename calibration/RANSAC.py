@@ -8,7 +8,7 @@ import cv2
 from CalibrationUtils import *
 
 class RANSAC:
-    def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0) -> None:
+    def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0, run_ransac=False) -> None:
         self.As = As
         self.As_tf = As_tf
         self.Bs = Bs
@@ -22,6 +22,7 @@ class RANSAC:
         self.besterr = (60000,60000)
         self.bestlen = 0
         self.solver = solver
+        self.run_ransac = run_ransac
         pass
 
     def compute_estimation_error_fulldataset(self, X_hat):
@@ -90,7 +91,11 @@ class RANSAC:
         print(np.array(X_full[0:3, 0:3]))
         print(np.array(X_full[0:3, -1]))
 
-        return
+        if(self.run_ransac):
+            pass
+        else:
+            return
+            
         for i in range(self.iterations):
             if(i %500 ==0):
                 print(i)

@@ -29,16 +29,9 @@ class CameraRobotCalibration:
         if(not self.args.only_calibration):
             device_id = ctx.devices[0].get_info(rs.camera_info.serial_number)
             self.sensor = RealSenseSensor(device_id, frame="realsense", filter_depth=True)
-            # self.sensor.COLOR_IM_HEIGHT = 1080
-            # self.sensor.COLOR_IM_WIDTH = 1920
-            print("color image size: ", self.sensor.COLOR_IM_HEIGHT, self.sensor.COLOR_IM_WIDTH)
             self.sensor.start()  # need yaml config here 
             intr = self.sensor.color_intrinsics
-            print("orig", np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]]))
-            # print("dup", np.array([[908.7789916992188, 0.0, 638.7603149414062], [0.0, 907.6327514648438, 341.215576171875],[0.0,0.0,1.0]]))
-            #self.intr_list = [intr._fx, intr._fy, intr._cx, intr._cy]
             self.camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
-            #self.camera_matrix = np.array([[908.7789916992188, 0.0, 638.7603149414062], [0.0, 907.6327514648438, 341.215576171875],[0.0,0.0,1.0]])
             self.dist_coeffs = np.array([0.0,0.0,0.0,0.0])
         self.file_name =  file_name
         # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
@@ -79,12 +72,7 @@ class CameraRobotCalibration:
     def reprojection_error(self, all_corners, ids,  rvec, tvec): 
         mean_error = 0.0 
         for id_, corners in zip(ids, all_corners):
-            #print(id_[0])
             proj_img_point, _ = cv2.projectPoints(self.board.objPoints[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
-            #print(self.board.objPoints[id_[0]], corners)
-            #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
-            # print(corners[0], proj_img_point[:,0,:])
-            # print(len(proj_img_point))
             error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
             mean_error += error
         return mean_error/len(ids)
@@ -93,7 +81,6 @@ class CameraRobotCalibration:
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect("tcp://192.168.0.3:2000")
-        #self.fa = FrankaArm()
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = [] 
         counter = []
@@ -133,16 +120,14 @@ class CameraRobotCalibration:
                         thresh = 0.3
                     if reproj_error >  thresh:
                         print("#### Very high reprojection error ####")
+                        print("#### Ignoring this sample ####")
                         continue
-                        
                     else:
                         R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
-                    
                 print(detections_count, i)
-                #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
             else:
                 print("stopping data collection")
                 if i ==0 :
@@ -175,9 +160,6 @@ class CameraRobotCalibration:
                                 float(data[11]))))
             ee_pose_tf = np.eye(4)
             tag_pose_tf = np.eye(4)
-
-            # self.calib_data.append(tuple((ee_pose, tag_pose)))
-            # self.calib_data_tf.append(tuple((ee_pose_tf, tag_pose_tf)))
             ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
             tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1]  
 
@@ -196,7 +178,7 @@ class CameraRobotCalibration:
                 self.calib_data_As_tf.append(ee_pose_tf_inv)
                 self.calib_data_Bs.append(tag_pose)
                 self.calib_data_Bs_tf.append(tag_pose_tf)                
-                
+
         solvers = [cv2.CALIB_HAND_EYE_TSAI,
                     cv2.CALIB_HAND_EYE_PARK,
                     cv2.CALIB_HAND_EYE_HORAUD,
@@ -209,10 +191,10 @@ class CameraRobotCalibration:
                         As_tf=self.calib_data_As_tf, 
                         Bs=self.calib_data_Bs, 
                         Bs_tf=self.calib_data_Bs_tf,
-                        solver=solver)
+                        solver=solver, 
+                        run_ransac=self.args.run_ransac)
             rs.Run()
-        # best_x, best_error= rs.Run()
-        # print(best_x[0:3, 0:3], best_x[0:3, -1] )
+
 
 def main(args):
     calib = CameraRobotCalibration(args)
