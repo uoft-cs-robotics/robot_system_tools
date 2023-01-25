@@ -28,18 +28,6 @@ sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-com
 
 
 ## Usage Instructions 
-# Real time Computer 
-Bring the built docker container up 
-
-```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
-```
-
-To open a bash terminal inside the docker container 
-```
-docker exec -it realtime_docker bash
-```
-
 # Workstation Computer 
 Bring the built docker container up 
 

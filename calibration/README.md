@@ -1,18 +1,59 @@
 # Documentation for using this camera-robot arm extrinsic calibration tool 
 
 
+## Dependancies
+If you are not using the workstation docker, you workstation computer should have the following installed 
+
+- opencv 
+- [perception](https://github.com/BerkeleyAutomation/perception) (this dependancy will be removed soon)
+- zmq 
+- pyrealsense2 
+
 ## Usage
-
-In the real-time computer: 
-
-Bring up the docker environment:
+Currently our data collection step is operated by moving the robot by hand using the guiding mode with the Franka Arms, so ensure the user stop is pressed down and the robot status LEDs are white in color. 
+# In Real time Computer,
+Bring the built docker container up 
 ```
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
 ```
-Open a terminal inside the docker by running this in a new terminal: 
+
+To open a bash terminal inside the docker container 
 ```
 docker exec -it realtime_docker bash
 ```
+Inside the real-time docekr run the server to send end-effector pose everytime we press "enter" from the work-station computer after running the calibration script
+```
+cd ~/git/franka_control_suite/build 
+./read_states
+```
+# In workstation computer/Docker,
+```
+cd ..../franka_arm_infra/calibration
+python CameraRobotCalibration ..args..
+```
+Now, move the robot to different configurations by hand, and press enter for the calibration script to record the calibration target pose and the end-effector pose. Collect 15-20 poses and then press any other key than "Enter" to signal end of data collection and for the calibration process to start. 
+
+## Tips for data collection to get accurate calibration results
+Few Referenced from [here](https://github.com/IFL-CAMP/easy_handeye#:~:text=can%27t%20hurt%20either.-,Tips%20for%20accuracy,-The%20following%20tips)
+- Maximize rotation between poses.
+- Minimize the translation between poses.
+- make sure the AR calibration target is flat and that there are no bumps
+- use opencv board with mulitple markers(eg. aruco board) instead of single tag 
+- record transforms data closer to the camera/robot base 
+    - by doing this, errors in rotation are not propagated as large errors in translation. 
+- use high resolution mode of RGB camera especially if the calibration target is far or small
+- only use transforms with low rmse reprojection error (< ~0.3 pixels) (already implemented in our tool)
+- Minimize the distance from the target to the camera of the tracking system.
+- Calibrate the camera intrinsics if necessary / applicable.
+
+
+
+
+
+
+
+ 
+
 
 ## Introduction 
 Visual manipulation systems have two configurations- camera attached to gripper or camera attached to environment. For both the configurations, most manipulation approaches require the rigid transformation between the camera's coordinate frame and the robot's coordinate frame. 
@@ -44,15 +85,9 @@ Although, in principle we only need a minimum of 2 motions with non parallel rot
 
 
 
-## Tips for data collection for accurate calibration 
-- make sure the calibration target is flat and that there are no bumps
-- aruco board instead of single aruco tag 
-- take transforms closer to the camera/robot base 
-    - by doing this, errors in rotation are not propagated as large errors in translation. 
-- only use transforms with low rmse reprojection error (< ~0.3 pixels)
-- refine fiducial marker detection coordinates to subpixels for more accurate pose estimation  
-- use high resolution mode of color camera especially if the calibration target is far or small
-## Notes on our approach 
+
+# Trouble shooting
+Ensure the right end-effector is attached to the robot in the Franka Desk App as this the frame with respect to robot base that is returned by libfranka if we query for the end-effector's pose. 
 
 ## References: 
 - [opencv documentation]( https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gaebfc1c9f7434196a374c382abf43439b)
