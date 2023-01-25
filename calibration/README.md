@@ -19,7 +19,7 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up
 
 To open a bash terminal inside the docker container 
 ```
-docker exec -it realtime_docker bash
+sudo docker exec -it realtime_docker bash
 ```
 Inside the real-time docekr run the server to send end-effector pose everytime we press "enter" from the work-station computer after running the calibration script
 ```
@@ -45,14 +45,6 @@ Few Referenced from [here](https://github.com/IFL-CAMP/easy_handeye#:~:text=can%
 - only use transforms with low rmse reprojection error (< ~0.3 pixels) (already implemented in our tool)
 - Minimize the distance from the target to the camera of the tracking system.
 - Calibrate the camera intrinsics if necessary / applicable.
-
-
-
-
-
-
-
- 
 
 
 ## Introduction 

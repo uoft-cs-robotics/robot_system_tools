@@ -4,6 +4,7 @@
 ## Dependancies 
 - docker-compose
 - docker 
+- git 
 
 installing docker dependancies 
 ```
@@ -41,7 +42,7 @@ docker exec -it workstation_computer_docker bash
 ```
 
 # To use frankapy 
-Frankapy can be used with the control_computer docker and optionally with workstation_computer docker(if you don't use a docker for workstation, build and use [this frankapy](https://github.com/Ruthrash/frankapy)) 
+Frankapy can be used with the real time computer docker and optionally with workstation_computer docker(if you don't use a docker for workstation, build and use [this frankapy](https://github.com/Ruthrash/frankapy)) 
 
 In your realtime pc, start the realtime computer docker with,
 ```
@@ -74,10 +75,15 @@ cd (frankapy path)/frankapy
 source catkin_ws/devel/setup.bash 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
-to test, run
+to test, run in the workstation computer/docker
 ```
 python3 scripts/reset_arm.py
 ```
 
-
-
+# Troubleshooting
+- permission denied when opening a bash terminal insider the docker environment like so- 
+```
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/workstation_computer_docker/json": dial unix /var/run/docker.sock: connect: permission denied
+```
+Follow instructions [here](https://stackoverflow.com/questions/48957195/how-to-fix-docker-got-permission-denied-issue#:~:text=If%20you%20want%20to%20run%20docker%20as%20non%2Droot%20user%20then%20you%20need%20to%20add%20it%20to%20the%20docker%20group.) 
+If you want to run docker as non-root user then you need to add it to the docker group.
