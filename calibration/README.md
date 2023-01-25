@@ -70,10 +70,9 @@ Although, in principle we only need a minimum of 2 motions with non parallel rot
         - this affects greater with the calibration tag farther from the camera. For more info refer [here](https://www.semanticscholar.org/paper/Analysis-of-Tracking-Accuracy-for-Single-Camera-Pentenrieder/70c5d9b33a978ff2d03eeaa627afaf4f6f609a1f) 
   
 - ### Robot Poses 
-    vibrations
-    non-rigid attachment 
-    rotation error 
-    error modelling
+    Robot motion causes vibrations to the calibration tag- in the eye-to-hand case. Make sure data is collected only vibrations have dampened. 
+    The calibration algorithm works on the assumption that the calibration target is rigidly attached to the scene/robot depending on eye-in-hand/eye-to-hand case. Make sure the attachments are rigid. 
+ 
 
 
 
