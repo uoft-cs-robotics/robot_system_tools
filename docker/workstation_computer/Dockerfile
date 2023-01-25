@@ -81,6 +81,12 @@ RUN apt-get install -y \
     ros-noetic-franka-ros \
     ros-noetic-franka-gripper
 
+RUN echo "cloning building autolab perception"
+RUN cd ~/git \ 
+    && git clone --recurse-submodules https://github.com/BerkeleyAutomation/perception
+RUN cd ~/git/perception \
+    && sudo pip3 install -e .
+
 RUN echo "cloning frankapy"
 
 RUN cd ~/git \ 
