@@ -68,7 +68,7 @@ Although, in principle we only need a minimum of 2 motions with non parallel rot
     - when the calibration tag is far away from the camera 
     - if the calibration tag's normal vector is not parallel to the z-axis of the camera frame i.e the tag is not frontal facing to the camera 
         - this affects greater with the calibration tag farther from the camera. For more info refer [here](https://www.semanticscholar.org/paper/Analysis-of-Tracking-Accuracy-for-Single-Camera-Pentenrieder/70c5d9b33a978ff2d03eeaa627afaf4f6f609a1f) 
-    - 
+  
 - ### Robot Poses 
     vibrations
     non-rigid attachment 
