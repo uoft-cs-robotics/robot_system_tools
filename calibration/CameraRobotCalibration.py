@@ -6,7 +6,7 @@ import cv2
 
 ##
 import zmq
-import tf.transformations as tf_utils
+
 
 #Real Sense libraries#
 from perception.realsense_sensor import RealSenseSensor## unnecessary dependancy 
@@ -57,7 +57,7 @@ class CameraRobotCalibration:
         #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
 
         self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
-        #self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
+        # self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
         #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
         self.arucoParams = cv2.aruco.DetectorParameters_create()
@@ -169,7 +169,7 @@ class CameraRobotCalibration:
                 self.calib_data_Bs.append(tag_pose)
                 self.calib_data_Bs_tf.append(tag_pose_tf)     
             else:
-                ee_pose_tf_inv = tf_utils.inverse_matrix(ee_pose_tf)
+                ee_pose_tf_inv = np.linalg.inv(ee_pose_tf)#tf_utils.inverse_matrix(ee_pose_tf)
                 ee_pose = list(ee_pose)
                 ee_pose[0] = cv2.Rodrigues(ee_pose_tf_inv[0:3, 0:3])[0]
                 ee_pose[1] = ee_pose_tf_inv[0:3, -1]

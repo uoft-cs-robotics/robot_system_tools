@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.matlib as npm
 import cv2
-import tf.transformations as tf_utils
 import copy
 
 
@@ -111,24 +110,24 @@ def weightedAverageQuaternions(Q, w):
     # return the real part of the largest eigenvector (has only real part)
     return np.real(eigenVectors[:,0].A1)
 
-def AverageTransformations(transforms_list):
-    avg_tvec = np.array([0.0, 0.0, 0.0])
-    avg_rvec = None
-    quaternions = []
-    for transform in transforms_list:
-        print(transform[1])
-        avg_tvec += np.array(transform[1])
+# def AverageTransformations(transforms_list):
+#     avg_tvec = np.array([0.0, 0.0, 0.0])
+#     avg_rvec = None
+#     quaternions = []
+#     for transform in transforms_list:
+#         print(transform[1])
+#         avg_tvec += np.array(transform[1])
 
-        rotation_matrix = np.zeros(shape=(3,3))
-        cv2.Rodrigues(transform[0], rotation_matrix)
-        transform_matrix = np.eye(4); transform_matrix[0:3, 0:3] = rotation_matrix
-        quaternion = tf_utils.quaternion_from_matrix(transform_matrix)
-        quaternions.append(quaternion)
+#         rotation_matrix = np.zeros(shape=(3,3))
+#         cv2.Rodrigues(transform[0], rotation_matrix)
+#         transform_matrix = np.eye(4); transform_matrix[0:3, 0:3] = rotation_matrix
+#         quaternion = tf_utils.quaternion_from_matrix(transform_matrix)
+#         quaternions.append(quaternion)
 
-    avg_tvec = avg_tvec/len(transforms_list)
-    avg_quat = averageQuaternions(np.array(quaternions))
-    avg_transmatrix = tf_utils.quaternion_matrix(avg_quat)
-    return cv2.Rodrigues(avg_transmatrix[0:3, 0:3])[0], avg_tvec
+#     avg_tvec = avg_tvec/len(transforms_list)
+#     avg_quat = averageQuaternions(np.array(quaternions))
+#     avg_transmatrix = tf_utils.quaternion_matrix(avg_quat)
+#     return cv2.Rodrigues(avg_transmatrix[0:3, 0:3])[0], avg_tvec
 
 def refine_corners(image, corners):
     winSize = [5, 5]
@@ -158,7 +157,7 @@ def reprojection_error_in_robot_base( all_corners, ids,  rvec, tvec, new_points,
 
     # Ttag2base= np.matmul(Tcam2base, Ttag2cam)
 
-    Tbase2cam = tf_utils.inverse_matrix(Tcam2base)
+    Tbase2cam = np.linalg.inv(Tcam2base)#tf_utils.inverse_matrix(Tcam2base)
     rvec_new = cv2.Rodrigues(Tbase2cam[0:3, 0:3])[0]
     tvec_new = Tbase2cam[0:3, -1]
 

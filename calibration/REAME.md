@@ -1,5 +1,19 @@
 # Documentation for using this camera-robot arm extrinsic calibration tool 
 
+
+## Usage
+
+In the real-time computer: 
+
+Bring up the docker environment:
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
+```
+Open a terminal inside the docker by running this in a new terminal: 
+```
+docker exec -it realtime_docker bash
+```
+
 ## Introduction 
 Visual manipulation systems have two configurations- camera attached to gripper or camera attached to environment. For both the configurations, most manipulation approaches require the rigid transformation between the camera's coordinate frame and the robot's coordinate frame. 
 

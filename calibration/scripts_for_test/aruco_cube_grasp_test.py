@@ -39,9 +39,10 @@ camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[
 dist_coeffs =np.array([0.0,0.0,0.0,0.0])
 #######
 
-eye_in_hand = False
+eye_in_hand = True
+print("yes1")
 fa = FrankaArm()
-
+print("yes2")
 
 if not eye_in_hand: 
     fa.reset_joints()
@@ -49,15 +50,15 @@ if not eye_in_hand:
 
 if eye_in_hand: 
     
-    R_cam2gripper = np.array([[ 0.00593383, -0.99943719,  0.03301643],
-                                [ 0.99997778 , 0.00603086,  0.00284006],
-                                [-0.00303758 , 0.03299884,  0.99945077]])
-    t_cam2gripper = np.array([0.04309507, -0.03661075, -0.05638443]) 
+    R_cam2gripper = np.array([[ 0.04327561, -0.99861027 , 0.03007906],
+ [ 0.99906139 , 0.04319899 ,-0.00319282],
+ [ 0.00188899,  0.030189 ,   0.99954242]])
+    t_cam2gripper = np.array([ 0.04777699, -0.03524564, -0.0507563]) 
 
-    # R_cam2gripper = np.array([[ 3.01473874e-04, -9.99535968e-01 , 3.04591042e-02],
-    #                         [ 9.99999331e-01 , 3.35343425e-04 , 1.10686584e-03],
-    #                         [-1.11656648e-03 , 3.04587502e-02 , 9.99535401e-01]])
-    # t_cam2gripper = np.array([ 0.04466579, -0.03646603, -0.06275917]) ##most correct yet
+    # R_cam2gripper = np.array([[ 0.01143509, -0.99975713,  0.01883957],
+    #         [ 0.99990166,  0.01158566,  0.00790228],
+    #         [-0.00811863,  0.01874735,  0.99979129]])
+    # t_cam2gripper = np.array([0.05296211 ,  -0.03722842 ,-0.05813381]) ##most correct yet
     # R_cam2gripper = np.array([[ 0.01840936, -0.99965802,  0.01857263],
     #                         [ 0.99980491 , 0.01827272, -0.00749979],
     #                         [ 0.00715785,  0.01870707 , 0.99979939]])
@@ -162,7 +163,7 @@ pose.translation[2] += 0.2
 print(pose)
 fa.goto_pose(pose)
 
-print(goal)
+# print(goal)
 pose.translation[2] -= 0.2
 print(pose)
 fa.goto_pose(pose)
