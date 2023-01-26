@@ -62,7 +62,7 @@ Although, in principle we only need a minimum of 2 motions with non parallel rot
 - ### Calibration Target Pose Estimation 
     For estimating the pose of the calibration target, we first detect the fiducials in the image using OpenCV. Since we know the 3D model of the fiducials, we know the corresponding 3D points of the detected 2D points, therefore we can use [P-n-P algorithm](https://docs.opencv.org/3.4/d9/d0c/group__calib3d.html#ga357634492a94efe8858d0ce1509da869) to estimate the pose of the calibration target with respect to the camera. 
 
-    We can gauge the accuracy of the pose estimate by reprojecting the 3D points of the fiducials on the camera using calibration tag pose estimate and pre-estimated camera intrinsics. We can then calculate the rmse between the detected pixel coordinates and the expected coordinates based on reprojection. 
+    We can gauge the accuracy of the pose estimate by reprojecting the 3D coordinates of the fiducials' corners onto the image plane in the camera's frame of reference using calibration tag's pose estimate and pre-estimated camera intrinsics. We can then calculate the rmse between the detected pixel coordinates and the expected coordinates based on reprojection RMSE. 
 
     Large reprojection error(bad pose estimates) usually occur for the following reasons. 
     - when the calibration tag is far away from the camera 
