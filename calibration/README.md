@@ -67,11 +67,11 @@ Although, in principle we only need a minimum of 2 motions with non parallel rot
     Large reprojection error(bad pose estimates) usually occur for the following reasons. 
     - when the calibration tag is far away from the camera 
     - if the calibration tag's normal vector is not parallel to the z-axis of the camera frame i.e the tag is not frontal facing to the camera 
-        - this affects greater with the calibration tag farther from the camera. For more info refer [here](https://www.semanticscholar.org/paper/Analysis-of-Tracking-Accuracy-for-Single-Camera-Pentenrieder/70c5d9b33a978ff2d03eeaa627afaf4f6f609a1f) 
+        - this affects higher with the calibration tag farther away from the camera. For more info refer [here](https://www.semanticscholar.org/paper/Analysis-of-Tracking-Accuracy-for-Single-Camera-Pentenrieder/70c5d9b33a978ff2d03eeaa627afaf4f6f609a1f) 
   
 - ### Robot Poses 
-    Robot motion causes vibrations to the calibration tag- in the eye-to-hand case. Make sure data is collected only vibrations have dampened. 
-    The calibration algorithm works on the assumption that the calibration target is rigidly attached to the scene/robot depending on eye-in-hand/eye-to-hand case. Make sure the attachments are rigid. 
+    Robot motion causes vibrations to the calibration tag- in the eye-to-hand case. Make sure data is collected only when vibrations have subsided. 
+    The calibration algorithm works on the assumption that the calibration target is rigidly attached to the scene/robot depending on eye-in-hand/eye-to-hand case. Make sure the calibration tag is fixed rigidly and 
  
 
 
