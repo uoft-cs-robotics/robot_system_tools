@@ -11,7 +11,6 @@ import zmq
 #Real Sense libraries#
 from perception.realsense_sensor import RealSenseSensor## unnecessary dependancy 
 import pyrealsense2 as rs
-
 #FrankaPy#
 #from frankapy import FrankaArm
 from scipy.spatial.transform import Rotation as R
@@ -50,17 +49,12 @@ class CameraRobotCalibration:
     def create_aruco_objects(self):
         markerLength = 0.0265
         markerSeparation = 0.0057
-
-        # markerLength = 0.0387
-        # markerSeparation = 0.0057        
-        self.aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
-        #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
-
-        self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary( cv2.aruco.DICT_6X6_1000 )
+        self.board = cv2.aruco.GridBoard((5, 7), markerLength, markerSeparation, self.aruco_dict)
         # self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
         #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
-        self.arucoParams = cv2.aruco.DetectorParameters_create()
+        self.arucoParams = cv2.aruco.DetectorParameters()
     
     def refine_corners(self, image, corners):
         winSize = [5, 5]
@@ -72,7 +66,7 @@ class CameraRobotCalibration:
     def reprojection_error(self, all_corners, ids,  rvec, tvec): 
         mean_error = 0.0 
         for id_, corners in zip(ids, all_corners):
-            proj_img_point, _ = cv2.projectPoints(self.board.objPoints[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
+            proj_img_point, _ = cv2.projectPoints(self.board.getObjPoints()[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
             error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
             mean_error += error
         return mean_error/len(ids)

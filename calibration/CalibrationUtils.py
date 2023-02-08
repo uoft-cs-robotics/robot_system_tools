@@ -140,9 +140,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
     mean_error = 0.0 
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -164,8 +164,8 @@ def reprojection_error_in_robot_base( all_corners, ids,  rvec, tvec, new_points,
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
         proj_img_point, _ = cv2.projectPoints(new_points[id_[0]], rvec_new, tvec_new, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -176,7 +176,7 @@ def objPoints_in_robot_base(board, Tcam2base, rvec, tvec):
     Ttag2cam = tf_from_rvectvec(rvec, tvec)
     Ttag2base = np.matmul(Tcam2base, Ttag2cam)
     print("sanity", Ttag2base)
-    new_points = copy.copy(board.objPoints)
+    new_points = copy.copy(board.getObjPoints())
     print("before", new_points[0])
     for square_idx in range(len(new_points)):
         for point_idx in range(len(new_points[square_idx])):
@@ -203,9 +203,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
     mean_error = 0.0 
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
