@@ -1,3 +1,6 @@
 franka_control_suite/build/
 .vscode/
 calibration/data/
+*.png
+*.pdf
+*.pyc   
