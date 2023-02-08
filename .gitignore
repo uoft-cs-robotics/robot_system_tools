@@ -4,3 +4,5 @@ calibration/data/
 *.png
 *.pdf
 *.pyc   
+*.jpg
+!calibration_target/*.pdf
