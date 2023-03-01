@@ -36,6 +36,8 @@ class CameraRobotCalibration:
         # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
         self.calib_data_As = []; self.calib_data_As_tf = []
         self.calib_data_Bs = []; self.calib_data_Bs_tf = []
+        self.zmq_port = args.zmq_server_port
+        self.zmq_ip = args.zmq_server_ip
 
     def get_ee_pose_zmq(self,):
         self.socket.send_string("data")#even an empty message would do
@@ -60,7 +62,9 @@ class CameraRobotCalibration:
     def WaitAndCollectData(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.0.3:2000")
+        socket_address = "tcp://" + self.zmq_ip + ":" + self.zmq_port 
+        self.socket.connect(socket_address)
+
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = [] 
         counter = []
@@ -225,6 +229,10 @@ if __name__ == "__main__":
                         'only creates a calibration target and stores the image in the data folder')         
     parser.add_argument("--run_ransac",default=False, nargs='?',  type=str2bool, help='this option'\
                         'runs ransac to select EEposes and calibration target poses based on how well they all agree to AX=XB')                                          
+    parser.add_argument("--zmq_server_ip",default='192.168.0.3', nargs='?',  type=str, help='ip address'\
+                        'of the zmq server running on the realtime PC to send robot hand poses')  
+    parser.add_argument("--zmq_server_port",default='2000', nargs='?',  type=str, help='port'\
+                        'of the zmq server running on the realtime PC to send robot hand poses')                                                 
     args = parser.parse_args()
     main(args)
 
