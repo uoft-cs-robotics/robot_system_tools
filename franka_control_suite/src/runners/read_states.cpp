@@ -110,7 +110,7 @@ std::string robot_ip, zmq_server_ip, zmq_server_port;
         exit(1);
     }
     try {
-    franka::Robot robot("192.168.1.107");// should be robot's ip
+    franka::Robot robot(robot_ip);// should be robot's ip
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
     std::string zmq_socket_address = "tcp://" + zmq_server_ip + ":" + zmq_server_port ;
