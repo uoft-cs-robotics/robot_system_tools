@@ -129,10 +129,10 @@ def weightedAverageQuaternions(Q, w):
 #     avg_transmatrix = tf_utils.quaternion_matrix(avg_quat)
 #     return cv2.Rodrigues(avg_transmatrix[0:3, 0:3])[0], avg_tvec
 
-def refine_corners(image, corners):
+def refine_corners( image, corners):
     winSize = [5, 5]
     zeroZone = [-1, -1]
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 40, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
     for corner in corners: 
         cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
 
@@ -203,21 +203,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
     mean_error = 0.0
     singular_mean_error = 0.0
     for id_, corners in zip(ids, all_corners):
-        print(id_)
-        #print(id_[0])
         proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.getObjPoints()[id_[0]], corners)
-        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
-        # print(corners[0], proj_img_point[:,0,:])
-        # print(len(proj_img_point))
-        error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2SQR)/len(proj_img_point)
-        print(corners[0], proj_img_point[:,0,:])
-        for c, proj in zip(corners[0], proj_img_point[:,0,:]):
-            print(c, proj)
-            singular_error = cv2.norm(c, proj, cv2.NORM_L2SQR)
-            singular_mean_error += singular_error
+        error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
         mean_error += error
-    print(singular_mean_error/(len(ids)*4.0))
     return mean_error/len(ids)
 
 def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs, id=0):

@@ -57,21 +57,6 @@ class CameraRobotCalibration:
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.arucoParams)
     
-    def refine_corners(self, image, corners):
-        winSize = [5, 5]
-        zeroZone = [-1, -1]
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
-        for corner in corners: 
-            cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
-
-    # def reprojection_error(self, all_corners, ids,  rvec, tvec): 
-    #     mean_error = 0.0 
-    #     for id_, corners in zip(ids, all_corners):
-    #         proj_img_point, _ = cv2.projectPoints(self.board.getObjPoints()[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
-    #         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
-    #         mean_error += error
-    #     return mean_error/len(ids)
-
     def WaitAndCollectData(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
@@ -89,12 +74,11 @@ class CameraRobotCalibration:
             ee_poses = []
             if (ip==""):
                 time.sleep(0.5)
-
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
-                self.refine_corners(image_gray, corners)
+                refine_corners(image_gray, corners)
                 #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
                 if ids is not None: 
                     detections_count +=1
@@ -103,12 +87,10 @@ class CameraRobotCalibration:
                     #https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga549c2075fac14829ff4a58bc931c033d
                     # retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, self.board, self.camera_matrix, self.dist_coeffs, rvec, tvec)  # p
                     objPoints= None; imgPoints = None
-
                     objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
                     # print(objPoints, imgPoints)                    
                     retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
-
-                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                    cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                     file_name = "data/image/image_"+str(detections_count-1)+".jpg"
                     # cv2.imwrite(file_name, color_im)
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
@@ -119,9 +101,6 @@ class CameraRobotCalibration:
                     reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
                                                         camera_matrix=self.camera_matrix,
                                                         dist_coeffs=self.dist_coeffs)
-                    # reproj_error =  reprojection_error(objPoints, imgPoints, rvec, tvec, board=self.board, 
-                    #                                     camera_matrix=self.camera_matrix,
-                    #                                     dist_coeffs=self.dist_coeffs)
 
                     print("reprojection error",reproj_error)
                     if self.args.camera_in_hand:
