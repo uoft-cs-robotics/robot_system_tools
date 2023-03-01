@@ -64,13 +64,13 @@ class CameraRobotCalibration:
         for corner in corners: 
             cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
 
-    def reprojection_error(self, all_corners, ids,  rvec, tvec): 
-        mean_error = 0.0 
-        for id_, corners in zip(ids, all_corners):
-            proj_img_point, _ = cv2.projectPoints(self.board.getObjPoints()[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
-            error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
-            mean_error += error
-        return mean_error/len(ids)
+    # def reprojection_error(self, all_corners, ids,  rvec, tvec): 
+    #     mean_error = 0.0 
+    #     for id_, corners in zip(ids, all_corners):
+    #         proj_img_point, _ = cv2.projectPoints(self.board.getObjPoints()[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
+    #         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
+    #         mean_error += error
+    #     return mean_error/len(ids)
 
     def WaitAndCollectData(self):
         self.context = zmq.Context()
@@ -116,12 +116,12 @@ class CameraRobotCalibration:
                     print("tag", rvec, tvec, len(ids) )
 
                     print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
-                    # reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
-                    #                                     camera_matrix=self.camera_matrix,
-                    #                                     dist_coeffs=self.dist_coeffs)
-                    reproj_error =  reprojection_error(objPoints, imgPoints, rvec, tvec, board=self.board, 
+                    reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
                                                         camera_matrix=self.camera_matrix,
                                                         dist_coeffs=self.dist_coeffs)
+                    # reproj_error =  reprojection_error(objPoints, imgPoints, rvec, tvec, board=self.board, 
+                    #                                     camera_matrix=self.camera_matrix,
+                    #                                     dist_coeffs=self.dist_coeffs)
 
                     print("reprojection error",reproj_error)
                     if self.args.camera_in_hand:
