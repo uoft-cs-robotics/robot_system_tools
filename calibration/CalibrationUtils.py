@@ -129,10 +129,10 @@ def weightedAverageQuaternions(Q, w):
 #     avg_transmatrix = tf_utils.quaternion_matrix(avg_quat)
 #     return cv2.Rodrigues(avg_transmatrix[0:3, 0:3])[0], avg_tvec
 
-def refine_corners(image, corners):
+def refine_corners( image, corners):
     winSize = [5, 5]
     zeroZone = [-1, -1]
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 40, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
     for corner in corners: 
         cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
 
@@ -140,9 +140,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
     mean_error = 0.0 
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -164,8 +164,8 @@ def reprojection_error_in_robot_base( all_corners, ids,  rvec, tvec, new_points,
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
         proj_img_point, _ = cv2.projectPoints(new_points[id_[0]], rvec_new, tvec_new, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -176,7 +176,7 @@ def objPoints_in_robot_base(board, Tcam2base, rvec, tvec):
     Ttag2cam = tf_from_rvectvec(rvec, tvec)
     Ttag2base = np.matmul(Tcam2base, Ttag2cam)
     print("sanity", Ttag2base)
-    new_points = copy.copy(board.objPoints)
+    new_points = copy.copy(board.getObjPoints())
     print("before", new_points[0])
     for square_idx in range(len(new_points)):
         for point_idx in range(len(new_points[square_idx])):
@@ -200,14 +200,10 @@ def tf_from_rvectvec(rvec, tvec):
     return out
 
 def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dist_coeffs): 
-    mean_error = 0.0 
+    mean_error = 0.0
+    singular_mean_error = 0.0
     for id_, corners in zip(ids, all_corners):
-        #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
-        # print(corners[0], proj_img_point[:,0,:])
-        # print(len(proj_img_point))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
         mean_error += error
     return mean_error/len(ids)
@@ -222,3 +218,19 @@ def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camer
         error = cv2.norm(corner, proj_img_point[0][0], cv2.NORM_L2)
         mean_error += error
     return mean_error/len(markerPoints)
+
+
+# def reprojection_error( objPoints, imgPoints,  rvec, tvec, board, camera_matrix, dist_coeffs): 
+#     mean_error = 0.0 
+#     for objPoint, imgPoint in zip(objPoints, imgPoints):
+#         #print(id_[0])
+#         # print(objPoint, imgPoint, rvec, tvec, camera_matrix, dist_coeffs)
+#         proj_img_point, _ = cv2.projectPoints(objPoint, rvec, tvec, camera_matrix, dist_coeffs )
+#         #print(self.board.getObjPoints()[id_[0]], corners)
+#         #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+#         # print(corners[0], proj_img_point[:,0,:])
+#         # print(len(proj_img_point))
+#         print(imgPoint, proj_img_point[0])
+#         error = cv2.norm(imgPoint, proj_img_point[0], cv2.NORM_L2)/len(proj_img_point)
+#         mean_error += error
+#     return mean_error/len(imgPoints)

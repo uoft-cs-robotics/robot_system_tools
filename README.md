@@ -4,7 +4,6 @@
 ## Dependancies 
 - docker-compose
 - docker 
-- git 
 
 installing docker dependancies 
 ```
@@ -16,19 +15,33 @@ sudo apt-get install docker.io docker-compose
 Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). this runs the realtime linux kernel. Workstation computer is the computer that sends high level control commands to the robot, this computer can run GPUs
 
 # Real time Computer 
-Build docker container for the real time computer directly connected to Franka's control 
+Build docker container for the real time computer directly connected to Franka's control. 
 ```
 sudo docker-compose --log-level ERROR  -f docker/realtime_computer/docker-compose-gui.yml build
 ```
 
 # Workstation Computer 
-Build docker container for the workstation computer that has GPU/nvidia drivers
+Build docker container for the workstation computer that has GPU/nvidia drivers 
+
+**Note: it is important to pass the workstation IP address as seen as the realtime computer here**
 ```
-sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-compose-gui.yml build
+sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-compose-gui.yml build --build-arg workstation_ip=<workstation_ip address>
 ```
 
 
 ## Usage Instructions 
+# Real time Computer 
+Bring the built docker container up 
+
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
+```
+
+To open a bash terminal inside the docker container 
+```
+docker exec -it realtime_docker bash
+```
+
 # Workstation Computer 
 Bring the built docker container up 
 
@@ -42,7 +55,7 @@ docker exec -it workstation_computer_docker bash
 ```
 
 # To use frankapy 
-Frankapy can be used with the real time computer docker and optionally with workstation_computer docker(if you don't use a docker for workstation, build and use [this frankapy](https://github.com/Ruthrash/frankapy)) 
+Frankapy can be used with the control_computer docker and optionally with workstation_computer docker(if you don't use a docker for workstation, build and use [this frankapy](https://github.com/Ruthrash/frankapy)) 
 
 In your realtime pc, start the realtime computer docker with,
 ```
@@ -50,6 +63,12 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up
 ```
 
 Optionally, if you are using workstation docker, start it with, 
+as mentioned [here](https://stackoverflow.com/questions/69872788/docker-could-not-connect-to-any-x-display#:~:text=The%20solution%20is%20to%20run%20the%20following%20command%20in%20your%20terminal%3A)to get GUI access first run, 
+
+```
+xhost +local:docker 
+```
+then run,
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
@@ -61,12 +80,13 @@ start frankapy by
 If using workstation docker, 
 
 ```
-docker exec -it workstation_computer_docker bash
+    docker exec -it workstation_computer_docker bash
 cd /root/git/frankapy 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
 to test, run
 ```
+cd ...../frankapy
 python3 scripts/reset_arm.py
 ```
 If directly using host workstation and not docker, 
@@ -75,15 +95,10 @@ cd (frankapy path)/frankapy
 source catkin_ws/devel/setup.bash 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
-to test, run in the workstation computer/docker
+to test, run
 ```
 python3 scripts/reset_arm.py
 ```
 
-# Troubleshooting
-- permission denied when opening a bash terminal insider the docker environment like so- 
-```
-Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/workstation_computer_docker/json": dial unix /var/run/docker.sock: connect: permission denied
-```
-Follow instructions [here](https://stackoverflow.com/questions/48957195/how-to-fix-docker-got-permission-denied-issue#:~:text=If%20you%20want%20to%20run%20docker%20as%20non%2Droot%20user%20then%20you%20need%20to%20add%20it%20to%20the%20docker%20group.) 
-If you want to run docker as non-root user then you need to add it to the docker group.
+
+

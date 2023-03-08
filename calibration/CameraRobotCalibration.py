@@ -11,7 +11,6 @@ import zmq
 #Real Sense libraries#
 from perception.realsense_sensor import RealSenseSensor## unnecessary dependancy 
 import pyrealsense2 as rs
-
 #FrankaPy#
 #from frankapy import FrankaArm
 from scipy.spatial.transform import Rotation as R
@@ -37,6 +36,8 @@ class CameraRobotCalibration:
         # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
         self.calib_data_As = []; self.calib_data_As_tf = []
         self.calib_data_Bs = []; self.calib_data_Bs_tf = []
+        self.zmq_port = args.zmq_server_port
+        self.zmq_ip = args.zmq_server_ip
 
     def get_ee_pose_zmq(self,):
         self.socket.send_string("data")#even an empty message would do
@@ -50,37 +51,20 @@ class CameraRobotCalibration:
     def create_aruco_objects(self):
         markerLength = 0.0265
         markerSeparation = 0.0057
-
-        # markerLength = 0.0387
-        # markerSeparation = 0.0057        
-        self.aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_6X6_1000 )
-        #aruco_dict = cv2.aruco.Dictionary_get( cv2.aruco.DICT_4X4_1000 )
-
-        self.board = cv2.aruco.GridBoard_create(5, 7, markerLength, markerSeparation, self.aruco_dict)
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary( cv2.aruco.DICT_6X6_1000 )
+        self.board = cv2.aruco.GridBoard((5, 7), markerLength, markerSeparation, self.aruco_dict)
         # self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
         #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
         #cv2.imwrite('/home/ruthrash/test.jpg', img)
-        self.arucoParams = cv2.aruco.DetectorParameters_create()
+        self.arucoParams = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.arucoParams)
     
-    def refine_corners(self, image, corners):
-        winSize = [5, 5]
-        zeroZone = [-1, -1]
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
-        for corner in corners: 
-            cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
-
-    def reprojection_error(self, all_corners, ids,  rvec, tvec): 
-        mean_error = 0.0 
-        for id_, corners in zip(ids, all_corners):
-            proj_img_point, _ = cv2.projectPoints(self.board.objPoints[id_[0]], rvec, tvec, self.camera_matrix, self.dist_coeffs )
-            error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
-            mean_error += error
-        return mean_error/len(ids)
-
     def WaitAndCollectData(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://192.168.0.3:2000")
+        socket_address = "tcp://" + self.zmq_ip + ":" + self.zmq_port 
+        self.socket.connect(socket_address)
+
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = [] 
         counter = []
@@ -94,25 +78,34 @@ class CameraRobotCalibration:
             ee_poses = []
             if (ip==""):
                 time.sleep(0.5)
-
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
-                corners, ids, rejectedImgPoints = cv2.aruco.detectMarkers(image_gray, self.aruco_dict, parameters=self.arucoParams)  # First, detect markers
-                self.refine_corners(image_gray, corners)
+                corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
+                refine_corners(image_gray, corners)
                 #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
                 if ids is not None: 
                     detections_count +=1
                     rvec = None 
                     tvec = None
-                    retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, self.board, self.camera_matrix, self.dist_coeffs, rvec, tvec)  # p
-                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                    #https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga549c2075fac14829ff4a58bc931c033d
+                    # retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, self.board, self.camera_matrix, self.dist_coeffs, rvec, tvec)  # p
+                    objPoints= None; imgPoints = None
+                    objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
+                    # print(objPoints, imgPoints)                    
+                    retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
+                    cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                     file_name = "data/image/image_"+str(detections_count-1)+".jpg"
                     # cv2.imwrite(file_name, color_im)
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
-                    print("tag", rvec, tvec, retval )
+                    # print("tag", rvec, tvec, retval )
+                    print("tag", rvec, tvec, len(ids) )
+
                     print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
-                    reproj_error =  self.reprojection_error(corners,ids, rvec, tvec)
+                    reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
+                                                        camera_matrix=self.camera_matrix,
+                                                        dist_coeffs=self.dist_coeffs)
+
                     print("reprojection error",reproj_error)
                     if self.args.camera_in_hand:
                         thresh = 0.3
@@ -236,6 +229,10 @@ if __name__ == "__main__":
                         'only creates a calibration target and stores the image in the data folder')         
     parser.add_argument("--run_ransac",default=False, nargs='?',  type=str2bool, help='this option'\
                         'runs ransac to select EEposes and calibration target poses based on how well they all agree to AX=XB')                                          
+    parser.add_argument("--zmq_server_ip",default='192.168.0.3', nargs='?',  type=str, help='ip address'\
+                        'of the zmq server running on the realtime PC to send robot hand poses')  
+    parser.add_argument("--zmq_server_port",default='2000', nargs='?',  type=str, help='port'\
+                        'of the zmq server running on the realtime PC to send robot hand poses')                                                 
     args = parser.parse_args()
     main(args)
 

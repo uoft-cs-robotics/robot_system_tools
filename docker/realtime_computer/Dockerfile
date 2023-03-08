@@ -55,7 +55,14 @@ RUN cd \
 RUN apt-get install -y \
     ros-noetic-libfranka \
     ros-noetic-franka-ros \
-    ros-noetic-franka-gripper
+    ros-noetic-franka-gripper \
+    ros-noetic-realsense2-camera
+
+RUN apt-get install -y \
+librealsense2-dkms \
+librealsense2-utils \
+librealsense2-dev \
+
 
 RUN echo "franka-interface"
 
@@ -63,6 +70,8 @@ RUN cd ~/git \
     && git clone --recurse-submodules https://github.com/iamlab-cmu/franka-interface \
     && cd franka-interface 
 
+
+  
 
 RUN echo "cloning libfranka"
 RUN cd ~/git/franka-interface \
@@ -111,7 +120,7 @@ RUN cd ~/git \
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 RUN echo "source ~/git/franka-interface/catkin_ws/devel/setup.bash " >> ~/.bashrc
-
+RUN pip3 install zmq realsense2
 
 ARG DEBIAN_FRONTEND=dialog
 
