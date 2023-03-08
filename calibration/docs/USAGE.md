@@ -151,5 +151,4 @@ optional arguments:
 
 
 
-For both the non ROS and ROS based pose data collection follow below, 
-Now, move the robot to different configurations by hand, and press enter for the calibration script to record the calibration target pose and the end-effector pose. Collect 15-20 poses and then press any other key than "Enter" to signal end of data collection and for the calibration process to start. 
+For both the non ROS and ROS based pose data collection, move the robot to different configurations by hand, and press enter for the calibration script to record the calibration target pose and the end-effector pose. Collect 15-20 poses and then press any other key than "Enter" to signal end of data collection and for the calibration process to start. 

@@ -26,41 +26,19 @@ Build docker container for the workstation computer that has GPU/nvidia drivers
 ```
 sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-compose-gui.yml build --build-arg workstation_ip=<workstation_ip address>
 ```
-
-## Setting up ssh-pass between the workstation and realtime computers (done only once)
-
-Make sure to setup your workstation/workstation docker's ssh key to ssh into the realtime computer/docker without a password(this is required for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc), you can run the following, 
-
-1. In a terminal in your workstation/workstation docker, 
+### Build franka_control_suite in the realtime docker environment
+open a bash terminal inside the realtime docker container 
 ```
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-[Press enter]
-[Press enter]
-[Press enter]
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
+(sudo) docker exec -it realtime_docker bash
 ```
-2. Upload your public ssh key to the realtime pc
-     
-    i. In a separate terminal on your workstation PC/docker, use your favorite text editor to open your id_rsa.pub file.
-    ```
-    vim ~/.ssh/id_rsa.pub
-    ```
+go to franka_control_suite and build it
+```
+cd /root/git/franka_control_suite
+mkdir build && cd build 
+cmake ..
+make
+```
 
-    ii. In a new terminal on your workstation PC/docker, ssh to the realtime PC.
-    ```
-    ssh [realtime -pc-username]@[realtime -pc-name]
-    Input password to realtime -pc.
-    ```
-
-    iii. Inside terminal in your realtime computer **(not realtime computer docker)**, 
-    ```
-    vim ~/.ssh/authorized_keys
-    ```
-    
-    iv. Copy the contents from your id_rsa.pub file to a new line on the authorized_keys file on the real time. Then save
-
-    v.Open a new terminal and try sshing to the realtime PC and it should no longer require a password.
 
 # Usage Instructions 
 ## Real time Computer 
@@ -88,7 +66,6 @@ To open a bash terminal inside the docker container
 ```
 (sudo) docker exec -it workstation_computer_docker bash
 ```
-
 
 ## Using frankapy 
 Frankapy can be used with the real time docker and optionally with workstation_computer docker(if you don't use a docker for workstation, build and use [this frankapy](https://github.com/Ruthrash/frankapy)) 
@@ -139,6 +116,45 @@ cd <path to frankapy>/frankapy
 python3 scripts/reset_arm.py
 ```
 
+## Setting up ssh-pass between the workstation and realtime computers (done only once)
+
+Make sure to setup your workstation/workstation docker's ssh key to ssh into the realtime computer/docker without a password(this is required for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc), you can run the following, 
+
+1. In a terminal in your workstation/workstation docker, 
+```
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+[Press enter]
+[Press enter]
+[Press enter]
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+```
+2. Upload your public ssh key to the realtime pc
+     
+    i. In a separate terminal on your workstation PC/docker, use your favorite text editor to open your id_rsa.pub file.
+    ```
+    vim ~/.ssh/id_rsa.pub
+    ```
+
+    ii. In a new terminal on your workstation PC/docker, ssh to the realtime PC.
+    ```
+    ssh [realtime -pc-username]@[realtime -pc-name]
+    Input password to realtime -pc.
+    ```
+
+    iii. Inside terminal in your realtime computer **(not realtime computer docker)**, 
+    ```
+    vim ~/.ssh/authorized_keys
+    ```
+    
+    iv. Copy the contents from your id_rsa.pub file to a new line on the authorized_keys file on the real time. Then save
+
+    v. Open a new terminal in the workstation docker and try sshing to the realtime PC and it should no longer require a password.
+
+
+## Using calibration
+
+Please checkout [calibration/docs](https://github.com/pairlab/franka_arm_infra/blob/dev/rosAPI/calibration/calibration/docs/USAGE.md) for documentations of hand-eye calibration, usage of this tool 
 
 
 
