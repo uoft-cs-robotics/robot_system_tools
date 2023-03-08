@@ -58,10 +58,6 @@ RUN apt-get install -y \
     ros-noetic-franka-gripper \
     ros-noetic-realsense2-camera
 
-RUN apt-get install -y \
-librealsense2-dkms \
-librealsense2-utils \
-librealsense2-dev \
 
 
 RUN echo "franka-interface"
