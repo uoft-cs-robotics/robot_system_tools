@@ -104,11 +104,12 @@ class ROSCameraRobotCalibration:
                     print("reprojection error",reproj_error)
                     thresh = 0.3
                     if reproj_error >  thresh:
-                        current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
-                        difference = np.matmul(np.linalg.inv(current), prev_pose) 
-                        print("relative rotation in degrees, translation in m: ", 
-                                np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
-                                difference[0:3,-1])                        
+                        if(detections_count > 0 ):
+                            current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
+                            difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                            print("relative rotation in degrees, translation in m: ", 
+                                    np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
+                                    difference[0:3,-1])                        
                         print("#### Very high reprojection error ####")
                         print("#### Ignoring this sample ####")
                         continue
@@ -134,10 +135,10 @@ class ROSCameraRobotCalibration:
                     rospy.core.signal_shutdown('keyboard interrupt')
                     exit()
                 break    
-                
+            processed_image +=1    
                 # break
-            rospy.core.signal_shutdown('keyboard interrupt')
-            processed_image +=1 
+            # rospy.core.signal_shutdown('keyboard interrupt')
+            
         for ee_rot, ee_trans, tag_rot, tag_trans in zip(R_gripper2base, t_gripper2base, R_tag2cam, t_tag2cam):
             ee_pose_line = [str(i) for i in [ee_rot[0][0],ee_rot[1][0], ee_rot[2][0], ee_trans[0], ee_trans[1], ee_trans[2]]]
             tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]
@@ -147,7 +148,6 @@ class ROSCameraRobotCalibration:
     def Calibrate(self,):
         with open(self.file_name, 'r') as fp:
             lines = fp.readlines()
-        i = 0 
         for line in lines:
             data = line.split('\n')[0].split(',')
             ee_pose = tuple(((float(data[0]),

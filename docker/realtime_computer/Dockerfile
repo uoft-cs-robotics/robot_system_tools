@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y \
     python3-catkin-tools
 # Build and install Protobuf 
 RUN cd \
-    && mkdir git \
+    # && mkdir git \
     && cd git \ 
     && wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protobuf-all-3.11.4.zip \ 
     && unzip protobuf-all-3.11.4.zip \ 
@@ -102,7 +102,7 @@ RUN cd ~/git \
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 RUN echo "source ~/git/franka-interface/catkin_ws/devel/setup.bash " >> ~/.bashrc
-RUN pip3 install zmq pyrealsense2 numba
+RUN pip3 install zmq pyrealsense2 numba scipy   
 
 ARG DEBIAN_FRONTEND=dialog
 

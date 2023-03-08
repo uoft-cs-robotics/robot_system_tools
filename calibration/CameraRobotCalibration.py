@@ -33,9 +33,8 @@ class CameraRobotCalibration:
             intr = self.sensor.color_intrinsics
             self.camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
             self.dist_coeffs = np.array([0.0,0.0,0.0,0.0])
-            open(self.file_name, 'x').close()#empty the file in which poses are recorded
+            open(self.file_name, 'w').close()#empty the file in which poses are recorded
 
-       
         # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
         self.calib_data_As = []; self.calib_data_As_tf = []
         self.calib_data_Bs = []; self.calib_data_Bs_tf = []
@@ -72,6 +71,7 @@ class CameraRobotCalibration:
         all_ids = []
         detections_count = 0
         processed_image = 0
+        prev_pose = None 
         while(True):
             ip = input("Press Enter to continue collecting current sample....else space bar to stop")
             tag_poses = []
@@ -85,7 +85,6 @@ class CameraRobotCalibration:
                 refine_corners(image_gray, corners)
                 
                 if ids is not None: 
-                    detections_count +=1
                     rvec = None 
                     tvec = None
                     #https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga549c2075fac14829ff4a58bc931c033d
@@ -113,6 +112,13 @@ class CameraRobotCalibration:
                     else: 
                         thresh = 0.3
                     if reproj_error >  thresh:
+                        if detections_count > 0:
+                            current = np.eye(4); current[0:3, 0:3] = ee_rotation; current[0:3, -1] = ee_position
+                            difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                            diff_r = R.from_matrix(difference[0:3,0:3])
+                            print("relative rotation in degrees, translation in m: ", 
+                                diff_r.as_euler('xyz', degrees=True),
+                                difference[0:3,-1])                           
                         print("#### Very high reprojection error ####")
                         print("#### Ignoring this sample ####")
                         continue
@@ -121,10 +127,21 @@ class CameraRobotCalibration:
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
+                    if (detections_count==0):
+                        prev_pose = np.eye(4); prev_pose[0:3, 0:3] = ee_rotation; prev_pose[0:3, -1] = ee_position                        
+                    else: 
+                        current = np.eye(4); current[0:3, 0:3] = ee_rotation; current[0:3, -1] = ee_position
+                        difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                        diff_r = R.from_matrix(difference[0:3,0:3])
+                        print("relative rotation in degrees, translation in m : ",
+                                diff_r.as_euler('xyz', degrees=True),
+                                difference[0:3,-1])
+                        prev_pose = current 
+                    detections_count +=1                           
                 print("accepted pairs of pose, no. of frames processed", detections_count, processed_image)                           
             else:
                 print("stopping data collection")
-                if i ==0 :
+                if detections_count==0 :
                     exit()
                 break    
             processed_image += 1    
@@ -137,7 +154,6 @@ class CameraRobotCalibration:
     def Calibrate(self,):
         with open(self.file_name, 'r') as fp:
             lines = fp.readlines()
-        i = 0 
         for line in lines:
             data = line.split('\n')[0].split(',')
             ee_pose = tuple(((float(data[0]),
@@ -163,7 +179,7 @@ class CameraRobotCalibration:
                 self.calib_data_Bs.append(tag_pose)
                 self.calib_data_Bs_tf.append(tag_pose_tf)     
             else:
-                ee_pose_tf_inv = np.linalg.inv(ee_pose_tf)#tf_utils.inverse_matrix(ee_pose_tf)
+                ee_pose_tf_inv = np.linalg.inv(ee_pose_tf)
                 ee_pose = list(ee_pose)
                 ee_pose[0] = cv2.Rodrigues(ee_pose_tf_inv[0:3, 0:3])[0]
                 ee_pose[1] = ee_pose_tf_inv[0:3, -1]

@@ -42,7 +42,9 @@ RUN apt-get update && apt-get install -y \
     gnuplot-qt\
     iproute2 \
     python3-pip \
-    gnome-terminal
+    gnome-terminal\
+    nano\
+    vim
 # Dependencies for Bash unit-tests
 RUN apt-get update && apt-get install -y \
     bats \
@@ -65,7 +67,7 @@ RUN apt-get update && apt-get install -y \
     python3-tk
 # Build and install Protobuf 
 RUN cd \
-    && mkdir git \
+    # && mkdir git \
     && cd git \ 
     && wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protobuf-all-3.11.4.zip \ 
     && unzip protobuf-all-3.11.4.zip \ 
@@ -124,7 +126,9 @@ RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
 RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
-RUN pip3 install zmq pyrealsense2
+#reinstalling numba seems to solve an error when we import FrankaArm from frankapy
+RUN pip3 install zmq pyrealsense2 numba  scipy
+
 # RUN cd /root/git/franka_arm_infra/franka_control_suite \
 #     && mkdir build \
 #     && cd build \ 
