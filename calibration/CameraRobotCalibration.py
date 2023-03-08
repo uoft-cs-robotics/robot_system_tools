@@ -25,6 +25,7 @@ class CameraRobotCalibration:
         self.args = args
         self.create_aruco_objects()
         ctx = rs.context()
+        self.file_name =  file_name
         if(not self.args.only_calibration):
             device_id = ctx.devices[0].get_info(rs.camera_info.serial_number)
             self.sensor = RealSenseSensor(device_id, frame="realsense", filter_depth=True)
@@ -32,7 +33,9 @@ class CameraRobotCalibration:
             intr = self.sensor.color_intrinsics
             self.camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
             self.dist_coeffs = np.array([0.0,0.0,0.0,0.0])
-        self.file_name =  file_name
+            open(self.file_name, 'x').close()#empty the file in which poses are recorded
+
+       
         # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
         self.calib_data_As = []; self.calib_data_As_tf = []
         self.calib_data_Bs = []; self.calib_data_Bs_tf = []
@@ -41,7 +44,7 @@ class CameraRobotCalibration:
 
     def get_ee_pose_zmq(self,):
         self.socket.send_string("data")#even an empty message would do
-        message = self.socket.recv()
+        message = self.socket.recv()# receives EE pose 
         zmqPose = np.frombuffer(message).astype(np.float32)
         zmqPose = np.reshape(a=zmqPose, newshape=(4,4), order='F')
         zmq_position = np.array(zmqPose[:3,3])
@@ -53,9 +56,6 @@ class CameraRobotCalibration:
         markerSeparation = 0.0057
         self.aruco_dict = cv2.aruco.getPredefinedDictionary( cv2.aruco.DICT_6X6_1000 )
         self.board = cv2.aruco.GridBoard((5, 7), markerLength, markerSeparation, self.aruco_dict)
-        # self.board = cv2.aruco.GridBoard_create(4, 5, markerLength, markerSeparation, self.aruco_dict)
-        #img = cv2.aruco.drawPlanarBoard(board, (3300,3300))# for printing on A4 paper
-        #cv2.imwrite('/home/ruthrash/test.jpg', img)
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.arucoParams)
     
@@ -71,7 +71,7 @@ class CameraRobotCalibration:
         all_corners = []
         all_ids = []
         detections_count = 0
-        i = 0
+        processed_image = 0
         while(True):
             ip = input("Press Enter to continue collecting current sample....else space bar to stop")
             tag_poses = []
@@ -83,7 +83,7 @@ class CameraRobotCalibration:
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
                 refine_corners(image_gray, corners)
-                #cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                
                 if ids is not None: 
                     detections_count +=1
                     rvec = None 
@@ -94,14 +94,15 @@ class CameraRobotCalibration:
                     objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
                     # print(objPoints, imgPoints)                    
                     retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
-                    cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
-                    file_name = "data/image/image_"+str(detections_count-1)+".jpg"
-                    # cv2.imwrite(file_name, color_im)
+                    if(args.debug_image):
+                        cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                        cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                        img_file_name = "data/image/image_"+str(detections_count-1)+".jpg"
+                        cv2.imwrite(img_file_name, color_im)
                     ee_rotation, ee_position  = self.get_ee_pose_zmq() 
                     # print("tag", rvec, tvec, retval )
-                    print("tag", rvec, tvec, len(ids) )
-
-                    print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
+                    # print("tag", rvec, tvec, len(ids) )
+                    # print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
                     reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
                                                         camera_matrix=self.camera_matrix,
                                                         dist_coeffs=self.dist_coeffs)
@@ -120,13 +121,13 @@ class CameraRobotCalibration:
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
-                print(detections_count, i)
+                print("accepted pairs of pose, no. of frames processed", detections_count, processed_image)                           
             else:
                 print("stopping data collection")
                 if i ==0 :
                     exit()
                 break    
-            i += 1    
+            processed_image += 1    
         for ee_rot, ee_trans, tag_rot, tag_trans in zip(R_gripper2base, t_gripper2base, R_tag2cam, t_tag2cam):
             ee_pose_line = [str(i) for i in [ee_rot[0][0],ee_rot[1][0], ee_rot[2][0], ee_trans[0], ee_trans[1], ee_trans[2]]]
             tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]
@@ -225,14 +226,16 @@ if __name__ == "__main__":
     parser.add_argument("--only_calibration", default=False, nargs='?',type=str2bool, help='if true, values'\
                         'stored in the data folder are used for calibration if false, data is first collected,'\
                         'stored in /data folder and then calibration  routine is run')                        
-    parser.add_argument("--create_calibration_target",default=False, nargs='?',  type=str2bool, help='this options'\
-                        'only creates a calibration target and stores the image in the data folder')         
+    # parser.add_argument("--create_calibration_target",default=False, nargs='?',  type=str2bool, help='this options'\
+    #                     'only creates a calibration target and stores the image in the data folder')         
     parser.add_argument("--run_ransac",default=False, nargs='?',  type=str2bool, help='this option'\
                         'runs ransac to select EEposes and calibration target poses based on how well they all agree to AX=XB')                                          
     parser.add_argument("--zmq_server_ip",default='192.168.0.3', nargs='?',  type=str, help='ip address'\
                         'of the zmq server running on the realtime PC to send robot hand poses')  
     parser.add_argument("--zmq_server_port",default='2000', nargs='?',  type=str, help='port'\
-                        'of the zmq server running on the realtime PC to send robot hand poses')                                                 
+                        'of the zmq server running on the realtime PC to send robot hand poses')  
+    parser.add_argument("--debug_image",default=False, nargs='?',  type=str2bool, help='this option'\
+                        'draws aruco tag detections and the estimated tag frame on the image and saves in the data/image folder')                                                                        
     args = parser.parse_args()
     main(args)
 

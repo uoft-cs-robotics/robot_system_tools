@@ -13,6 +13,9 @@ services:
       rttime: -1
       memlock: 8428281856
     network_mode: host
+    privileged: true
+    devices:
+    - /dev:/dev
     volumes:
       - ../../calibration:/root/git/calibration
 

@@ -84,18 +84,13 @@
 #include <franka/robot_state.h>
 
 int main(int argc, char** argv) {
-std::string robot_ip, zmq_server_ip, zmq_server_port;
-    if(argc < 2){
+std::string robot_ip, zmq_server_ip="192.168.0.3", zmq_server_port ="2000";
+    if(argc < 4){
         std::cout<<"The usage is ./frank_control "
                     "robot_ip "
                     "zmq_server_ip(optional/default values) "
                     "zmq_server_port(optional/default values) \n";
         exit(1);
-    }
-    else if(argc == 2){
-        robot_ip = argv[1];
-        zmq_server_ip = "192.168.0.3";
-        zmq_server_port = "2000";
     }
     else if(argc == 4){
         robot_ip = argv[1];
