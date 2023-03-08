@@ -134,6 +134,7 @@ class ROSCameraRobotCalibration:
                 if processed_image ==0 :
                     rospy.core.signal_shutdown('keyboard interrupt')
                     exit()
+                rospy.core.signal_shutdown('keyboard interrupt')
                 break    
             processed_image +=1    
                 # break
