@@ -27,6 +27,7 @@ run the readstates server that send end effector poses when requested, ?
 ### In workstation computer,
 Bring the built workstation docker container up 
 ```
+xhost +local:docker 
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
 open a bash terminal inside the workstation docker container 
@@ -83,6 +84,7 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up
 ### In workstation computer,
 Bring the built workstation docker container up 
 ```
+xhost +local:docker 
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
 open a bash terminal inside the workstation docker container 
