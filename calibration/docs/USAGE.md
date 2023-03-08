@@ -30,9 +30,10 @@ Bring the built workstation docker container up
 xhost +local:docker 
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
-open a bash terminal inside the workstation docker container 
+open a bash terminal inside the workstation docker container and go to appropriate directory
 ```
 (sudo) docker exec -it workstation_computer_docker bash
+cd /root/git/calibration 
 ```
 In the worstation computer docker terminal, run the script to collect the pose data and run hand eye calibration i.e CameraRobotCalibration.py script with appropriate arguments, see the available ones here
 ```
@@ -150,20 +151,5 @@ optional arguments:
 
 
 
-
-
-open a bash terminal inside the docker container 
-```
-sudo docker exec -it realtime_docker bash
-```
-Inside the real-time docekr run the server to send end-effector pose everytime we press "enter" from the work-station computer after running the calibration script
-```
-cd ~/git/franka_control_suite/build 
-./read_states
-```
-# In workstation computer/Docker,
-```
-cd ..../franka_arm_infra/calibration
-python CameraRobotCalibration ..args..
-```
+For both the non ROS and ROS based pose data collection follow below, 
 Now, move the robot to different configurations by hand, and press enter for the calibration script to record the calibration target pose and the end-effector pose. Collect 15-20 poses and then press any other key than "Enter" to signal end of data collection and for the calibration process to start. 
