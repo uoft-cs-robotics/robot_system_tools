@@ -67,6 +67,7 @@ class ROSCameraRobotCalibration:
             ip = input("Press Enter to continue collecting current sample....else space bar to stop")
             if (ip==""):
                 time.sleep(0.5)      
+                processed_image +=1
                 # yaml API used in tf python breaks for some reason 
                 # assert(self.tf_listener_.frameExists(self.robot_base_frame))
                 # assert(self.tf_listener_.frameExists(self.ee_frame))
@@ -136,7 +137,7 @@ class ROSCameraRobotCalibration:
                     exit()
                 rospy.core.signal_shutdown('keyboard interrupt')
                 break    
-            processed_image +=1    
+                
                 # break
             # rospy.core.signal_shutdown('keyboard interrupt')
             

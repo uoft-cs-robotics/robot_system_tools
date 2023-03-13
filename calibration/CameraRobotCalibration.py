@@ -19,6 +19,7 @@ from scipy.spatial.transform import Rotation as R
 #Calibration
 from CalibrationUtils import *
 from RANSAC import RANSAC 
+import open3d as o3d 
 
 class CameraRobotCalibration: 
     def __init__(self, args, file_name:str='data/file.txt')-> None: 
@@ -31,6 +32,8 @@ class CameraRobotCalibration:
             self.sensor = RealSenseSensor(device_id, frame="realsense", filter_depth=True)
             self.sensor.start()  # need yaml config here 
             intr = self.sensor.color_intrinsics
+            # depth_intr = self.sensor.depth_intrinsics
+            self.intr = intr
             self.camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
             self.dist_coeffs = np.array([0.0,0.0,0.0,0.0])
             open(self.file_name, 'w').close()#empty the file in which poses are recorded
@@ -77,9 +80,29 @@ class CameraRobotCalibration:
             tag_poses = []
             ee_poses = []
             if (ip==""):
+                processed_image += 1 
                 time.sleep(0.5)
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
+
+                color_im_rgb = cv2.cvtColor(color_im, cv2.COLOR_BGR2RGB)
+
+                depth_im_o3d = o3d.geometry.Image(depth_im_.raw_data)
+                color_im_o3d = o3d.geometry.Image(color_im_rgb)
+
+                cv2.imshow('Estimated Pose', color_im_rgb)
+                key = cv2.waitKey(0)  
+                cv2.destroyAllWindows()    
+                cv2.imshow('Estimated Pose', depth_im_.raw_data)
+                key = cv2.waitKey(0)  
+                cv2.destroyAllWindows()                               
+                print(np.shape(color_im_.raw_data))
+                print(np.shape(depth_im_.raw_data))
+                intrinsic = o3d.camera.PinholeCameraIntrinsic()
+                intrinsic.set_intrinsics(width=1280,height=720, fx = self.intr._fx, fy = self.intr._fy,cx=self.intr._cx, cy =self.intr._cy )
+                rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(color_im_o3d, depth_im_o3d)
+                color_pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsic)
+                o3d.visualization.draw_geometries([color_pcd], point_show_normal=False)
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
                 refine_corners(image_gray, corners)
@@ -144,7 +167,7 @@ class CameraRobotCalibration:
                 if detections_count==0 :
                     exit()
                 break    
-            processed_image += 1    
+               
         for ee_rot, ee_trans, tag_rot, tag_trans in zip(R_gripper2base, t_gripper2base, R_tag2cam, t_tag2cam):
             ee_pose_line = [str(i) for i in [ee_rot[0][0],ee_rot[1][0], ee_rot[2][0], ee_trans[0], ee_trans[1], ee_trans[2]]]
             tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]

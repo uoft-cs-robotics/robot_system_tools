@@ -2,7 +2,7 @@ import numpy as np
 import numpy.matlib as npm
 import cv2
 import copy
-
+import open3d as o3d 
 
 
 def str2bool(value):
@@ -33,6 +33,14 @@ def write_to_file(line_list, file_name):
         f.write(line)
         f.write('\n') 
 
+
+# def get_pointcloud_from_rgbd(rgbd_o3d_image, intrinsics):
+#     return open3d.geometry.create_point_cloud_from_rgbd_image
+
+def get_rgbd_from_images(depth_image_raw, color_image_raw):
+    rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
+                    color_image_raw, depth_image_raw)
+    return rgbd_image
 
 # print(ee_rotation)
 # rvec = cv2.Rodrigues(ee_rotation)[0]
