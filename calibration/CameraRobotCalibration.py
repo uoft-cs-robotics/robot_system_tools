@@ -18,7 +18,7 @@ from scipy.spatial.transform import Rotation as R
 
 #Calibration
 from calibration_utils import *
-from RANSAC import RANSAC 
+from ransac import RANSAC 
 
 class CameraRobotCalibration: 
     def __init__(self, args, file_name:str='data/file.txt')-> None: 

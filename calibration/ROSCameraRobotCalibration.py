@@ -11,7 +11,7 @@ from tf import TransformListener
 import tf.transformations as tf_utils
 
 from calibration_utils import *
-from RANSAC import RANSAC 
+from ransac import RANSAC 
 
 from frankapy import FrankaArm
 
