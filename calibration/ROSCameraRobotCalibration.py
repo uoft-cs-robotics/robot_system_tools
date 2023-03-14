@@ -10,14 +10,20 @@ from cv_bridge import CvBridge
 from tf import TransformListener
 import tf.transformations as tf_utils
 
-from CalibrationUtils import *
+from calibration_utils import *
 from RANSAC import RANSAC 
 
+from frankapy import FrankaArm
+
 class ROSCameraRobotCalibration:
-    def __init__(self, args, file_name:str='data/file.txt')-> None:     
-        rospy.init_node('listener', anonymous=True)
-        rospy.Subscriber(args.rgb_image_topic, Image, self.subscribeImage)# subscriber for RGB image
-        rospy.Subscriber(args.rgb_camera_info_topic, CameraInfo, self.getCameraInfo)#subscriber for RGM image camera info 
+    def __init__(self, args, file_name:str='data/file.txt')-> None:  
+        self.args = args
+        if(self.args.move_robot_automatically):
+            self.fa_object = FrankaArm()           
+        if(not args.move_robot_automatically):
+            rospy.init_node('listener', anonymous=True)
+        rospy.Subscriber(args.rgb_image_topic, Image, self.subscribe_image_cb)# subscriber for RGB image
+        rospy.Subscriber(args.rgb_camera_info_topic, CameraInfo, self.camera_info_cb)#subscriber for RGM image camera info 
         self.camera_matrix = None#np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
         self.dist_coeffs = None#np.array([0.0,0.0,0.0,0.0])   
         self.create_aruco_objects()     
@@ -26,12 +32,18 @@ class ROSCameraRobotCalibration:
         self.robot_base_frame = args.robot_base_frame_name #"panda_link0"
         self.ee_frame = args.ee_frame_name#"panda_end_effector"
         self.file_name = file_name
-        self.args = args
+        
         self.calib_data_As = []; self.calib_data_As_tf = []
-        self.calib_data_Bs = []; self.calib_data_Bs_tf = []      
+        self.calib_data_Bs = []; self.calib_data_Bs_tf = []   
+        self.REPROJ_THRESH = 0.3   
+        self.cv_bridge = CvBridge()
+        self.detections_count = 0
+        self.processed_image = 0   
           
         if(not self.args.only_calibration):
             open(self.file_name, 'w').close()#empty the file in which poses are recorded
+
+
     def create_aruco_objects(self):
         markerLength = 0.0265
         markerSeparation = 0.0057   
@@ -40,103 +52,168 @@ class ROSCameraRobotCalibration:
         self.arucoParams = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.arucoParams)
 
-    def subscribeImage(self, img_msg):
+    def subscribe_image_cb(self, img_msg):
         if self.camera_matrix is None: 
             return 
         else: 
             self.img_msg = img_msg
 
-    def getCameraInfo(self, info_msg):
+    def camera_info_cb(self, info_msg):
         if(self.camera_matrix is None):
             self.dist_coeffs = np.array(info_msg.D[:4])
             self.camera_matrix = np.array(info_msg.K).reshape(3,3)
         else: 
             return        
 
-    def userInteractionFunction(self,):
-        cv_bridge = CvBridge()
-        R_gripper2base = []; t_gripper2base = []     
-        R_tag2cam = []; t_tag2cam = []  
-        detections_count = 0
-        processed_image = 0                     
-        while(self.img_msg is None):#waits here until a new image is received
-            pass
-        prev_pose = None 
-        while(True): 
-                
-            ip = input("Press Enter to continue collecting current sample....else space bar to stop")
-            if (ip==""):
-                time.sleep(0.5)      
-                # yaml API used in tf python breaks for some reason 
-                # assert(self.tf_listener_.frameExists(self.robot_base_frame))
-                # assert(self.tf_listener_.frameExists(self.ee_frame))
+    def process_image_for_aruco(self,prev_pose=None):
+        color_im = self.cv_bridge.imgmsg_to_cv2(self.img_msg)         
+        image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)      
+        corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
+        refine_corners(image_gray, corners)
+        self.processed_image += 1
+        if ids is not None: 
+            rvec = None 
+            tvec = None
+            objPoints= None; imgPoints = None
+            objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
+            # print(objPoints, imgPoints)                    
+            retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+            if(args.debug_image):
+                cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                img_file_name = "data/image/image_"+str(self.detections_count-1)+".jpg"
+                cv2.imwrite(img_file_name, color_im)
+            # print("tag", rvec, tvec, retval )
+            # print("ee_rot", ee_rotation_matrix)
+            # print("ee",cv2.Rodrigues(ee_rotation_matrix)[0], ee_position  )
+            reproj_error =  reprojection_error(corners,
+                                                ids,
+                                                rvec, tvec,
+                                                self.board, 
+                                                self.camera_matrix, 
+                                                self.dist_coeffs)  
+        else: 
+            return None, None, None, None, None, None, None
+        t = self.tf_listener_.getLatestCommonTime(self.robot_base_frame, self.ee_frame)
+        ee_position, ee_quaternion = self.tf_listener_.lookupTransform(self.robot_base_frame, self.ee_frame,t)
+        ee_rotation_matrix = tf_utils.quaternion_matrix(ee_quaternion)
+        ee_rotation_matrix = ee_rotation_matrix[0:3, 0:3]   
+        print("reprojection error",reproj_error)
+        
+        if reproj_error > self.REPROJ_THRESH:
+            if(self.detections_count > 0 and prev_pose is not None):
+                current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
+                # difference = np.matmul(np.linalg.inv(current), prev_pose)
+                difference = np.matmul(np.linalg.inv(prev_pose), current) 
 
-                t = self.tf_listener_.getLatestCommonTime(self.robot_base_frame, self.ee_frame)
-                ee_position, ee_quaternion = self.tf_listener_.lookupTransform(self.robot_base_frame, self.ee_frame,t)
-                ee_rotation_matrix = tf_utils.quaternion_matrix(ee_quaternion)
-                ee_rotation_matrix = ee_rotation_matrix[0:3, 0:3]
-                color_im = cv_bridge.imgmsg_to_cv2(self.img_msg)         
-                image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)      
-                corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
-                refine_corners(image_gray, corners)
-                if ids is not None: 
-                    
-                    rvec = None 
-                    tvec = None
-                    objPoints= None; imgPoints = None
-                    objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
-                    # print(objPoints, imgPoints)                    
-                    retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
-                    if(args.debug_image):
-                        cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
-                        cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
-                        img_file_name = "data/image/image_"+str(detections_count-1)+".jpg"
-                        cv2.imwrite(img_file_name, color_im)
-                    # print("tag", rvec, tvec, retval )
-                    # print("ee_rot", ee_rotation_matrix)
-                    # print("ee",cv2.Rodrigues(ee_rotation_matrix)[0], ee_position  )
-                    reproj_error =  reprojection_error(corners,
-                                                        ids,
-                                                        rvec, tvec,
-                                                        self.board, 
-                                                        self.camera_matrix, 
-                                                        self.dist_coeffs)
-                    print("reprojection error",reproj_error)
-                    thresh = 0.3
-                    if reproj_error >  thresh:
-                        if(detections_count > 0 ):
-                            current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
-                            difference = np.matmul(np.linalg.inv(current), prev_pose) 
-                            print("relative rotation in degrees, translation in m: ", 
-                                    np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
-                                    difference[0:3,-1])                        
-                        print("#### Very high reprojection error ####")
-                        print("#### Ignoring this sample ####")
+                print("relative rotation in degrees, translation in m: ", 
+                        np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
+                        difference[0:3,-1])                        
+            print("#### Very high reprojection error ####")
+            print("#### Ignoring this sample ####")          
+
+        return corners, ids, rvec, tvec, reproj_error, ee_position, ee_rotation_matrix
+
+    def automatic_robot_movement(self,flag_delta_pose=False):
+        while(self.img_msg is None):#waits here until a new image is received
+            pass        
+        # initial_pose = self.fa_object.get_pose()
+        R_gripper2base = []; t_gripper2base = []     
+        R_tag2cam = []; t_tag2cam = []          
+        if(not flag_delta_pose):
+            abs_poses = get_absolute_poses('data/file_poses.txt')
+            self.fa_object.reset_joints()
+            for abs_pose in abs_poses:
+                self.fa_object.goto_pose(abs_pose, duration=3,ignore_virtual_walls=True, use_impedance=False)
+                time.sleep(1.0) 
+                # ee_pose_rigid_tf = self.fa_object.get_pose()
+                # ee_position = ee_pose_rigid_tf.translation
+                # ee_rotation_matrix = ee_pose_rigid_tf.rotation
+
+                corners, ids, rvec, tvec, reproj_error, ee_position, ee_rotation_matrix = self.process_image_for_aruco()
+                if ids is not None:      
+                    if reproj_error > self.REPROJ_THRESH:
                         continue
                     else:
                         R_gripper2base.append(cv2.Rodrigues(ee_rotation_matrix)[0])
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
-                    if (detections_count==0):
+                    if (self.detections_count==0):
                         prev_pose = np.eye(4); prev_pose[0:3, 0:3] = ee_rotation_matrix; prev_pose[0:3, -1] = ee_position
-                    else: 
+                        self.detections_count +=1 
+                    elif (self.detections_count >= 0 and reproj_error < self.REPROJ_THRESH): 
                         current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
                         difference = np.matmul(np.linalg.inv(current), prev_pose) 
                         print("relative rotation in degrees, translation in m : ",
                                 np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
                                 difference[0:3,-1])
                         prev_pose = current 
-                    detections_count +=1                           
-                print("accepted pairs of pose, no. of frames processed", detections_count, processed_image)                           
+                        self.detections_count +=1  
+                else:
+                    print("No aruco tag detected in this sample")  
+                print("accepted pairs of pose, no. of frames processed", self.detections_count, self.processed_image)  
+                self.fa_object.reset_joints()
+                # print(abs_pose, self.fa_object.get_pose())                
+        else: 
+            delta_poses = get_delta_poses('data/file_poses.txt')
+            for delta_pose in delta_poses:
+                self.fa_object.goto_pose_delta(delta_pose, duration=6,ignore_virtual_walls=True)
+                time.sleep(0.5) 
+                print(delta_pose, self.fa_object.get_pose())
+        for ee_rot, ee_trans, tag_rot, tag_trans in zip(R_gripper2base, t_gripper2base, R_tag2cam, t_tag2cam):
+            ee_pose_line = [str(i) for i in [ee_rot[0][0],ee_rot[1][0], ee_rot[2][0], ee_trans[0], ee_trans[1], ee_trans[2]]]
+            tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]
+            line = ee_pose_line + tag_pose_line
+            write_to_file(line, self.file_name)   
+        rospy.core.signal_shutdown('keyboard interrupt')
+        return
+    def user_robot_move_function(self,):
+        
+        R_gripper2base = []; t_gripper2base = []     
+        R_tag2cam = []; t_tag2cam = []  
+                  
+        while(self.img_msg is None):#waits here until a new image is received
+            pass
+        prev_pose = None 
+        while(True): 
+            ip = input("Press Enter to continue collecting current sample....else space bar to stop")
+            if (ip==""):
+                time.sleep(0.5)      
+                # yaml API used in tf python breaks for some reason 
+                # assert(self.tf_listener_.frameExists(self.robot_base_frame))
+                # assert(self.tf_listener_.frameExists(self.ee_frame))
+                corners, ids, rvec, tvec, reproj_error, ee_position, ee_rotation_matrix = self.process_image_for_aruco()
+                if ids is not None:                    
+                    if reproj_error > self.REPROJ_THRESH:
+                        continue
+                    else:
+                        R_gripper2base.append(cv2.Rodrigues(ee_rotation_matrix)[0])
+                        t_gripper2base.append(ee_position) 
+                        R_tag2cam.append(rvec)
+                        t_tag2cam.append(tvec)
+                    if (self.detections_count==0):
+                        prev_pose = np.eye(4); prev_pose[0:3, 0:3] = ee_rotation_matrix; prev_pose[0:3, -1] = ee_position
+                    elif (self.detections_count > 0 and reproj_error < self.REPROJ_THRESH): 
+                        current = np.eye(4); current[0:3, 0:3] = ee_rotation_matrix; current[0:3, -1] = ee_position
+                        difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                        print("relative rotation in degrees, translation in m : ",
+                                np.array(tf_utils.euler_from_matrix(difference))*180.0/np.pi,
+                                difference[0:3,-1])
+                        prev_pose = current 
+                        self.detections_count +=1  
+                else:
+                    print("No aruco tag detected in this sample")  
+                    self.processed_image +=1                        
+                print("accepted pairs of pose, no. of frames processed", self.detections_count, self.processed_image)                           
             else:
                 print("stopping data collection")
-                if processed_image ==0 :
+                if self.processed_image ==0 :
                     rospy.core.signal_shutdown('keyboard interrupt')
                     exit()
                 rospy.core.signal_shutdown('keyboard interrupt')
                 break    
-            processed_image +=1    
+            rospy.core.signal_shutdown('keyboard interrupt')
                 # break
             # rospy.core.signal_shutdown('keyboard interrupt')
             
@@ -206,7 +283,10 @@ def main(args):
     calibration_object = ROSCameraRobotCalibration(args)
     if (not args.only_calibration):
         rate = rospy.Rate(30) # 30hz
-        x = threading.Thread(target=calibration_object.userInteractionFunction)
+        if(args.move_robot_automatically):
+            x = threading.Thread(target=calibration_object.automatic_robot_movement)
+        else:
+            x = threading.Thread(target=calibration_object.user_robot_move_function)
         x.start()
         if not rospy.core.is_initialized():
             raise rospy.exceptions.ROSInitException("client code must call rospy.init_node() first")

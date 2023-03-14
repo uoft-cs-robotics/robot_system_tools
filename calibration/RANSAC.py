@@ -5,7 +5,7 @@ import tf.transformations as tf_utils
 random.seed(10)
 import cv2
 
-from CalibrationUtils import *
+from calibration_utils import *
 
 class RANSAC:
     def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0, run_ransac=False) -> None:
@@ -87,7 +87,7 @@ class RANSAC:
         rot, trans = cv2.calibrateHandEye(A_rot, A_trans, B_rot, B_trans,method=self.solver)
         X_full = tf_from_rvectvec(rot, trans)
         print("full dataset error", self.compute_estimation_error_fulldataset(X_full))
-        print(X_full)
+        # print(X_full)
         print(np.array(X_full[0:3, 0:3]))
         print(np.array(X_full[0:3, -1]))
 

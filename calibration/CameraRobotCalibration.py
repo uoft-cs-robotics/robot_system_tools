@@ -17,7 +17,7 @@ from scipy.spatial.transform import Rotation as R
 #from april_tag_pick_place import point_to_object
 
 #Calibration
-from CalibrationUtils import *
+from calibration_utils import *
 from RANSAC import RANSAC 
 
 class CameraRobotCalibration: 
@@ -114,7 +114,8 @@ class CameraRobotCalibration:
                     if reproj_error >  thresh:
                         if detections_count > 0:
                             current = np.eye(4); current[0:3, 0:3] = ee_rotation; current[0:3, -1] = ee_position
-                            difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                            # difference = np.matmul(np.linalg.inv(current), prev_pose) 
+                            difference = np.matmul(np.linalg.inv(prev_pose), current) 
                             diff_r = R.from_matrix(difference[0:3,0:3])
                             print("relative rotation in degrees, translation in m: ", 
                                 diff_r.as_euler('xyz', degrees=True),
