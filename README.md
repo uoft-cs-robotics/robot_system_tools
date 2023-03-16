@@ -97,8 +97,8 @@ bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimeco
 ```
 to test, run
 ```
-cd /root/git/frankapy
-python3 scripts/reset_arm.py
+cd /root/git/tests
+python3 docker_frankapy_test.py
 ```
 If directly using host workstation and not docker, 
 ```
@@ -107,13 +107,13 @@ source catkin_ws/devel/setup.bash
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
 to test,
-go to frankapy directory 
+go to franka_arm_infra/tests directory in your workstation machine
 ```
-cd <path to frankapy>/frankapy
+cd <path to franka_arm_infra>/tests
 ```
- then run
+then run
 ```
-python3 scripts/reset_arm.py
+python3 docker_frankapy_test.py
 ```
 
 ## Setting up ssh-pass between the workstation and realtime computers (done only once)

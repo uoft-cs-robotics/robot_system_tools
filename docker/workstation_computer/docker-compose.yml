@@ -18,4 +18,5 @@ services:
     - /dev:/dev
     volumes:
       - ../../calibration:/root/git/calibration
+      - ../../test:/root/git/tests  
 

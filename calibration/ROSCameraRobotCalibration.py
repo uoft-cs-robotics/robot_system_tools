@@ -20,7 +20,7 @@ class ROSCameraRobotCalibration:
         self.args = args
         if(self.args.move_robot_automatically):
             self.fa_object = FrankaArm()           
-        if(not args.move_robot_automatically):
+        if(not args.move_robot_automatically):# as frankapy inits its own node
             rospy.init_node('listener', anonymous=True)
         rospy.Subscriber(args.rgb_image_topic, Image, self.subscribe_image_cb)# subscriber for RGB image
         rospy.Subscriber(args.rgb_camera_info_topic, CameraInfo, self.camera_info_cb)#subscriber for RGM image camera info 
@@ -39,10 +39,10 @@ class ROSCameraRobotCalibration:
         self.cv_bridge = CvBridge()
         self.detections_count = 0
         self.processed_image = 0   
+        self.bool_kill_thread = False
           
         if(not self.args.only_calibration):
             open(self.file_name, 'w').close()#empty the file in which poses are recorded
-
 
     def create_aruco_objects(self):
         markerLength = 0.0265
@@ -115,8 +115,13 @@ class ROSCameraRobotCalibration:
         return corners, ids, rvec, tvec, reproj_error, ee_position, ee_rotation_matrix
 
     def automatic_robot_movement(self,flag_delta_pose=False):
+
         while(self.img_msg is None):#waits here until a new image is received
-            pass        
+            print("waiting for image msg")
+            time.sleep(1)
+            if self.bool_kill_thread: 
+                return
+            
         # initial_pose = self.fa_object.get_pose()
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = []          
@@ -169,12 +174,15 @@ class ROSCameraRobotCalibration:
         rospy.core.signal_shutdown('keyboard interrupt')
         return
     def user_robot_move_function(self,):
-        
+
+        while(self.img_msg is None):#waits here until a new image is received
+            print("waiting for image msg")
+            time.sleep(1)
+            if self.bool_kill_thread: 
+                return
+
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = []  
-                  
-        while(self.img_msg is None):#waits here until a new image is received
-            pass
         prev_pose = None 
         while(True): 
             ip = input("Press Enter to continue collecting current sample....else space bar to stop")
@@ -282,11 +290,12 @@ class ROSCameraRobotCalibration:
 def main(args):
     calibration_object = ROSCameraRobotCalibration(args)
     if (not args.only_calibration):
-        rate = rospy.Rate(30) # 30hz
+        rate = rospy.Rate(30) # 1hz
         if(args.move_robot_automatically):
             x = threading.Thread(target=calibration_object.automatic_robot_movement)
         else:
             x = threading.Thread(target=calibration_object.user_robot_move_function)
+        x.daemon = True
         x.start()
         if not rospy.core.is_initialized():
             raise rospy.exceptions.ROSInitException("client code must call rospy.init_node() first")
@@ -294,7 +303,10 @@ def main(args):
             while not rospy.core.is_shutdown():
                 rate.sleep()
         except KeyboardInterrupt:
-            rospy.core.signal_shutdown('keyboard interrupt')    
+            print("killing ROS node")
+            rospy.core.signal_shutdown('keyboard interrupt') 
+             
+        calibration_object.bool_kill_thread = True
         x.join()
         calibration_object.Calibrate()
     else: 
