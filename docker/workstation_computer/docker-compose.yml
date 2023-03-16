@@ -18,5 +18,5 @@ services:
     - /dev:/dev
     volumes:
       - ../../calibration:/root/git/calibration
-      - ../../test:/root/git/tests  
+      - ../../tests/frankapy_control_test_scripts:/root/git/tests/frankapy_control_test_scripts
 

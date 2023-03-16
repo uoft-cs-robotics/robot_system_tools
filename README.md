@@ -97,7 +97,7 @@ bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimeco
 ```
 to test, run
 ```
-cd /root/git/tests
+cd /root/git/tests/frankapy_control_test_scripts
 python3 docker_frankapy_test.py
 ```
 If directly using host workstation and not docker, 
@@ -109,7 +109,7 @@ bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimeco
 to test,
 go to franka_arm_infra/tests directory in your workstation machine
 ```
-cd <path to franka_arm_infra>/tests
+cd <path to franka_arm_infra>/tests/frankapy_control_test_scripts
 ```
 then run
 ```
