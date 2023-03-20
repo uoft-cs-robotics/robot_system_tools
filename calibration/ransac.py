@@ -139,9 +139,9 @@ class RANSAC:
         print(np.array(best_X[0:3, 0:3]))
         print(np.array(best_X[0:3,-1]))
         print(best_X)
-        inverse_matrix = tf_utils.inverse_matrix(best_X)
-        print(tf_utils.quaternion_from_matrix(inverse_matrix))
-        print(np.array(inverse_matrix[0:3, -1]))        
+        # inverse_matrix = tf_utils.inverse_matrix(best_X)
+        # print(tf_utils.quaternion_from_matrix(inverse_matrix))
+        # print(np.array(inverse_matrix[0:3, -1]))        
         return best_X, self.besterr
 
 
