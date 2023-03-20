@@ -2,14 +2,14 @@ import cv2
 import numpy as np
 from calibration_utils import *
 from scipy.spatial.transform import Rotation as R
-from ransac import RANSAC 
+from backend import BACKEND
 
 class BaseRobotCameraCalibration:
     def __init__(self, args,
                     data_file_name:str='data/file.txt',
                     reproj_error_thresh=0.3,
-                    aruco_marker_length=0.0265,
-                    aruco_marker_separation=0.0057,
+                    aruco_marker_length=0.025,
+                    aruco_marker_separation=0.005,
                     aruco_board_n_rows=5,
                     aruco_board_n_cols=7):
         self.args = args
@@ -94,13 +94,13 @@ class BaseRobotCameraCalibration:
                     cv2.CALIB_HAND_EYE_DANIILIDIS]
         for solver in solvers: 
             print("solver = ", solver)
-            rs = RANSAC(As=self.calib_data_As, 
+            backend = BACKEND(As=self.calib_data_As, 
                         As_tf=self.calib_data_As_tf, 
                         Bs=self.calib_data_Bs, 
                         Bs_tf=self.calib_data_Bs_tf,
                         solver=solver, 
                         run_ransac=self.args.run_ransac)
-            rs.Run()
+            backend.Run()
 
     def process_image_msg_for_aruco(self, img_msg, prev_tag_pose=None):
         color_im = self.cv_bridge.imgmsg_to_cv2(img_msg)         
@@ -123,9 +123,6 @@ class BaseRobotCameraCalibration:
                 cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                 img_file_name = "data/image/image_"+str(self.detections_count-1)+".jpg"
                 cv2.imwrite(img_file_name, color_im)
-            # print("tag", rvec, tvec, retval )
-            # print("ee_rot", ee_rotation_matrix)
-            # print("ee",cv2.Rodrigues(ee_rotation_matrix)[0], ee_position  )
             reproj_error =  reprojection_error(corners,
                                                 ids,
                                                 rvec, tvec,

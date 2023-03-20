@@ -12,13 +12,25 @@ import tf.transformations as tf_utils
 from scipy.spatial.transform import Rotation as R
 
 from calibration_utils import *
-from ransac import RANSAC 
 from base_robot_camera_calibration import BaseRobotCameraCalibration
 from frankapy import FrankaArm
 
 class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
-    def __init__(self, args, file_name:str='data/file.txt', movement_pose_file:str='data/file_moves.txt')-> None: 
-        super().__init__(args, data_file_name=file_name) 
+    def __init__(self, args,
+                reproj_error_thresh=0.3,
+                aruco_marker_length=0.025,
+                aruco_marker_separation=0.005,
+                aruco_board_n_rows=5,
+                aruco_board_n_cols=7,
+                file_name:str='data/file.txt', 
+                movement_pose_file:str='data/file_moves.txt')-> None: 
+        super().__init__(args, 
+                        reproj_error_thresh=reproj_error_thresh,
+                        aruco_marker_length=aruco_marker_length,
+                        aruco_marker_separation=aruco_marker_separation,
+                        aruco_board_n_rows=aruco_board_n_rows,
+                        aruco_board_n_cols=aruco_board_n_cols,        
+                        data_file_name=file_name) 
         self.args = args
         if(self.args.move_robot_automatically):
             self.fa_object = FrankaArm()           
@@ -63,7 +75,6 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         R_gripper2base = []; t_gripper2base = []     
         R_tag2cam = []; t_tag2cam = []  
         prev_tag_pose = None 
-        prev_ee_pose = None         
         while(True): 
             if(self.abs_poses is not None and len(self.abs_poses)!=0 ):
                 self.fa_object.reset_joints()
@@ -98,25 +109,21 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                         t_tag2cam.append(tvec)
                         
                     if (self.detections_count==0):
-                        prev_ee_pose = np.eye(4); prev_ee_pose[0:3, 0:3] = ee_rotation_matrix; prev_ee_pose[0:3, -1] = ee_position
                         prev_tag_pose = np.eye(4); prev_tag_pose[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; prev_tag_pose[0:3, -1] = np.squeeze(tvec)
                         self.detections_count +=1  
-
                     elif (self.detections_count > 0 and reproj_error < self.REPROJ_THRESH): 
-                        current_ee = np.eye(4); current_ee[0:3, 0:3] = ee_rotation_matrix; current_ee[0:3, -1] = ee_position
                         current_tag = np.eye(4); current_tag[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; current_tag[0:3, -1] = np.squeeze(tvec)
-                        difference = np.matmul(np.linalg.inv(current_tag), prev_tag_pose) 
-                        diff_r = R.from_matrix(difference[0:3,0:3])
+                        difference_tag = np.matmul(np.linalg.inv(current_tag), prev_tag_pose) 
+                        diff_r = R.from_matrix(difference_tag[0:3,0:3])
                         print("relative calibration tag rotation in degrees, translation in m : ",
                                 diff_r.as_euler('xyz', degrees=True),
-                                difference[0:3,-1])
-                        prev_ee_pose = current_ee
+                                difference_tag[0:3,-1])
                         prev_tag_pose = current_tag
                         self.detections_count +=1  
-                        
                 else:
                     print("No aruco tag detected in this sample")  
-                    self.processed_image +=1                        
+                    self.processed_image +=1   
+
                 print("accepted pairs of pose, no. of frames processed", self.detections_count, self.processed_image)                           
             else:
                 print("stopping data collection")

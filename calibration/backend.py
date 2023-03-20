@@ -7,7 +7,7 @@ import cv2
 
 from calibration_utils import *
 
-class RANSAC:
+class BACKEND:
     def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0, run_ransac=False) -> None:
         self.As = As
         self.As_tf = As_tf

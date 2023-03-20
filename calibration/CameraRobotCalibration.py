@@ -7,25 +7,34 @@ import cv2
 ##
 import zmq
 
-
 #Real Sense libraries#
 from perception.realsense_sensor import RealSenseSensor## unnecessary dependancy 
 import pyrealsense2 as rs
 #FrankaPy#
 #from frankapy import FrankaArm
 from scipy.spatial.transform import Rotation as R
-#from april_tag_pick_place import point_to_object
 
 #Calibration
 from calibration_utils import *
-from ransac import RANSAC 
+from base_robot_camera_calibration import BaseRobotCameraCalibration
 
-class CameraRobotCalibration: 
-    def __init__(self, args, file_name:str='data/file.txt')-> None: 
+class CameraRobotCalibration(BaseRobotCameraCalibration): 
+    def __init__(self, args,
+                reproj_error_thresh=0.3,
+                aruco_marker_length=0.025,
+                aruco_marker_separation=0.005,
+                aruco_board_n_rows=5,
+                aruco_board_n_cols=7,
+                file_name:str='data/file.txt')-> None: 
+        super().__init__(args, 
+                        reproj_error_thresh=reproj_error_thresh,
+                        aruco_marker_length=aruco_marker_length,
+                        aruco_marker_separation=aruco_marker_separation,
+                        aruco_board_n_rows=aruco_board_n_rows,
+                        aruco_board_n_cols=aruco_board_n_cols,        
+                        data_file_name=file_name)         
         self.args = args
-        self.create_aruco_objects()
         ctx = rs.context()
-        self.file_name =  file_name
         if(not self.args.only_calibration):
             device_id = ctx.devices[0].get_info(rs.camera_info.serial_number)
             self.sensor = RealSenseSensor(device_id, frame="realsense", filter_depth=True)
@@ -33,11 +42,7 @@ class CameraRobotCalibration:
             intr = self.sensor.color_intrinsics
             self.camera_matrix = np.array([[intr._fx, 0.0, intr._cx], [0.0, intr._fy, intr._cy],[0.0,0.0,1.0]])
             self.dist_coeffs = np.array([0.0,0.0,0.0,0.0])
-            open(self.file_name, 'w').close()#empty the file in which poses are recorded
 
-        # tuple of (rvec,tvec) and 4x4 tf matrices for tag's pose and ee's pose
-        self.calib_data_As = []; self.calib_data_As_tf = []
-        self.calib_data_Bs = []; self.calib_data_Bs_tf = []
         self.zmq_port = args.zmq_server_port
         self.zmq_ip = args.zmq_server_ip
 
@@ -50,15 +55,7 @@ class CameraRobotCalibration:
         zmq_rot = np.array(zmqPose[:3,:3])
         return zmq_rot, zmq_position
 
-    def create_aruco_objects(self):
-        markerLength = 0.0265
-        markerSeparation = 0.0057
-        self.aruco_dict = cv2.aruco.getPredefinedDictionary( cv2.aruco.DICT_6X6_1000 )
-        self.board = cv2.aruco.GridBoard((5, 7), markerLength, markerSeparation, self.aruco_dict)
-        self.arucoParams = cv2.aruco.DetectorParameters()
-        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.arucoParams)
-    
-    def WaitAndCollectData(self):
+    def collect_data(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)
         socket_address = "tcp://" + self.zmq_ip + ":" + self.zmq_port 
@@ -69,144 +66,57 @@ class CameraRobotCalibration:
         counter = []
         all_corners = []
         all_ids = []
-        detections_count = 0
-        processed_image = 0
-        prev_pose = None 
+
+        prev_tag_pose = None 
         while(True):
             ip = input("Press Enter to continue collecting current sample....else space bar to stop")
             tag_poses = []
             ee_poses = []
             if (ip==""):
                 time.sleep(0.5)
+                ee_rotation_matrix, ee_position  = self.get_ee_pose_zmq() 
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
                 image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
-                corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
-                refine_corners(image_gray, corners)
-                
-                if ids is not None: 
-                    rvec = None 
-                    tvec = None
-                    #https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html#ga549c2075fac14829ff4a58bc931c033d
-                    # retval, rvec, tvec = cv2.aruco.estimatePoseBoard(corners, ids, self.board, self.camera_matrix, self.dist_coeffs, rvec, tvec)  # p
-                    objPoints= None; imgPoints = None
-                    objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
-                    # print(objPoints, imgPoints)                    
-                    retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
-                    if(args.debug_image):
-                        cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
-                        cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
-                        img_file_name = "data/image/image_"+str(detections_count-1)+".jpg"
-                        cv2.imwrite(img_file_name, color_im)
-                    ee_rotation, ee_position  = self.get_ee_pose_zmq() 
-                    # print("tag", rvec, tvec, retval )
-                    # print("tag", rvec, tvec, len(ids) )
-                    # print("ee",cv2.Rodrigues(ee_rotation)[0], ee_position  )
-                    reproj_error =  reprojection_error(corners,ids, rvec, tvec, board=self.board, 
-                                                        camera_matrix=self.camera_matrix,
-                                                        dist_coeffs=self.dist_coeffs)
-
-                    print("reprojection error",reproj_error)
-                    if self.args.camera_in_hand:
-                        thresh = 0.3
-                    else: 
-                        thresh = 0.3
-                    if reproj_error >  thresh:
-                        if detections_count > 0:
-                            current = np.eye(4); current[0:3, 0:3] = ee_rotation; current[0:3, -1] = ee_position
-                            # difference = np.matmul(np.linalg.inv(current), prev_pose) 
-                            difference = np.matmul(np.linalg.inv(prev_pose), current) 
-                            diff_r = R.from_matrix(difference[0:3,0:3])
-                            print("relative rotation in degrees, translation in m: ", 
-                                diff_r.as_euler('xyz', degrees=True),
-                                difference[0:3,-1])                           
-                        print("#### Very high reprojection error ####")
-                        print("#### Ignoring this sample ####")
-                        continue
+                corners, ids, rvec, tvec, reproj_error = self.process_image_for_aruco(image_gray, prev_tag_pose)
+                if ids is not None:                    
+                    if reproj_error > self.REPROJ_THRESH:
+                        continue                
                     else:
-                        R_gripper2base.append(cv2.Rodrigues(ee_rotation)[0])
+                        R_gripper2base.append(cv2.Rodrigues(ee_rotation_matrix)[0])
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
-                    if (detections_count==0):
-                        prev_pose = np.eye(4); prev_pose[0:3, 0:3] = ee_rotation; prev_pose[0:3, -1] = ee_position                        
-                    else: 
-                        current = np.eye(4); current[0:3, 0:3] = ee_rotation; current[0:3, -1] = ee_position
-                        difference = np.matmul(np.linalg.inv(current), prev_pose) 
-                        diff_r = R.from_matrix(difference[0:3,0:3])
-                        print("relative rotation in degrees, translation in m : ",
+
+                    if (self.detections_count==0):
+                        prev_tag_pose = np.eye(4); prev_tag_pose[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; prev_tag_pose[0:3, -1] = np.squeeze(tvec)
+                        self.detections_count +=1  
+                    elif (self.detections_count > 0 and reproj_error < self.REPROJ_THRESH): 
+                        current_tag = np.eye(4); current_tag[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; current_tag[0:3, -1] = np.squeeze(tvec)
+                        difference_tag = np.matmul(np.linalg.inv(current_tag), prev_tag_pose) 
+                        diff_r = R.from_matrix(difference_tag[0:3,0:3])
+                        print("relative calibration tag rotation in degrees, translation in m : ",
                                 diff_r.as_euler('xyz', degrees=True),
-                                difference[0:3,-1])
-                        prev_pose = current 
-                    detections_count +=1                           
-                print("accepted pairs of pose, no. of frames processed", detections_count, processed_image)                           
+                                difference_tag[0:3,-1])
+                        prev_tag_pose = current_tag
+                        self.detections_count +=1    
+                else:
+                    print("No aruco tag detected in this sample")  
+                    self.processed_image +=1     
+
+                print("accepted pairs of pose, no. of frames processed", self.detections_count, self.processed_image)                                                                           
             else:
                 print("stopping data collection")
-                if detections_count==0 :
+                if self.detections_count==0 :
                     exit()
                 break    
-            processed_image += 1    
+            self.processed_image += 1    
         for ee_rot, ee_trans, tag_rot, tag_trans in zip(R_gripper2base, t_gripper2base, R_tag2cam, t_tag2cam):
             ee_pose_line = [str(i) for i in [ee_rot[0][0],ee_rot[1][0], ee_rot[2][0], ee_trans[0], ee_trans[1], ee_trans[2]]]
             tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]
             line = ee_pose_line + tag_pose_line
-            write_to_file(line, self.file_name)     
+            write_to_file(line, self.DATA_FILE_NAME)     
                    
-    def Calibrate(self,):
-        with open(self.file_name, 'r') as fp:
-            lines = fp.readlines()
-        for line in lines:
-            data = line.split('\n')[0].split(',')
-            ee_pose = tuple(((float(data[0]),
-                                float(data[1]),
-                                    float(data[2])), 
-                            (float(data[3]),
-                                float(data[4]),
-                                float(data[5]))))
-            tag_pose = tuple(((float(data[6]),
-                                float(data[7]),
-                                float(data[8])), 
-                            (float(data[9]),
-                                float(data[10]),
-                                float(data[11]))))
-            ee_pose_tf = np.eye(4)
-            tag_pose_tf = np.eye(4)
-            ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
-            tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1]  
-
-            if(self.args.camera_in_hand):          
-                self.calib_data_As.append(ee_pose)
-                self.calib_data_As_tf.append(ee_pose_tf)
-                self.calib_data_Bs.append(tag_pose)
-                self.calib_data_Bs_tf.append(tag_pose_tf)     
-            else:
-                ee_pose_tf_inv = np.linalg.inv(ee_pose_tf)
-                ee_pose = list(ee_pose)
-                ee_pose[0] = cv2.Rodrigues(ee_pose_tf_inv[0:3, 0:3])[0]
-                ee_pose[1] = ee_pose_tf_inv[0:3, -1]
-                ee_pose = tuple(ee_pose)
-                self.calib_data_As.append(ee_pose)
-                self.calib_data_As_tf.append(ee_pose_tf_inv)
-                self.calib_data_Bs.append(tag_pose)
-                self.calib_data_Bs_tf.append(tag_pose_tf)                
-
-        solvers = [cv2.CALIB_HAND_EYE_TSAI,
-                    cv2.CALIB_HAND_EYE_PARK,
-                    cv2.CALIB_HAND_EYE_HORAUD,
-                    cv2.CALIB_HAND_EYE_ANDREFF,
-                    cv2.CALIB_HAND_EYE_DANIILIDIS]
-
-        for solver in solvers: 
-            print("solver = ", solver)
-            rs = RANSAC(As=self.calib_data_As, 
-                        As_tf=self.calib_data_As_tf, 
-                        Bs=self.calib_data_Bs, 
-                        Bs_tf=self.calib_data_Bs_tf,
-                        solver=solver, 
-                        run_ransac=self.args.run_ransac)
-            rs.Run()
-
-
 def main(args):
     calib = CameraRobotCalibration(args)
     #fa.reset_joints()
@@ -217,16 +127,16 @@ def main(args):
             ip = input('have you configured the EE and camera to a desired'\
                 'initial configuration? if yes, press Enter')
             if (ip==""):
-                calib.MoveAndCollectData()
+                calib.collect_data()
             else:
                 print('move the end effector to initial configuration and restart'\
                     'the script')
                 exit()
         else: 
-            calib.WaitAndCollectData()
-            calib.Calibrate()
+            calib.collect_data()
+            calib.run_robot_camera_calibration()
     else:
-        calib.Calibrate()
+        calib.run_robot_camera_calibration()
                  
 
     pass 
