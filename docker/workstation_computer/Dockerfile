@@ -119,7 +119,7 @@ RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
 # RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
 # RUN echo "export ROS_MASTER_URI=http://192.168.0.1:11311" >> ~/.bashrc
 
-RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
+# RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_IP=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
 

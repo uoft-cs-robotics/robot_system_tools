@@ -143,26 +143,30 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optional app description')
-    parser.add_argument("--camera_in_hand", default=True, nargs='?', type=str2bool, help='is the camera attached'\
+    parser.add_argument("--camera_in_hand", default=True, nargs='?', type=str2bool, help='is the camera attached '\
                         'to the robots body or to the environment?')
-    parser.add_argument("--move_robot_automatically", default=False, nargs='?',  type=str2bool, help='should the EE'\
-                        'automatically move for collecting data? In this case, the EE is first' \
-                        'manually moved to an initial pose and the script controls EE to predefined'\
-                        'relative poses. If false, the EE should be moved manually(white status LED'\
+    parser.add_argument("--move_robot_automatically", default=False, nargs='?',  type=str2bool, help='should the EE '\
+                        'automatically move for collecting data? In this case, the EE is first ' \
+                        'manually moved to an initial pose and the script controls EE to predefined '\
+                        'relative poses. If false, the EE should be moved manually(white status LED) '\
                         'and press enter to collect data')
-    parser.add_argument("--only_calibration", default=False, nargs='?',type=str2bool, help='if true, values'\
-                        'stored in the data folder are used for calibration if false, data is first collected,'\
+    parser.add_argument("--only_calibration", default=False, nargs='?',type=str2bool, help='if true, values '\
+                        'stored in the data folder are used for calibration if false, data is first collected, '\
                         'stored in /data folder and then calibration  routine is run')                        
     # parser.add_argument("--create_calibration_target",default=False, nargs='?',  type=str2bool, help='this options'\
     #                     'only creates a calibration target and stores the image in the data folder')         
-    parser.add_argument("--run_ransac",default=False, nargs='?',  type=str2bool, help='this option'\
-                        'runs ransac to select EEposes and calibration target poses based on how well they all agree to AX=XB')                                          
-    parser.add_argument("--zmq_server_ip",default='192.168.0.3', nargs='?',  type=str, help='ip address'\
-                        'of the zmq server running on the realtime PC to send robot hand poses')  
-    parser.add_argument("--zmq_server_port",default='2000', nargs='?',  type=str, help='port'\
-                        'of the zmq server running on the realtime PC to send robot hand poses')  
-    parser.add_argument("--debug_image",default=False, nargs='?',  type=str2bool, help='this option'\
+    parser.add_argument("--run_ransac",default=False, nargs='?',  type=str2bool, help='this option '\
+                        'runs ransac to select EEposes and calibration target poses based on how well they all agree to AX=XB ')                                          
+    parser.add_argument("--zmq_server_ip",default='192.168.0.3', nargs='?',  type=str, help='ip address '\
+                        'of the zmq server running on the realtime PC to send robot hand poses ')  
+    parser.add_argument("--zmq_server_port",default='2000', nargs='?',  type=str, help='port ' \
+                        'of the zmq server running on the realtime PC to send robot hand poses ' \
+                        'the port number is an arbitrary number less than 65535 and ensure it is ' \
+                        'not used by any other application in your computer')  
+    parser.add_argument("--debug_image",default=True, nargs='?',  type=str2bool, help='this option '\
                         'draws aruco tag detections and the estimated tag frame on the image and saves in the data/image folder')                                                                        
+                                                                      
+
     args = parser.parse_args()
     main(args)
 

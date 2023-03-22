@@ -1,5 +1,12 @@
 ## Description 
+This repository contains scripts and off-the-shelf starter scripts for developping and running algorithms for the Franka Emika Panda arms. 
+- In the [docker](docker) folder you can find the docker compose yaml and Dockerfiles to setup the docker environment for the realtime computer and workstation computer interfacing with the Franka arms. [frankapy](https://github.com/iamlab-cmu/frankapy) and [frank-interface](https://github.com/iamlab-cmu/franka-interface) are also compiled in the docker environments and you should be able to use frankapy APIs out of the box through this repo. 
 
+- In the [calibration](calibration) folder you can find the calibration scripts to run robot camera calibration routine(currently) and multi camera calibration routine (soon), find more info [here](calibration/docs). 
+
+- In the [franka_control_suite](franka_control_suite)(Work in Progress) folder you can find experimental feedback controllers implemented in libfranka.
+
+- In [tests](tests) (Work in Progress) folder we will provide various unit tests and integration test scripts to ensure the software system is working as expected. Including tests for the docker environment, frankapy, robot camera calibration, etc (Work in Progress)
 
 ## Dependancies 
 - docker-compose
@@ -11,20 +18,24 @@ sudo apt-get install docker.io docker-compose
 ```
 # Build Instructions
 
-Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel. Workstation computer is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs. 
+Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). Workstation computer is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs. 
 
 ## Real time Computer 
 Build docker container for the real time computer directly connected to Franka's control. 
 ```
-sudo docker-compose --log-level ERROR  -f docker/realtime_computer/docker-compose-gui.yml build
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
+                            --build-arg workstation_ip=<workstation_ip address>\
+                            --build-arg realtime_computer_ip=<realtime_computer_ip address>\
+                            --build-arg franka_firmware_version=<franka_firmware_version>
 ```
+Note:For example if your firmware is 3.x, franka_firmware_version=3
 
 ## Workstation Computer 
 Build docker container for the workstation computer that has GPU/nvidia drivers 
 
 **Note: it is important to pass the workstation IP address as seen by the realtime computer here**
 ```
-sudo docker-compose --log-level ERROR  -f docker/workstation_computer/docker-compose-gui.yml build --build-arg workstation_ip=<workstation_ip address>
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build --build-arg workstation_ip=<workstation_ip address>
 ```
 ### Build franka_control_suite in the realtime docker environment
 open a bash terminal inside the realtime docker container 
@@ -154,7 +165,7 @@ ssh-add ~/.ssh/id_rsa
 
 ## Using calibration
 
-Please checkout [calibration/docs](https://github.com/pairlab/franka_arm_infra/blob/dev/rosAPI/calibration/calibration/docs/USAGE.md) for documentations of hand-eye calibration, usage of this tool 
+Please checkout [calibration/docs](calibration/docs) for documentations of hand-eye calibration, usage of this tool 
 
 
 

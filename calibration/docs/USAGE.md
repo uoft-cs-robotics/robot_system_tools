@@ -164,80 +164,46 @@ cd /root/git/calibration
   
 
 If not using the ROS API, In the worstation computer docker terminal, run the script to collect the pose data and run hand eye calibration i.e CameraRobotCalibration.py script with appropriate arguments, see the available ones here
-
 ```
-
 python3 CameraRobotCalibration.py -h
-
-  
-
+```
+You will see a terminal output like so
+```
 usage: CameraRobotCalibration.py [-h] [--camera_in_hand [CAMERA_IN_HAND]]
-
-[--move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]]
-
-[--only_calibration [ONLY_CALIBRATION]]
-
-[--run_ransac [RUN_RANSAC]] [--zmq_server_ip [ZMQ_SERVER_IP]]
-
-[--zmq_server_port [ZMQ_SERVER_PORT]]
-
-[--debug_image [DEBUG_IMAGE]]
-
-  
+                                 [--move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]]
+                                 [--only_calibration [ONLY_CALIBRATION]]
+                                 [--run_ransac [RUN_RANSAC]] [--zmq_server_ip [ZMQ_SERVER_IP]]
+                                 [--zmq_server_port [ZMQ_SERVER_PORT]]
+                                 [--debug_image [DEBUG_IMAGE]]
 
 Optional app description
 
-  
-
 optional arguments:
-
--h, --help show this help message and exit
-
---camera_in_hand [CAMERA_IN_HAND]
-
-is the camera attachedto the robots body or to the environment?
-
---move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]
-
-should the EEautomatically move for collecting data? In this case, the EE
-
-is firstmanually moved to an initial pose and the script controls EE to
-
-predefinedrelative poses. If false, the EE should be moved manually(white
-
-status LEDand press enter to collect data
-
---only_calibration [ONLY_CALIBRATION]
-
-if true, valuesstored in the data folder are used for calibration if
-
-false, data is first collected,stored in /data folder and then calibration
-
-routine is run
-
---run_ransac [RUN_RANSAC]
-
-this optionruns ransac to select EEposes and calibration target poses
-
-based on how well they all agree to AX=XB
-
---zmq_server_ip [ZMQ_SERVER_IP]
-
-ip addressof the zmq server running on the realtime PC to send robot hand
-
-poses
-
---zmq_server_port [ZMQ_SERVER_PORT]
-
-portof the zmq server running on the realtime PC to send robot hand poses
-
---debug_image [DEBUG_IMAGE]
-
-this optiondraws aruco tag detections and the estimated tag frame on the
-
-image and saves in the data/image folder
-
-  
+  -h, --help            show this help message and exit
+  --camera_in_hand [CAMERA_IN_HAND]: True(default)/False
+                        is the camera attached to the robots body or to the environment?
+  --move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]: True/False(default)
+                        should the EE automatically move for collecting data? In this case, the EE
+                        is first manually moved to an initial pose and the script controls EE to
+                        predefined relative poses. If false, the EE should be moved manually(white
+                        status LED) and press enter to collect data
+  --only_calibration [ONLY_CALIBRATION]: True/False(default)
+                        if true, values stored in the data folder are used for calibration if
+                        false, data is first collected, stored in /data folder and then
+                        calibration routine is run
+  --run_ransac [RUN_RANSAC]: True/False(default)
+                        this option runs ransac to select EEposes and calibration target poses
+                        based on how well they all agree to AX=XB
+  --zmq_server_ip [ZMQ_SERVER_IP]
+                        ip address of the zmq server running on the realtime PC to send robot hand
+                        poses
+  --zmq_server_port [ZMQ_SERVER_PORT]
+                        port of the zmq server running on the realtime PC to send robot hand poses
+                        the port number is an arbitrary number less than 65535 and ensure it is
+                        not used by any other application in your computer
+  --debug_image [DEBUG_IMAGE]: True(default)/False
+                        this option draws aruco tag detections and the estimated tag frame on the
+                        image and saves in the data/image folder
 
 ```
 
@@ -246,90 +212,59 @@ image and saves in the data/image folder
 run the ROSCameraRobotCalibration.py script with appropriate arguments, see the available ones here
 
 ```
-
 python3 ROSCameraRobotCalibration.py -h
 
-  
-
+```
+You will see a terminal output like so
+```
 usage: ROSCameraRobotCalibration.py [-h] [--camera_in_hand [CAMERA_IN_HAND]]
-
-[--move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]]
-
-[--only_calibration [ONLY_CALIBRATION]]
-
-[--robot_base_frame_name [ROBOT_BASE_FRAME_NAME]]
-
-[--ee_frame_name [EE_FRAME_NAME]]
-
-[--rgb_image_topic [RGB_IMAGE_TOPIC]]
-
-[--rgb_camera_info_topic [RGB_CAMERA_INFO_TOPIC]]
-
-[--run_ransac [RUN_RANSAC]] [--debug_image [DEBUG_IMAGE]]
-
-  
+                                    [--move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]]
+                                    [--only_calibration [ONLY_CALIBRATION]]
+                                    [--robot_base_frame_name [ROBOT_BASE_FRAME_NAME]]
+                                    [--ee_frame_name [EE_FRAME_NAME]]
+                                    [--rgb_image_topic [RGB_IMAGE_TOPIC]]
+                                    [--rgb_camera_info_topic [RGB_CAMERA_INFO_TOPIC]]
+                                    [--run_ransac [RUN_RANSAC]] [--debug_image [DEBUG_IMAGE]]
+                                    [--with_franka_gripper [WITH_FRANKA_GRIPPER]]
 
 Optional app description
 
-  
-
 optional arguments:
-
--h, --help show this help message and exit
-
---camera_in_hand [CAMERA_IN_HAND]
-
-is the camera attachedto the robots body or to the environment?
-
---move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]
-
-should the EEautomatically move for collecting data? In this case, the EE
-
-is firstmanually moved to an initial pose and the script controls EE to
-
-predefinedrelative poses. If false, the EE should be moved manually(white
-
-status LEDand press enter to collect data
-
---only_calibration [ONLY_CALIBRATION]
-
-if true, valuesstored in the data folder are used for calibration if
-
-false, data is first collected,stored in /data folder and then calibration
-
-routine is run
-
---robot_base_frame_name [ROBOT_BASE_FRAME_NAME]
-
-robot base frames name in the /tf tree
-
---ee_frame_name [EE_FRAME_NAME]
-
-end-effector frames name in the /tf tree
-
---rgb_image_topic [RGB_IMAGE_TOPIC]
-
-RGB image raw topic name
-
---rgb_camera_info_topic [RGB_CAMERA_INFO_TOPIC]
-
-RGB image camera info name
-
---run_ransac [RUN_RANSAC]
-
-this optionruns ransac to select EEposes and calibration target poses
-
-based on how well they all agree to AX=XB
-
---debug_image [DEBUG_IMAGE]
-
-this optiondraws aruco tag detections and the estimated tag frame on the
-
-image and saves in the data/image folder
-
+  -h, --help            show this help message and exit
+  --camera_in_hand [CAMERA_IN_HAND]: True(default)/False
+                        is the camera attached to the robots body or to the environment?
+  --move_robot_automatically [MOVE_ROBOT_AUTOMATICALLY]: True/False(default)
+                        should the EE automatically move for collecting data? In this case, the EE
+                        is first manually moved to an initial pose and the script controls EE to
+                        predefined relative poses. If false, the EE should be moved manually(white
+                        status LED) and press enter to collect data
+  --only_calibration [ONLY_CALIBRATION]: True/False(default)
+                        if true, values stored in the data folder are used for calibration if
+                        false, data is first collected, stored in /data folder and then
+                        calibration routine is run
+  --robot_base_frame_name [ROBOT_BASE_FRAME_NAME]
+                        robot base frames name in the /tf tree
+  --ee_frame_name [EE_FRAME_NAME]
+                        end-effector frames name in the /tf tree
+  --rgb_image_topic [RGB_IMAGE_TOPIC]
+                        RGB image raw topic name
+  --rgb_camera_info_topic [RGB_CAMERA_INFO_TOPIC]
+                        RGB image camera info name
+  --run_ransac [RUN_RANSAC]: True/False(default)
+                        this option runs ransac to select EEposes and calibration target poses
+                        based on how well they all agree to AX=XB
+  --debug_image [DEBUG_IMAGE]: True(default)/False
+                        this option draws aruco tag detections and the estimated tag frame on the
+                        image and saves in the data/image folder
+  --with_franka_gripper [WITH_FRANKA_GRIPPER]: True/False(default)
+                        are you using the franka arm with franka gripper?
 ```
 
 For both the non ROS and ROS based pose data collection, move the robot to different configurations by hand, and press enter for the calibration script to record the calibration target pose and the end-effector pose. Collect 15-30 poses and then press any other key than "Enter" to signal end of data collection and for the calibration process to start.
+
+The output hand eye calibration result for all available [methods](https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gad10a5ef12ee3499a0774c7904a801b99) in opencv will be printed on the terminal. If you choose to run RANSAC, the results after running the RANSAC scheme will be printed. 
+
+For the camera in hand case the output is the Transformation of the camera frame in the EndEffector's frame. For the camera in the environment case. the output is the transformation of the camera frame in the robot's base frame. 
 
 ### c.<u> Instructions for Testing </u>
 TBD

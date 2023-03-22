@@ -42,7 +42,8 @@ Few Referenced from [here](https://github.com/IFL-CAMP/easy_handeye#:~:text=can%
 
 
 # Trouble shooting
-Ensure the right end-effector is attached to the robot in the Franka Desk App as this the frame with respect to robot base that is returned by libfranka if we query for the end-effector's pose. 
+- Ensure the right end-effector is attached to the robot in the Franka Desk App as this the frame with respect to robot base that is returned by libfranka if we query for the end-effector's pose. 
+- Ensure the calibration tag printed hasn't changed the scale of the tag from the PDF, the marker edge should be 0.025m and the marker separation should be 0.005. If on measurement you find different values, set pass to the constructor of the calibration classes. 
 
 ## References: 
 - [opencv documentation]( https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gaebfc1c9f7434196a374c382abf43439b)

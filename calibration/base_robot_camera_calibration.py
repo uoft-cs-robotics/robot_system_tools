@@ -87,12 +87,17 @@ class BaseRobotCameraCalibration:
         self.read_calibration_data_from_file(self.DATA_FILE_NAME)
         assert(len(self.calib_data_As)!=0)
         assert(len(self.calib_data_Bs)!=0)
-        solvers = [cv2.CALIB_HAND_EYE_TSAI,
-                    cv2.CALIB_HAND_EYE_PARK,
-                    cv2.CALIB_HAND_EYE_HORAUD,
-                    cv2.CALIB_HAND_EYE_ANDREFF,
-                    cv2.CALIB_HAND_EYE_DANIILIDIS]
-        for solver in solvers: 
+        # solvers = [cv2.CALIB_HAND_EYE_TSAI,
+        #             cv2.CALIB_HAND_EYE_PARK,
+        #             cv2.CALIB_HAND_EYE_HORAUD,
+        #             cv2.CALIB_HAND_EYE_ANDREFF,
+        #             cv2.CALIB_HAND_EYE_DANIILIDIS]
+        solver_names = {cv2.CALIB_HAND_EYE_TSAI:"cv2.CALIB_HAND_EYE_TSAI",
+                        cv2.CALIB_HAND_EYE_PARK:"cv2.CALIB_HAND_EYE_PARK",
+                        cv2.CALIB_HAND_EYE_HORAUD:"cv2.CALIB_HAND_EYE_HORAUD",
+                        cv2.CALIB_HAND_EYE_ANDREFF:"cv2.CALIB_HAND_EYE_ANDREFF",
+                        cv2.CALIB_HAND_EYE_DANIILIDIS:"cv2.CALIB_HAND_EYE_DANIILIDIS"}
+        for solver in solver_names.keys(): 
             print("solver = ", solver)
             backend = BACKEND(As=self.calib_data_As, 
                         As_tf=self.calib_data_As_tf, 
@@ -117,7 +122,7 @@ class BaseRobotCameraCalibration:
             objPoints= None; imgPoints = None
             objPoints, imgPoints = self.board.matchImagePoints(corners, ids, objPoints, imgPoints)
             # print(objPoints, imgPoints)                    
-            retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)                    #cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+            retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
             if(self.args.debug_image):
                 cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
                 cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)

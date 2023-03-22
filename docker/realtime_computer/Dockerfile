@@ -7,6 +7,10 @@ SHELL ["/bin/bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG workstation_ip=192.168.0.1
+ARG realtime_computer_ip=192.168.0.3
+ARG franka_firmware_version=5
+
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
     curl \
@@ -67,7 +71,7 @@ RUN cd ~/git \
 
 RUN echo "cloning libfranka"
 RUN cd ~/git/franka-interface \
-    && bash ./bash_scripts/clone_libfranka.sh 5
+    && bash ./bash_scripts/clone_libfranka.sh ${franka_firmware_version}
 
 RUN echo "building libfranka"
 RUN cd ~/git/franka-interface \
@@ -102,6 +106,10 @@ RUN cd ~/git \
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 RUN echo "source ~/git/franka-interface/catkin_ws/devel/setup.bash " >> ~/.bashrc
+
+RUN echo "export ROS_IP=${realtime_computer_ip}" >> ~/.bashrc
+RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
+
 RUN pip3 install zmq pyrealsense2 numba scipy   
 
 ARG DEBIAN_FRONTEND=dialog
