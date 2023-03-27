@@ -9,9 +9,11 @@ This repository contains scripts and off-the-shelf starter scripts for developpi
 - In [tests](tests) (Work in Progress) folder we will provide various unit tests and integration test scripts to ensure the software system is working as expected. Including tests for the docker environment, frankapy, robot camera calibration, etc (Work in Progress)
 
 ## Dependancies 
-- docker-compose
+- docker-compose (version 1)
 - docker 
 
+
+Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
 installing docker dependancies 
 ```
 sudo apt-get install docker.io docker-compose
@@ -87,7 +89,7 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up
 ```
 
 if you are using workstation docker, **in a new terminal** start it with, 
-as mentioned [here](https://stackoverflow.com/questions/69872788/docker-could-not-connect-to-any-x-display#:~:text=The%20solution%20is%20to%20run%20the%20following%20command%20in%20your%20terminal%3A)to get GUI access first run, 
+as mentioned [here] (https://stackoverflow.com/questions/69872788/docker-could-not-connect-to-any-x-display#:~:text=The%20solution%20is%20to%20run%20the%20following%20command%20in%20your%20terminal%3A)to get GUI access first run, 
 
 ```
 xhost +local:docker 
