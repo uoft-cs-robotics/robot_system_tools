@@ -30,7 +30,7 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
                             --build-arg realtime_computer_ip=<realtime_computer_ip address>\
                             --build-arg franka_firmware_version=<franka_firmware_version>
 ```
-Note:For example if your firmware is 3.x, franka_firmware_version=3
+Note:For example if your firmware is 3.x, franka_firmware_version=3. For your robot, you can find this in Franka Desk -> Settings -> System -> Version. 
 
 ## Workstation Computer 
 Build docker container for the workstation computer that has GPU/nvidia drivers 
