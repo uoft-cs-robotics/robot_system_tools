@@ -84,14 +84,32 @@
 #include <franka/robot_state.h>
 
 int main(int argc, char** argv) {
-
+std::string robot_ip, zmq_server_ip="192.168.0.3", zmq_server_port ="2000";
+    if(argc < 4){
+        std::cout<<"The usage is ./frank_control "
+                    "robot_ip "
+                    "zmq_server_ip(optional/default values) "
+                    "zmq_server_port(optional/default values) \n";
+        exit(1);
+    }
+    else if(argc == 4){
+        robot_ip = argv[1];
+        zmq_server_ip = argv[2];
+        zmq_server_port = argv[3];
+    }
+    else{
+        std::cout<<"The usage is ./frank_control "
+            "robot_ip "
+            "zmq_server_ip(optional/default values) "
+            "zmq_server_port(optional/default values) \n";
+        exit(1);
+    }
     try {
-
-    franka::Robot robot("192.168.1.107");// should be robot's ip
+    franka::Robot robot(robot_ip);// should be robot's ip
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind ("tcp://192.168.0.3:2000");//change IP if communicating between two machines
-
+    std::string zmq_socket_address = "tcp://" + zmq_server_ip + ":" + zmq_server_port ;
+    socket.bind (zmq_socket_address );
         while(true) {
             std::cout<<"Waiting for EE frame request"<<std::endl;
             zmq::message_t request;

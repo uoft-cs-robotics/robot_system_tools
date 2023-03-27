@@ -1,8 +1,9 @@
 franka_control_suite/build/
 .vscode/
-calibration/data/
+#calibration/data/
+!calibration/calibration_board/target_A4.pdf
+!calibration/calibration_board/target_US_letter.pdf
 *.png
 *.pdf
 *.pyc   
 *.jpg
-!calibration_target/*.pdf

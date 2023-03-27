@@ -2,6 +2,7 @@ import numpy as np
 import numpy.matlib as npm
 import cv2
 import copy
+from autolab_core import RigidTransform
 
 
 
@@ -33,7 +34,85 @@ def write_to_file(line_list, file_name):
         f.write(line)
         f.write('\n') 
 
+def sample_view_poses(initial_pose):
+    delta_position = [[],[],[],[],[],[],[],[],[],[]]
+    return
 
+def get_delta_poses(file_name):
+    with open(file_name, 'r') as fp:
+        lines = fp.readlines()
+        ee_poses_tf = []
+    for line in lines:
+        data = line.split('\n')[0].split(',')
+        ee_pose = tuple(((float(data[0]),
+                            float(data[1]),
+                                float(data[2])), 
+                        (float(data[3]),
+                            float(data[4]),
+                            float(data[5]))))
+        tag_pose = tuple(((float(data[6]),
+                            float(data[7]),
+                            float(data[8])), 
+                        (float(data[9]),
+                            float(data[10]),
+                            float(data[11]))))
+        ee_pose_tf = np.eye(4)
+        tag_pose_tf = np.eye(4)
+        ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
+        tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1] 
+        ee_poses_tf.append(ee_pose_tf)
+    prev = None
+    delta_poses = []
+    for abs_ee_pose_tf in ee_poses_tf: 
+        if prev is None: 
+            delta_pose = RigidTransform(from_frame='franka_tool', 
+                                        to_frame='franka_tool',
+                                        rotation=np.eye(3),
+                                        translation=np.array([0.0, 0.0,0.0]))
+            prev = abs_ee_pose_tf
+        else: 
+            # difference = np.matmul(np.linalg.inv(abs_ee_pose_tf), prev)
+            # print(prev)
+            # print(abs_ee_pose_tf)
+            difference = np.matmul(np.linalg.inv(prev), abs_ee_pose_tf)
+            delta_pose = RigidTransform(from_frame='franka_tool', 
+                                        to_frame='franka_tool',
+                                        rotation=difference[0:3,0:3],
+                                        translation=difference[0:3,-1])
+        delta_poses.append(delta_pose)
+    return delta_poses
+
+def get_absolute_poses(file_name):
+    with open(file_name, 'r') as fp:
+        lines = fp.readlines()
+
+    ee_poses = []
+    for line in lines:
+        data = line.split('\n')[0].split(',')
+        ee_pose = tuple(((float(data[0]),
+                            float(data[1]),
+                                float(data[2])), 
+                        (float(data[3]),
+                            float(data[4]),
+                            float(data[5]))))
+        tag_pose = tuple(((float(data[6]),
+                            float(data[7]),
+                            float(data[8])), 
+                        (float(data[9]),
+                            float(data[10]),
+                            float(data[11]))))
+        ee_pose_tf = np.eye(4)
+        # tag_pose_tf = np.eye(4)
+        ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
+        # tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1] 
+        abs_pose = RigidTransform(from_frame='franka_tool', 
+                                        to_frame='world',
+                                        # to_frame='franka_tool_base',
+                                        rotation=ee_pose_tf[0:3, 0:3],
+                                        translation=ee_pose_tf[0:3, -1]/1000.0)
+        ee_poses.append(abs_pose)
+    return ee_poses
+    
 # print(ee_rotation)
 # rvec = cv2.Rodrigues(ee_rotation)[0]
 # print(rvec)
@@ -129,10 +208,10 @@ def weightedAverageQuaternions(Q, w):
 #     avg_transmatrix = tf_utils.quaternion_matrix(avg_quat)
 #     return cv2.Rodrigues(avg_transmatrix[0:3, 0:3])[0], avg_tvec
 
-def refine_corners(image, corners):
+def refine_corners( image, corners):
     winSize = [5, 5]
     zeroZone = [-1, -1]
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 40, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
     for corner in corners: 
         cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
 
@@ -140,9 +219,9 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
     mean_error = 0.0 
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -164,8 +243,8 @@ def reprojection_error_in_robot_base( all_corners, ids,  rvec, tvec, new_points,
     for id_, corners in zip(ids, all_corners):
         #print(id_[0])
         proj_img_point, _ = cv2.projectPoints(new_points[id_[0]], rvec_new, tvec_new, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+        #print(self.board.getObjPoints()[id_[0]], corners)
+        #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
         # print(corners[0], proj_img_point[:,0,:])
         # print(len(proj_img_point))
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
@@ -176,7 +255,7 @@ def objPoints_in_robot_base(board, Tcam2base, rvec, tvec):
     Ttag2cam = tf_from_rvectvec(rvec, tvec)
     Ttag2base = np.matmul(Tcam2base, Ttag2cam)
     print("sanity", Ttag2base)
-    new_points = copy.copy(board.objPoints)
+    new_points = copy.copy(board.getObjPoints())
     print("before", new_points[0])
     for square_idx in range(len(new_points)):
         for point_idx in range(len(new_points[square_idx])):
@@ -200,14 +279,10 @@ def tf_from_rvectvec(rvec, tvec):
     return out
 
 def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dist_coeffs): 
-    mean_error = 0.0 
+    mean_error = 0.0
+    singular_mean_error = 0.0
     for id_, corners in zip(ids, all_corners):
-        #print(id_[0])
-        proj_img_point, _ = cv2.projectPoints(board.objPoints[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
-        #print(self.board.objPoints[id_[0]], corners)
-        #print(np.shape(self.board.objPoints[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
-        # print(corners[0], proj_img_point[:,0,:])
-        # print(len(proj_img_point))
+        proj_img_point, _ = cv2.projectPoints(board.getObjPoints()[id_[0]], rvec, tvec, camera_matrix, dist_coeffs )
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
         mean_error += error
     return mean_error/len(ids)
@@ -222,3 +297,19 @@ def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camer
         error = cv2.norm(corner, proj_img_point[0][0], cv2.NORM_L2)
         mean_error += error
     return mean_error/len(markerPoints)
+
+
+# def reprojection_error( objPoints, imgPoints,  rvec, tvec, board, camera_matrix, dist_coeffs): 
+#     mean_error = 0.0 
+#     for objPoint, imgPoint in zip(objPoints, imgPoints):
+#         #print(id_[0])
+#         # print(objPoint, imgPoint, rvec, tvec, camera_matrix, dist_coeffs)
+#         proj_img_point, _ = cv2.projectPoints(objPoint, rvec, tvec, camera_matrix, dist_coeffs )
+#         #print(self.board.getObjPoints()[id_[0]], corners)
+#         #print(np.shape(self.board.getObjPoints()[id_[0]]), np.shape(corners[0]), np.shape(proj_img_point[:,0,:]))
+#         # print(corners[0], proj_img_point[:,0,:])
+#         # print(len(proj_img_point))
+#         print(imgPoint, proj_img_point[0])
+#         error = cv2.norm(imgPoint, proj_img_point[0], cv2.NORM_L2)/len(proj_img_point)
+#         mean_error += error
+#     return mean_error/len(imgPoints)
