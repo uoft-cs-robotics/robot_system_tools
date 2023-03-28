@@ -37,8 +37,12 @@ Build docker container for the workstation computer that has GPU/nvidia drivers
 
 **Note: it is important to pass the workstation IP address as seen by the realtime computer here**
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build --build-arg workstation_ip=<workstation_ip address>
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
+                            --build-arg workstation_ip=<workstation_ip address>
+                                                        
 ```
+**Note** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
+
 ### Build franka_control_suite in the realtime docker environment
 open a bash terminal inside the realtime docker container 
 ```
@@ -170,5 +174,19 @@ ssh-add ~/.ssh/id_rsa
 Please checkout [calibration/docs](calibration/docs) for documentations of hand-eye calibration, usage of this tool 
 
 
+## Test robotiq gripper
+To run the robotiq device, first in a terminal do
+```sh
+(sudo) docker exec -it workstation_computer_docker bash
+source ~/git/catkin_ws/devel/setup.bash
+rosrun robotiq_2f_gripper_control Robotiq2FGripperRtuNode.py /dev/ttyUSB0
+```
+**Note** when connecting the robotiq gripper to the workstation pc, it may open different file descriptor. In our case it was: `/dev/ttyUSB0`. You may check the following command to see which usb port the robotiq is connected to:  `ls /dev/ttyUSB*`
 
-
+In another terminal do
+```sh
+(sudo) docker exec -it workstation_computer_docker bash
+source ~/git/catkin_ws/devel/setup.bash
+rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
+```
+then you can try first reset the gripper by passing `r` and then activate the gripper by passing `a`.
