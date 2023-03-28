@@ -10,6 +10,7 @@ SHELL ["/bin/bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG workstation_ip=192.168.0.1
+ARG use_robotiq=0
 
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
@@ -136,3 +137,13 @@ RUN pip3 install zmq pyrealsense2 numba  scipy
 #     && make
 ARG DEBIAN_FRONTEND=dialog
 
+RUN if [[ "x$use_robotiq" == "x1" ]] ;\
+    then echo "use_robotiq is set to TRUE" \
+    && pip3 install -U pymodbus==2.5.3 \
+    && cd ~/git \
+    && mkdir -p catkin_ws/src \
+    && cd catkin_ws/src \
+    && git clone https://github.com/pairlab/robotiq.git \
+    && catkin build \
+    && source ../devel/setup.bash ; \
+    fi
