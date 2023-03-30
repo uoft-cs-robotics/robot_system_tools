@@ -5,9 +5,9 @@ import tf.transformations as tf_utils
 random.seed(10)
 import cv2
 
-from CalibrationUtils import *
+from calibration_utils import *
 
-class RANSAC:
+class BACKEND:
     def __init__(self,As, As_tf, Bs, Bs_tf, solver=cv2.CALIB_HAND_EYE_TSAI,  min_pts=4, iterations=5000, thresh=1.0, run_ransac=False) -> None:
         self.As = As
         self.As_tf = As_tf
@@ -87,7 +87,7 @@ class RANSAC:
         rot, trans = cv2.calibrateHandEye(A_rot, A_trans, B_rot, B_trans,method=self.solver)
         X_full = tf_from_rvectvec(rot, trans)
         print("full dataset error", self.compute_estimation_error_fulldataset(X_full))
-        print(X_full)
+        # print(X_full)
         print(np.array(X_full[0:3, 0:3]))
         print(np.array(X_full[0:3, -1]))
 
@@ -139,9 +139,9 @@ class RANSAC:
         print(np.array(best_X[0:3, 0:3]))
         print(np.array(best_X[0:3,-1]))
         print(best_X)
-        inverse_matrix = tf_utils.inverse_matrix(best_X)
-        print(tf_utils.quaternion_from_matrix(inverse_matrix))
-        print(np.array(inverse_matrix[0:3, -1]))        
+        # inverse_matrix = tf_utils.inverse_matrix(best_X)
+        # print(tf_utils.quaternion_from_matrix(inverse_matrix))
+        # print(np.array(inverse_matrix[0:3, -1]))        
         return best_X, self.besterr
 
 

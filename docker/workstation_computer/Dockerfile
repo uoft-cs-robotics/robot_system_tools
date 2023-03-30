@@ -3,12 +3,13 @@
 FROM osrf/ros:noetic-desktop-full
 
 
-ENV WS_DIR="/root"
+ENV WS_DIR="/root/git"
 WORKDIR ${WS_DIR}
 
 SHELL ["/bin/bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
+ARG workstation_ip=192.168.0.1
 
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
@@ -41,7 +42,9 @@ RUN apt-get update && apt-get install -y \
     gnuplot-qt\
     iproute2 \
     python3-pip \
-    gnome-terminal
+    gnome-terminal\
+    nano\
+    vim
 # Dependencies for Bash unit-tests
 RUN apt-get update && apt-get install -y \
     bats \
@@ -64,7 +67,7 @@ RUN apt-get update && apt-get install -y \
     python3-tk
 # Build and install Protobuf 
 RUN cd \
-    && mkdir git \
+    # && mkdir git \
     && cd git \ 
     && wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protobuf-all-3.11.4.zip \ 
     && unzip protobuf-all-3.11.4.zip \ 
@@ -79,7 +82,8 @@ RUN cd \
 RUN apt-get install -y \
     ros-noetic-libfranka \
     ros-noetic-franka-ros \
-    ros-noetic-franka-gripper
+    ros-noetic-franka-gripper \
+    ros-noetic-realsense2-camera
 
 RUN echo "cloning building autolab perception"
 RUN cd ~/git \ 
@@ -108,17 +112,22 @@ RUN apt-get install -y \
     ros-noetic-franka-ros \
     ros-noetic-franka-gripper
 
-
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
  
-RUN echo "export ROS_HOSTNAME=192.168.0.1" >> ~/.bashrc
-RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
-RUN echo "export ROS_MASTER_URI=http://192.168.0.1:11311" >> ~/.bashrc
+# RUN echo "export ROS_HOSTNAME=192.168.0.1" >> ~/.bashrc
+# RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
+# RUN echo "export ROS_MASTER_URI=http://192.168.0.1:11311" >> ~/.bashrc
+
+# RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
+RUN echo "export ROS_IP=${workstation_ip}" >> ~/.bashrc
+RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
 
 RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
+#reinstalling numba seems to solve an error when we import FrankaArm from frankapy
+RUN pip3 install zmq pyrealsense2 numba  scipy
 
 # RUN cd /root/git/franka_arm_infra/franka_control_suite \
 #     && mkdir build \
