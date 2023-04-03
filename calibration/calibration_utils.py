@@ -211,7 +211,7 @@ def weightedAverageQuaternions(Q, w):
 def refine_corners( image, corners):
     winSize = [5, 5]
     zeroZone = [-1, -1]
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 10, 0.001)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 30, 0.001)
     for corner in corners: 
         cv2.cornerSubPix(image, corner, winSize, zeroZone, criteria)
 

@@ -98,7 +98,7 @@ class BaseRobotCameraCalibration:
                         cv2.CALIB_HAND_EYE_ANDREFF:"cv2.CALIB_HAND_EYE_ANDREFF",
                         cv2.CALIB_HAND_EYE_DANIILIDIS:"cv2.CALIB_HAND_EYE_DANIILIDIS"}
         for solver in solver_names.keys(): 
-            print("solver = ", solver)
+            print("solver = ", solver_names[solver])
             backend = BACKEND(As=self.calib_data_As, 
                         As_tf=self.calib_data_As_tf, 
                         Bs=self.calib_data_Bs, 
@@ -109,10 +109,37 @@ class BaseRobotCameraCalibration:
 
     def process_image_msg_for_aruco(self, img_msg, prev_tag_pose=None):
         color_im = self.cv_bridge.imgmsg_to_cv2(img_msg)         
-        image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
-        return self.process_image_for_aruco(image_gray, prev_tag_pose)
+        # image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
+        return self.process_image_for_aruco(color_im, prev_tag_pose)
 
-    def process_image_for_aruco(self, image_gray, prev_tag_pose=None):      
+
+    def save_data_4_fg(self,ee_rvec, ee_tvec, color_im, id, objPoints, imgPoints):
+        ee_pose_tf = np.eye(4)
+        ee_pose_tf[0:3,-1] = ee_tvec
+        if np.shape(np.squeeze(ee_rvec)) ==(3,3):
+            ee_pose_tf[0:3,0:3] = ee_rvec
+        else: 
+            ee_pose_tf[0:3,0:3] = cv2.Rodrigues(ee_rvec)[0]
+
+        pose_file_name = "data/fg/"+"{:0>4}".format(str(id))+"_pose.csv"
+        kps_file_name =  "data/fg/"+"{:0>4}".format(str(id))+"_kps.csv"
+        image_file_name = "data/fg/"+"{:0>4}".format(str(id))+"_image.jpg"
+        img_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
+        cv2.imwrite(image_file_name, img_gray)
+        print(ee_pose_tf, ee_rvec, ee_tvec)
+        with open(pose_file_name, 'w+') as f:
+            print(str(ee_pose_tf[0,0])+" "+str(ee_pose_tf[0,1])+" "+str(ee_pose_tf[0,2])+" "+str(ee_pose_tf[0,3]), file=f)
+            print(str(ee_pose_tf[1,0])+" "+str(ee_pose_tf[1,1])+" "+str(ee_pose_tf[1,2])+" "+str(ee_pose_tf[1,3]), file=f)
+            print(str(ee_pose_tf[2,0])+" "+str(ee_pose_tf[2,1])+" "+str(ee_pose_tf[2,2])+" "+str(ee_pose_tf[2,3]), file=f)
+            print(str(ee_pose_tf[3,0])+" "+str(ee_pose_tf[3,1])+" "+str(ee_pose_tf[3,2])+" "+str(ee_pose_tf[3,3]), file=f)
+        with open(kps_file_name, 'w+') as f:
+            for (objpt, imgpt) in zip(objPoints, imgPoints):
+                objpt = np.squeeze(objpt)
+                imgpt = np.squeeze(imgpt)
+                print(str(imgpt[0])+" "+str(imgpt[1])+", "+str(objpt[0])+" "+str(objpt[1])+" "+str(objpt[2]), file=f)
+
+    def process_image_for_aruco(self, color_im, prev_tag_pose=None):    
+        image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)          
         corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
         refine_corners(image_gray, corners)
         self.processed_image += 1
@@ -135,7 +162,7 @@ class BaseRobotCameraCalibration:
                                                 self.camera_matrix, 
                                                 self.dist_coeffs)  
         else: 
-            return None, None, None, None, None,
+            return None, None, None, None, None, None, None
    
         print("reprojection error",reproj_error)
         if reproj_error > self.REPROJ_THRESH:
@@ -150,4 +177,4 @@ class BaseRobotCameraCalibration:
             print("#### Very high reprojection error ####")
             print("#### Ignoring this sample ####")          
 
-        return corners, ids, rvec, tvec, reproj_error
+        return corners, ids, rvec, tvec, reproj_error, objPoints, imgPoints

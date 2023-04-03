@@ -18,6 +18,7 @@ from scipy.spatial.transform import Rotation as R
 from calibration_utils import *
 from base_robot_camera_calibration import BaseRobotCameraCalibration
 
+import open3d as o3d
 class CameraRobotCalibration(BaseRobotCameraCalibration): 
     def __init__(self, args,
                 reproj_error_thresh=0.3,
@@ -77,8 +78,28 @@ class CameraRobotCalibration(BaseRobotCameraCalibration):
                 ee_rotation_matrix, ee_position  = self.get_ee_pose_zmq() 
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
-                image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
-                corners, ids, rvec, tvec, reproj_error = self.process_image_for_aruco(image_gray, prev_tag_pose)
+                depth_im = depth_im_.raw_data
+                o3d_flag = True
+                if o3d_flag:
+                    print(np.shape(color_im))
+                    print(self.camera_matrix[0,0], self.camera_matrix[1,1], self.camera_matrix[0,2], self.camera_matrix[1,2])
+                    print(self.camera_matrix)
+                    # depth_ = depth.astype(np.float32)
+                    o3d_color = o3d.geometry.Image(color_im)
+                    o3d_depth = o3d.geometry.Image(depth_im.astype(np.float32))                
+                    depth_intr = o3d.camera.PinholeCameraIntrinsic()
+                    depth_intr.set_intrinsics(height=np.shape(color_im)[0], 
+                                            width=np.shape(color_im)[1], 
+                                            fx=self.camera_matrix[0,0], #self.intr._fx, 
+                                            fy=self.camera_matrix[1,1],#self.intr._fy, 
+                                            cx=self.camera_matrix[0,2],#self.intr._cx, 
+                                            cy=self.camera_matrix[1,2])#self.intr._cy)
+                                                                
+                    rgbd = o3d.geometry.RGBDImage.create_from_color_and_depth(o3d_color, o3d_depth)                                            
+                    pcd2 = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd, depth_intr)
+                    o3d.visualization.draw_geometries([pcd2], point_show_normal=False)
+                # image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
+                corners, ids, rvec, tvec, reproj_error, obj_pts, img_pts = self.process_image_for_aruco(color_im  , prev_tag_pose)
                 if ids is not None:                    
                     if reproj_error > self.REPROJ_THRESH:
                         continue                

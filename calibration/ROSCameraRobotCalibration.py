@@ -98,7 +98,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                 ee_position, ee_quaternion = self.tf_listener_.lookupTransform(self.robot_base_frame, self.ee_frame,t)
                 ee_rotation_matrix = tf_utils.quaternion_matrix(ee_quaternion)
                 ee_rotation_matrix = ee_rotation_matrix[0:3, 0:3]# ee_rotation_matrix = ee_rotation_matrix[0:3, 0:3]                
-                corners, ids, rvec, tvec, reproj_error = self.process_image_msg_for_aruco(self.img_msg, prev_tag_pose)
+                corners, ids, rvec, tvec, reproj_error, obj_pts, img_pts = self.process_image_msg_for_aruco(self.img_msg, prev_tag_pose)
                 if ids is not None:                    
                     if reproj_error > self.REPROJ_THRESH:
                         continue
@@ -107,6 +107,14 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                         t_gripper2base.append(ee_position) 
                         R_tag2cam.append(rvec)
                         t_tag2cam.append(tvec)
+                        color_img = self.cv_bridge.imgmsg_to_cv2(self.img_msg)
+                        self.save_data_4_fg(ee_rotation_matrix,
+                                            ee_position, 
+                                            color_img,
+                                            self.detections_count, 
+                                            obj_pts,
+                                            img_pts)
+
                         
                     if (self.detections_count==0):
                         prev_tag_pose = np.eye(4); prev_tag_pose[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; prev_tag_pose[0:3, -1] = np.squeeze(tvec)
@@ -140,7 +148,16 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
             write_to_file(line, self.DATA_FILE_NAME)    
  
 def main(args):
-    calibration_object = ROSCameraRobotCalibration(args)
+    # calibration_object = ROSCameraRobotCalibration(args, 
+    #                                             reproj_error_thresh=0.5,
+    #                                             aruco_marker_length=0.0265,
+    #                                             aruco_marker_separation=0.0057,)
+    calibration_object = ROSCameraRobotCalibration(args, 
+                                                reproj_error_thresh=0.7,
+                                                aruco_marker_length=0.0387,
+                                                aruco_marker_separation= 0.0057,
+                                                aruco_board_n_rows=4,
+                                                aruco_board_n_cols=5)    
     if (not args.only_calibration):
         rate = rospy.Rate(30) # 30hz
         x = threading.Thread(target=calibration_object.user_robot_move_function)
