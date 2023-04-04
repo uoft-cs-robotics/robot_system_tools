@@ -34,11 +34,11 @@ def write_to_file(line_list, file_name):
         f.write(line)
         f.write('\n') 
 
-def sample_view_poses(initial_pose):
-    delta_position = [[],[],[],[],[],[],[],[],[],[]]
-    return
+# def sample_view_poses(initial_pose):
+#     delta_position = [[],[],[],[],[],[],[],[],[],[]]
+#     return
 
-def get_delta_poses(file_name):
+def get_delta_poses(file_name, initial_pose_fa):
     with open(file_name, 'r') as fp:
         lines = fp.readlines()
         ee_poses_tf = []
@@ -50,36 +50,47 @@ def get_delta_poses(file_name):
                         (float(data[3]),
                             float(data[4]),
                             float(data[5]))))
-        tag_pose = tuple(((float(data[6]),
-                            float(data[7]),
-                            float(data[8])), 
-                        (float(data[9]),
-                            float(data[10]),
-                            float(data[11]))))
+        # tag_pose = tuple(((float(data[6]),
+        #                     float(data[7]),
+        #                     float(data[8])), 
+        #                 (float(data[9]),
+        #                     float(data[10]),
+        #                     float(data[11]))))
         ee_pose_tf = np.eye(4)
-        tag_pose_tf = np.eye(4)
+        # tag_pose_tf = np.eye(4)
         ee_pose_tf[0:3, 0:3] = cv2.Rodrigues(ee_pose[0])[0]; ee_pose_tf[0:3, -1] = ee_pose[1]
-        tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1] 
+        ee_pose_tf[0:3, -1] = ee_pose_tf[0:3, -1]/1000.0
+        # tag_pose_tf[0:3, 0:3] = cv2.Rodrigues(tag_pose[0])[0]; tag_pose_tf[0:3, -1] = tag_pose[1] 
         ee_poses_tf.append(ee_pose_tf)
-    prev = None
+
     delta_poses = []
+    initial_pose = np.eye(4)
+    initial_pose[0:3, 0:3] = initial_pose_fa.rotation
+    initial_pose[0:3, -1] = initial_pose_fa.translation    
     for abs_ee_pose_tf in ee_poses_tf: 
-        if prev is None: 
-            delta_pose = RigidTransform(from_frame='franka_tool', 
-                                        to_frame='franka_tool',
-                                        rotation=np.eye(3),
-                                        translation=np.array([0.0, 0.0,0.0]))
-            prev = abs_ee_pose_tf
-        else: 
+        # if prev is None: 
+        #     delta_pose = RigidTransform(from_frame='franka_tool', 
+        #                                 to_frame='franka_tool',
+        #                                 rotation=np.eye(3),
+        #                                 translation=np.array([0.0, 0.0,0.0]))
+        #     prev = abs_ee_pose_tf
+        # else: 
             # difference = np.matmul(np.linalg.inv(abs_ee_pose_tf), prev)
             # print(prev)
             # print(abs_ee_pose_tf)
-            difference = np.matmul(np.linalg.inv(prev), abs_ee_pose_tf)
-            delta_pose = RigidTransform(from_frame='franka_tool', 
-                                        to_frame='franka_tool',
-                                        rotation=difference[0:3,0:3],
-                                        translation=difference[0:3,-1])
+        # difference = np.matmul(np.linalg.inv(abs_ee_pose_tf), initial_pose)
+        difference = np.matmul(np.linalg.inv(initial_pose), abs_ee_pose_tf )
+
+        delta_pose = RigidTransform(from_frame='franka_tool', 
+                                    to_frame='franka_tool',
+                                    rotation=difference[0:3,0:3],
+                                    translation=difference[0:3,-1])
         delta_poses.append(delta_pose)
+    first_delta_pose = RigidTransform(from_frame='franka_tool', 
+                                    to_frame='franka_tool',
+                                    rotation=np.eye(3),
+                                    translation=np.array([0.0, 0.0, 0.0]))
+    delta_poses = [first_delta_pose] + delta_poses
     return delta_poses
 
 def get_absolute_poses(file_name):
