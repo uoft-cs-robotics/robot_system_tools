@@ -139,11 +139,14 @@ ARG DEBIAN_FRONTEND=dialog
 
 RUN if [[ "x$use_robotiq" == "x1" ]] ;\
     then echo "use_robotiq is set to TRUE" \
+    && apt-get install ros-noetic-soem \
     && pip3 install -U pymodbus==2.5.3 \
     && cd ~/git \
-    && mkdir -p catkin_ws/src \
-    && cd catkin_ws/src \
+    && mkdir -p robotiq_ws/src \
+    && cd robotiq_ws/src \
     && git clone https://github.com/pairlab/robotiq.git \
+    && cd ../ \ 
+    && source /opt/ros/${ROS_DISTRO}/setup.bash\
     && catkin build \
-    && source ../devel/setup.bash ; \
+    && echo "source ~/git/robotiq_ws/devel/setup.bash" >> ~/.bashrc ; \
     fi
