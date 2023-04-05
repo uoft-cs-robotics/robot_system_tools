@@ -15,6 +15,14 @@ from tests_common import SynchMessages
 import matplotlib.pyplot as plt
 import time
 
+
+test_config = {
+    "square_length": 0.1,
+    "dt" : 0.001,
+    "velocity" : 0.08,
+    "cycles" : 4 
+}
+
 if __name__ == "__main__":
     fa = FrankaArm()
     fa.reset_joints()
@@ -22,9 +30,6 @@ if __name__ == "__main__":
 
     rospy.loginfo('Generating Trajectory')
     p0 = fa.get_pose()
-
-    square_length = 0.1
-    dt = 0.001
 
     X1 = p0.translation.copy()
     X2 = p0.translation.copy()
@@ -36,8 +41,10 @@ if __name__ == "__main__":
     X4 = X1.copy()
     X4[2] -= square_length
 
-    waypoints = generate_square_pose_traj(X1, X2, X3, X4, velocity=0.1, 
-                                        square_length=square_length, dt=0.001)
+    waypoints = generate_square_pose_traj(X1, X2, X3, X4, velocity=test_config["velocity"], 
+                                        square_length=test_config["square_length"], 
+                                        dt=test_config["dt"], 
+                                        cycles=test_config["cycles"])
 
     p0.translation = waypoints[0]
     rospy.loginfo('Initializing Sensor Publisher')
@@ -46,7 +53,8 @@ if __name__ == "__main__":
 
     rospy.loginfo('Going to initial point...')
     # To ensure skill doesn't end before completing trajectory, make the buffer time much longer than needed
-    fa.goto_pose(p0)
+    T = 5
+    fa.goto_pose(p0,  buffer_time=1000000000,  dynamic=True)
     print(p0.translation, X1)
     time.sleep(2.0)
     rospy.loginfo('Starting test...')

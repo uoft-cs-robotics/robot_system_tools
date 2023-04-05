@@ -18,13 +18,20 @@ def generate_sinusoidal_delta_joint_angle(time):
     delta_angle = np.pi/8.0 * (1- np.cos(np.pi/2.5 * time))
     return delta_angle 
 
-def generate_square_pose_traj(X1, X2, X3, X4, velocity, square_length, dt=0.001):
+def generate_square_wave(X1, X2, X3, X4, velocity, square_length, dt=0.001):
     line1 = generate_straight_line_traj(X1, X2, velocity, square_length, dt)
     line2 = generate_straight_line_traj(X2, X3, velocity, square_length, dt)
     line3 = generate_straight_line_traj(X3, X4, velocity, square_length, dt)
     line4 = generate_straight_line_traj(X4, X1, velocity, square_length, dt)
 
     return line1 + line2 + line3 + line4 
+
+def generate_square_pose_traj(X1, X2, X3, X4, velocity, square_length, cycles, dt=0.001):
+    output = []
+    assert cycles !=0, "Can't have zero square wave cycles"
+    for i in range(cycles):
+        output += generate_square_wave(X1, X2, X3, X4, velocity, square_length, dt)
+    return output
 
 def generate_straight_line_traj(X1, X2, velocity,square_length, dt=0.001): 
     alpha = 0.0
@@ -34,8 +41,6 @@ def generate_straight_line_traj(X1, X2, velocity,square_length, dt=0.001):
         waypoints.append(X1*(1-alpha) + X2*alpha)
         alpha += d_alpha
     waypoints.append(X2)
-    print("X1 ", X1, waypoints[0])
-    print("X2", X2, waypoints[-1])
     return waypoints
 
 def plot_joint_level(qs_real, qs_commmanded, dqs_real, dqs_commanded, show_plot=True): 
