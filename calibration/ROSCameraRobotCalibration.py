@@ -32,6 +32,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                         aruco_board_n_cols=aruco_board_n_cols,        
                         data_file_name=file_name) 
         self.args = args
+
         if(self.args.move_robot_automatically):
             self.fa_object = FrankaArm(with_gripper=self.args.with_franka_gripper)           
         if(not args.move_robot_automatically):# as frankapy inits its own node
@@ -47,7 +48,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         self.processed_image = 0   
         self.bool_kill_thread = False
         if self.args.move_robot_automatically:
-            if not self.delta_poses:
+            if not self.args.use_delta_poses:
                 self.abs_poses = get_absolute_poses(movement_pose_file)#gets command poses for frankapy to move robot automatically
             else:
                 self.initial_joints = self.fa_object.get_joints()
@@ -82,7 +83,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         prev_tag_pose = None 
         while(True): 
             # moves robot to viewposes recorded in file 
-            if(self.move_robot_automatically and not self.delta_poses):
+            if(self.args.move_robot_automatically and not self.args.use_delta_poses):
                 if(self.abs_poses is not None and len(self.abs_poses)!=0 ):
                     self.fa_object.reset_joints()
                     self.fa_object.goto_pose(self.abs_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
@@ -90,7 +91,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                 elif (self.abs_poses is not None and len(self.abs_poses)==0):
                     rospy.core.signal_shutdown('keyboard interrupt')
                     break   
-            elif(self.move_robot_automatically and self.delta_poses):      
+            elif(self.args.move_robot_automatically and self.args.use_delta_poses):      
                 if(self.delta_poses is not None and len(self.delta_poses)!=0 ):
                     self.fa_object.goto_joints(self.initial_joints)
                     self.fa_object.goto_pose_delta(self.delta_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
