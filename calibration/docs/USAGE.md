@@ -39,9 +39,16 @@ For the camera-in-hand case, the calibration tag is fixed to the environment rig
 
   
 
-For the camera-in-environment case, the calibration tag needs to be **rigidly** attached to the robot's End-Effector. You could use the (to be) provided CAD files for the finger tips and gripping points. The finger tips are to be attached to Franka End-effector and the gripping points are drilled/screwed onto the calibration tag. Now make the Franka End-effector with custom finger tips grasp the calibration tag with the attached custom gripping points, this ensures that the tag remains rigid with respect to the End-effector.
+For the camera-in-environment case, the calibration tag needs to be **rigidly** attached to the robot's End-Effector. You could use the provided CAD files for the finger tips and gripping points in [models_4_3d_printing](../models_4_3d_printing). The [finger tips](../models_4_3d_printing/franka_custom_finger_tips.stl) are to be attached to Franka End-effector and the [gripping points](../models_4_3d_printing/finger_grasp_points.stl) or [handle plate](../models_4_3d_printing/finger_handle_plate.stl) are drilled/screwed onto the calibration tag. Now make the Franka End-effector with custom finger tips(figure 1) grasp the calibration tag(as show in figure 3) with the attached custom gripping points(figure 2), this ensures that the tag remains rigid with respect to the End-effector.
 
-  
+![custom finger tip ](docs/imgs/finger_tip.jpeg)  
+figure 1: custom finger tip
+
+![grasp point ](docs/imgs/grasp_point.jpeg)  
+figure 2: grasping point
+
+![grasping calibration tag ](docs/imgs/grasp_calib_tag.jpeg) 
+figure 3: grasping calibration tag 
 
 ### b.<u> Preparation to provide End-Effector Poses. </u>
 
