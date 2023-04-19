@@ -32,6 +32,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
                         aruco_board_n_cols=aruco_board_n_cols,        
                         data_file_name=file_name) 
         self.args = args
+
         if(self.args.move_robot_automatically):
             self.fa_object = FrankaArm(with_gripper=self.args.with_franka_gripper)           
         if(not args.move_robot_automatically):# as frankapy inits its own node
@@ -47,10 +48,15 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         self.processed_image = 0   
         self.bool_kill_thread = False
         if self.args.move_robot_automatically:
-            self.abs_poses = get_absolute_poses(movement_pose_file)#gets command poses for frankapy to move robot automatically
+            if not self.args.use_delta_poses:
+                self.abs_poses = get_absolute_poses(movement_pose_file)#gets command poses for frankapy to move robot automatically
+            else:
+                self.initial_joints = self.fa_object.get_joints()
+                self.initial_pose = self.fa_object.get_pose()
+                self.delta_poses = get_delta_poses(file_name=movement_pose_file, initial_pose_fa=self.initial_pose)
         else: 
             self.abs_poses = None
-
+        
     def subscribe_image_cb(self, img_msg):
         if self.camera_matrix is None: 
             return 
@@ -76,13 +82,23 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         R_tag2cam = []; t_tag2cam = []  
         prev_tag_pose = None 
         while(True): 
-            if(self.abs_poses is not None and len(self.abs_poses)!=0 ):
-                self.fa_object.reset_joints()
-                self.fa_object.goto_pose(self.abs_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
-                time.sleep(1.0) 
-            elif (self.abs_poses is not None and len(self.abs_poses)==0):
-                rospy.core.signal_shutdown('keyboard interrupt')
-                break
+            # moves robot to viewposes recorded in file 
+            if(self.args.move_robot_automatically and not self.args.use_delta_poses):
+                if(self.abs_poses is not None and len(self.abs_poses)!=0 ):
+                    self.fa_object.reset_joints()
+                    self.fa_object.goto_pose(self.abs_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
+                    time.sleep(1.0) 
+                elif (self.abs_poses is not None and len(self.abs_poses)==0):
+                    rospy.core.signal_shutdown('keyboard interrupt')
+                    break   
+            elif(self.args.move_robot_automatically and self.args.use_delta_poses):      
+                if(self.delta_poses is not None and len(self.delta_poses)!=0 ):
+                    self.fa_object.goto_joints(self.initial_joints)
+                    self.fa_object.goto_pose_delta(self.delta_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
+                    time.sleep(1.0)             
+                elif (self.delta_poses is not None and len(self.delta_poses)==0):
+                    rospy.core.signal_shutdown('keyboard interrupt')
+                    break
 
             if(args.move_robot_automatically):
                 ip = ""
@@ -169,6 +185,8 @@ if __name__ == '__main__':
                         'manually moved to an initial pose and the script controls EE to predefined '\
                         'relative poses. If false, the EE should be moved manually(white status LED '\
                         'and press enter to collect data')
+    parser.add_argument("--use_delta_poses", default=True, nargs='?',  type=str2bool, help='should we use '\
+                        'delta end-effector poses to move the robot to collect data for calibration')                        
     parser.add_argument("--only_calibration", default=False, nargs='?',type=str2bool, help='if true, values '\
                         'stored in the data folder are used for calibration if false, data is first collected, '\
                         'stored in /data folder and then calibration  routine is run')  

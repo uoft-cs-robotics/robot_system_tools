@@ -197,6 +197,9 @@ optional arguments:
                         is first manually moved to an initial pose and the script controls EE to
                         predefined relative poses. If false, the EE should be moved manually(white
                         status LED) and press enter to collect data
+ --use_delta_poses [USE_DELTA_POSES]:True(default)/False
+                        should we use delta end-effector poses to move the robot to collect
+                        data for calibration
   --only_calibration [ONLY_CALIBRATION]: True/False(default)
                         if true, values stored in the data folder are used for calibration if
                         false, data is first collected, stored in /data folder and then
