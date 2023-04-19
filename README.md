@@ -190,3 +190,6 @@ source ~/git/catkin_ws/devel/setup.bash
 rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
 ```
 then you can try first reset the gripper by passing `r` and then activate the gripper by passing `a`.
+
+## Acknowledgements
+- We thank [Reinhard Grasmann](https://reinhardgrassmann.github.io/) for providing CAD files that were super useful to run robot camera calibration routine, provided in this repo at [calibration/models_4_3d_printing](calibration/models_4_3d_printing)
