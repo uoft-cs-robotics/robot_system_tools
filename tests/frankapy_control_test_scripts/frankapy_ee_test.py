@@ -14,13 +14,19 @@ from tests_common import *
 from tests_common import SynchMessages
 import matplotlib.pyplot as plt
 import time
+import tf.transformations as tf_utils 
 
 
 test_config = {
     "square_length": 0.1,
     "dt" : 0.001,
     "velocity" : 0.08,
-    "cycles" : 4 
+    "cycles" : 4,
+    #unused at the moment
+    "roll_deg": 10, 
+    "pitch_deg": 10, 
+    "yaw_deg": 10
+    #####
 }
 
 if __name__ == "__main__":
@@ -33,13 +39,13 @@ if __name__ == "__main__":
 
     X1 = p0.translation.copy()
     X2 = p0.translation.copy()
-    X1[1] -= square_length/2.0
-    X2[1] += square_length/2.0
+    X1[1] -= test_config["square_length"]/2.0
+    X2[1] += test_config["square_length"]/2.0
     X3 = X2.copy() 
-    X3[2] -= square_length
+    X3[2] -= test_config["square_length"]
 
     X4 = X1.copy()
-    X4[2] -= square_length
+    X4[2] -= test_config["square_length"]
 
     waypoints = generate_square_pose_traj(X1, X2, X3, X4, velocity=test_config["velocity"], 
                                         square_length=test_config["square_length"], 
@@ -49,15 +55,14 @@ if __name__ == "__main__":
     p0.translation = waypoints[0]
     rospy.loginfo('Initializing Sensor Publisher')
     pub = rospy.Publisher(FC.DEFAULT_SENSOR_PUBLISHER_TOPIC, SensorDataGroup, queue_size=1000)
-    rate = rospy.Rate(1 / dt)
+    rate = rospy.Rate(1 / test_config["dt"])
 
     rospy.loginfo('Going to initial point...')
     # To ensure skill doesn't end before completing trajectory, make the buffer time much longer than needed
-    T = 5
-    fa.goto_pose(p0,  buffer_time=1000000000,  dynamic=True)
-    print(p0.translation, X1)
+    fa.goto_pose(p0)
     time.sleep(2.0)
     rospy.loginfo('Starting test...')
+    fa.goto_pose(p0,  buffer_time=1000000000,  dynamic=True)
     init_time = rospy.Time.now().to_time()
     for i in range(1, len(waypoints)):
         timestamp = rospy.Time.now().to_time() - init_time
@@ -65,7 +70,6 @@ if __name__ == "__main__":
             id=i, timestamp=timestamp, 
             position=waypoints[i], quaternion=p0.quaternion
         )
-
         ros_msg = make_sensor_group_msg(
             trajectory_generator_sensor_msg=sensor_proto2ros_msg(
                 traj_gen_proto_msg, SensorDataMessageType.POSE_POSITION),

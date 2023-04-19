@@ -91,7 +91,6 @@ def plot_ee_level(poses_measured, poses_cmd, show_plot=True):
         axs[i,0].plot(x_axis, y_axis_measured,color='r', label='measured')
         axs[i,0].plot(x_axis, y_axis_cmd,color='g', label='commanded')
         axs[i,0].set_title('positions')
-        print(len(y_axis_measured), len(y_axis_cmd))
     plt.legend()
     plt.show()  
 
