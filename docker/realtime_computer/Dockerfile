@@ -9,7 +9,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 ARG workstation_ip=192.168.0.1
 ARG realtime_computer_ip=192.168.0.3
-ARG franka_firmware_version=5
+ARG robot_server_version=5
 
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
@@ -71,7 +71,7 @@ RUN cd ~/git \
 
 RUN echo "cloning libfranka"
 RUN cd ~/git/franka-interface \
-    && bash ./bash_scripts/clone_libfranka.sh ${franka_firmware_version}
+    && bash ./bash_scripts/clone_libfranka.sh ${robot_server_version}
 
 RUN echo "building libfranka"
 RUN cd ~/git/franka-interface \

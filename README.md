@@ -11,16 +11,26 @@ This repository contains scripts and off-the-shelf starter scripts for developpi
 ## Dependancies 
 - docker-compose (version 1)
 - docker 
+- git 
+- openssh-server
 
 
 Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
 installing docker dependancies 
 ```
-sudo apt-get install docker.io docker-compose
+sudo apt-get install docker.io docker-compose git 
 ```
+install openssh-server, following instructions [here](https://www.cyberciti.biz/faq/ubuntu-linux-install-openssh-server/)
+
 # Build Instructions
 
-Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). Workstation computer is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs. 
+Before building the docker environments, you need to add your user to the docker group as mentioned [here](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo), so that you can run the docker commands without sudo preveileges and therefore need not type in your password everytime. 
+
+```
+ sudo usermod -aG docker $USER
+```
+
+**Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). <u>Workstation computer</u> is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs.**
 
 ## Real time Computer 
 Build docker container for the real time computer directly connected to Franka's control. 
@@ -28,22 +38,13 @@ Build docker container for the real time computer directly connected to Franka's
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
                             --build-arg workstation_ip=<workstation_ip address>\
                             --build-arg realtime_computer_ip=<realtime_computer_ip address>\
-                            --build-arg franka_firmware_version=<franka_firmware_version>
+                            --build-arg robot_server_version=<robot_server_version>
 ```
-Note:For example if your firmware is 3.x, franka_firmware_version=3. For your robot, you can find this in Franka Desk -> Settings -> System -> Version. 
+Note: To find your robot server version, first find your robot systems version in Franka Desk -> Settings -> System -> Version. Next find your robot server version corresponding to your system version [here](https://frankaemika.github.io/docs/compatibility.html#compatibility-with-libfranka). eg. for robot system version >=4.2.1, robot server version is 5. 
 
-## Workstation Computer 
-Build docker container for the workstation computer that has GPU/nvidia drivers 
+Note: While building the docker container, the above command might print warnings in red color, don't be alarmed and let the process run. If it stops building, that's when there is an error. 
 
-**Note: it is important to pass the workstation IP address as seen by the realtime computer here**
-```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
-                            --build-arg workstation_ip=<workstation_ip address>
-                                                        
-```
-**Note** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
-
-### Build franka_control_suite in the realtime docker environment
+### Build franka_control_suite in the realtime docker environment **(optional and not required to use frankapy)**
 open a bash terminal inside the realtime docker container 
 ```
 (sudo) docker exec -it realtime_docker bash
@@ -56,13 +57,62 @@ cmake ..
 make
 ```
 
+## Workstation Computer 
+Build docker container for the workstation computer that has GPU/nvidia drivers 
+
+**Note: it is important to pass the workstation IP address as seen by the Realtime computer here**
+```
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
+                            --build-arg workstation_ip=<workstation_ip address>
+                                                        
+```
+**Note:** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
+
+Note: While building the docker container, the above command might print warnings in red color, don't be alarmed and let the process run. If it stops building, that's when there is an error. 
+
+## Setting up ssh-pass between the workstation and realtime computers (done only once)
+
+Make sure to setup your workstation/workstation docker's ssh key to ssh into the realtime computer/docker without a password(this is required for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc), you can run the following, 
+
+1. In a terminal in your **<u>workstation/workstation docker</u>**, 
+```
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+[Press enter]
+[Press enter]
+[Press enter]
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+```
+2. Upload your public ssh key to the **<u>realtime pc</u>**
+     
+    i. In a separate terminal on your **<u>workstation PC/docker</u>**, use your favorite text editor to open your id_rsa.pub file.
+    ```
+    vim ~/.ssh/id_rsa.pub
+    ```
+
+    ii. In a new terminal on your **<u>workstation PC/docker</u>**, ssh to the realtime PC.
+    ```
+    ssh [realtime -pc-username]@[realtime -pc-name]
+    Input password to realtime -pc.
+    ```
+
+    iii. Inside terminal in your realtime computer **(not realtime computer docker)**, 
+    ```
+    vim ~/.ssh/authorized_keys
+    ```
+    
+    iv. Copy the contents from your id_rsa.pub file to a new line on the authorized_keys file on the real time. Then save
+
+    v. Open a new terminal in the workstation docker and try sshing to the realtime PC and it should no longer require a password.
 
 # Usage Instructions 
 ## Real time Computer 
-Bring the built docker container up 
+In the realtime host computer terminal, bring the built docker container up 
 ```
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
 ```
+
+this would get the container running. Then in a new terminal in the realtime host machine, run, 
 
 To open a bash terminal inside the docker container 
 ```
@@ -70,16 +120,17 @@ To open a bash terminal inside the docker container
 ```
 
 ## Workstation Computer 
-to allow GUI usage in workstation docker 
-```
-xhost +local:docker 
-```
-then in the same terminal, run, 
+In a terminal in the workstation computer
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
 
-To open a bash terminal inside the docker container 
+In a new terminal in the workstation host machine, to allow GUI usage, first run, 
+```
+xhost +local:docker 
+```
+
+then to open a bash terminal inside the workstation docker container that we started running above, run
 ```
 (sudo) docker exec -it workstation_computer_docker bash
 ```
@@ -93,7 +144,8 @@ sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up
 ```
 
 if you are using workstation docker, **in a new terminal** start it with, 
-as mentioned [here] (https://stackoverflow.com/questions/69872788/docker-could-not-connect-to-any-x-display#:~:text=The%20solution%20is%20to%20run%20the%20following%20command%20in%20your%20terminal%3A)to get GUI access first run, 
+as mentioned [here](https://stackoverflow.com/questions/69872788/docker-could-not-connect-to-any-x-display#:~:text=The%20solution%20is%20to%20run%20the%20following%20command%20in%20your%20terminal%3A) to get GUI access first run, 
+
 
 ```
 xhost +local:docker 
@@ -132,42 +184,6 @@ then run
 ```
 python3 docker_frankapy_test.py
 ```
-
-## Setting up ssh-pass between the workstation and realtime computers (done only once)
-
-Make sure to setup your workstation/workstation docker's ssh key to ssh into the realtime computer/docker without a password(this is required for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc), you can run the following, 
-
-1. In a terminal in your workstation/workstation docker, 
-```
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-[Press enter]
-[Press enter]
-[Press enter]
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
-```
-2. Upload your public ssh key to the realtime pc
-     
-    i. In a separate terminal on your workstation PC/docker, use your favorite text editor to open your id_rsa.pub file.
-    ```
-    vim ~/.ssh/id_rsa.pub
-    ```
-
-    ii. In a new terminal on your workstation PC/docker, ssh to the realtime PC.
-    ```
-    ssh [realtime -pc-username]@[realtime -pc-name]
-    Input password to realtime -pc.
-    ```
-
-    iii. Inside terminal in your realtime computer **(not realtime computer docker)**, 
-    ```
-    vim ~/.ssh/authorized_keys
-    ```
-    
-    iv. Copy the contents from your id_rsa.pub file to a new line on the authorized_keys file on the real time. Then save
-
-    v. Open a new terminal in the workstation docker and try sshing to the realtime PC and it should no longer require a password.
-
 
 ## Using calibration
 
