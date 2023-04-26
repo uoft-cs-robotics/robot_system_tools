@@ -39,7 +39,7 @@ For the camera-in-hand case, the calibration tag is fixed to the environment rig
 
   
 
-For the camera-in-environment case, the calibration tag needs to be **rigidly** attached to the robot's End-Effector. You could use the (to be) provided CAD files for the finger tips and gripping points. The finger tips are to be attached to Franka End-effector and the gripping points are drilled/screwed onto the calibration tag. Now make the Franka End-effector with custom finger tips grasp the calibration tag with the attached custom gripping points, this ensures that the tag remains rigid with respect to the End-effector.
+For the camera-in-environment case, the calibration tag needs to be **rigidly** attached to the robot's End-Effector. You could use the provided CAD files for the finger tips and gripping points in [models_4_3d_printing](../models_4_3d_printing). The [finger tips](../models_4_3d_printing/franka_custom_finger_tips.stl) are to be attached to Franka End-effector and the [gripping points](../models_4_3d_printing/finger_grasp_points.stl) or [handle plate](../models_4_3d_printing/finger_handle_plate.stl) are drilled/screwed onto the calibration tag. Now make the Franka End-effector with custom finger tips(figure 1) grasp the calibration tag(as show in figure 3) with the attached custom gripping points(figure 2), this ensures that the tag remains rigid with respect to the End-effector. 
 
   
 
@@ -137,7 +137,10 @@ run the readstates server that send end effector poses when requested,
 
 ### c.<u> Run Pose Data Collection + Calibration Script </u>
 
-  
+There are currently two ways to collect data for calibration- 
+1. move the robot end-effector manually and then hit "enter" to collect the pose data samples(works for both ROS and non-ROS scripts) 
+2. move the robot automatically with absolute/relative poses present in [../data/file_moves.txt](../data/file_moves.txt).
+  2.a. If you are using relative poses, the robot will move relative to the initial end-effector configuration when you start the script, therefore, before starting frankapy, point the camera(camera in hand case) or the calibration tag(camera in environment case) to the calibration tag or the camera respectively. Ensure, the calibration tag's normal is close to perpendicular to the camera and there's around ~30cm between the tag and the camera.    
 
 ### In workstation computer,
 
