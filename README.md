@@ -30,9 +30,9 @@ Before building the docker environments, you need to add your user to the docker
  sudo usermod -aG docker $USER
 ```
 
-**Note: Realtime Computer is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). <u>Workstation computer</u> is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs.**
+**Note:** <u>**Realtime Computer**</u><a id='realtime'></a> is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). <u>**Workstation computer**</u><a id='workstation'></a> is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs.
 
-## Real time Computer 
+## [Real time Computer](#realtime)
 Build docker container for the real time computer directly connected to Franka's control. 
 ```
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
@@ -57,7 +57,7 @@ cmake ..
 make
 ```
 
-## Workstation Computer 
+## [Workstation Computer](#workstation)
 Build docker container for the workstation computer that has GPU/nvidia drivers 
 
 **Note: it is important to pass the workstation IP address as seen by the Realtime computer here**
@@ -70,7 +70,7 @@ sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build 
 
 Note: While building the docker container, the above command might print warnings in red color, don't be alarmed and let the process run. If it stops building, that's when there is an error. 
 
-## Setting up ssh-pass between the workstation and realtime computers (done only once)
+## Setting up ssh-key between the workstation and realtime computers (done only once)<a id='ssh-key'></a>
 
 Make sure to setup your workstation/workstation docker's ssh key to ssh into the realtime computer/docker without a password(this is required for frankapy) following instructions [here](https://github.com/iamlab-cmu/frankapy#setting-up-ssh-key-to-control-pc), you can run the following, 
 
@@ -106,12 +106,21 @@ ssh-add ~/.ssh/id_rsa
     v. Open a new terminal in the workstation docker and try sshing to the realtime PC and it should no longer require a password.
 
 # Usage Instructions 
-## Real time Computer 
+
+Note: docker-compose provides several commands to use the docker containers that we built in previous steps. They are ["up, start and run"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start). In our docker containers we have not yet defined explicit services, so we can either use up or run. "up" creates or recreates the container(if you made changes to dockerfile or .yml files), therefore you might lose changes you made in the container, like [adding ssh-key](#ssh-key), one way to deal with this is to use "up" command with --no-recreate flag. Additionally, when you run the "up" command, it by default starts with an "attaching" mode where it blocks the terminal and prints error logs if any. Another option as shown below is to use the start command, where the container runs in the background, make sure to "stop" the container when done
+## [Real time Computer](#realtime)
 In the realtime host computer terminal, bring the built docker container up 
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
+sudo docker-compose --no-recreate -f docker/realtime_computer/docker-compose-gui.yml up 
 ```
-
+or 
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
+```
+and when you are done with the container, run 
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
+```
 this would get the container running. Then in a new terminal in the realtime host machine, run, 
 
 To open a bash terminal inside the docker container 
@@ -119,12 +128,19 @@ To open a bash terminal inside the docker container
 (sudo) docker exec -it realtime_docker bash
 ```
 
-## Workstation Computer 
+## [Workstation Computer](#workstation) 
 In a terminal in the workstation computer
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
+sudo docker-compose --no-recreate -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
-
+or
+```
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+```
+and when you are done with the container, run 
+```
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
+```
 In a new terminal in the workstation host machine, to allow GUI usage, first run, 
 ```
 xhost +local:docker 
@@ -140,7 +156,15 @@ Frankapy can be used with the real time docker and optionally with workstation_c
 
 **First** In your realtime pc, start the realtime computer docker with,
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml up 
+sudo docker-compose --no-recreate -f docker/realtime_computer/docker-compose-gui.yml up 
+```
+or 
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
+```
+and when you are done with the container, run 
+```
+sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
 ```
 
 if you are using workstation docker, **in a new terminal** start it with, 
@@ -152,8 +176,17 @@ xhost +local:docker
 ```
 then in the same terminal, run,
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml up 
+sudo docker-compose --no-recreate -f docker/workstation_computer/docker-compose-gui.yml up 
 ```
+or
+```
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+```
+and when you are done with the container, run 
+```
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
+```
+
 
 To test the installation and setup of Frankapy,  
 
