@@ -9,7 +9,7 @@ This repository contains scripts and off-the-shelf starter scripts for developpi
 - In [tests](tests) (Work in Progress) folder we will provide various unit tests and integration test scripts to ensure the software system is working as expected. Including tests for the docker environment, frankapy, robot camera calibration, etc (Work in Progress)
 
 ## Dependancies 
-- docker-compose (version 1)
+- docker-compose (version 1 or version 2, use "docker-compose .." or "docker compose .." respectively)
 - docker 
 - git 
 - openssh-server
@@ -21,14 +21,13 @@ install openssh-server, following instructions [here](https://www.cyberciti.biz/
 
 # Build Instructions
 
-Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
-installing docker dependancies 
-
 Before building the docker environments, you need to add your user to the docker group as mentioned [here](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo), so that you can run the docker commands without sudo preveileges and therefore need not type in your password everytime. 
 
 ```
  sudo usermod -aG docker $USER
 ```
+Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
+installing docker dependancies 
 
 **Note:** <u>**Realtime Computer**</u><a id='realtime'></a> is the computer that sends/receives data from/to the robot realtime(1Khz). It runs the realtime linux kernel as described [here](https://frankaemika.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel). <u>**Workstation computer**</u><a id='workstation'></a> is the computer that sends high level commands to realtime computer to control the robot, this computer can run GPUs.
 
