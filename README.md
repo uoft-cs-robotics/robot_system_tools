@@ -14,15 +14,15 @@ This repository contains scripts and off-the-shelf starter scripts for developpi
 - git 
 - openssh-server
 
-
-Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
-installing docker dependancies 
 ```
 sudo apt-get install docker.io docker-compose git 
 ```
 install openssh-server, following instructions [here](https://www.cyberciti.biz/faq/ubuntu-linux-install-openssh-server/)
 
 # Build Instructions
+
+Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
+installing docker dependancies 
 
 Before building the docker environments, you need to add your user to the docker group as mentioned [here](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo), so that you can run the docker commands without sudo preveileges and therefore need not type in your password everytime. 
 
