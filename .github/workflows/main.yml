@@ -1,6 +1,9 @@
 name: Test
 
-on: [push]
+on:
+  push:
+    branches:
+    - main
 jobs: 
   workstation_docker_job:
     timeout-minutes: 10
