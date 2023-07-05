@@ -6,7 +6,7 @@ on:
     - main
 jobs: 
   workstation_docker_job:
-    timeout-minutes: 10
+    timeout-minutes: 35
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -14,5 +14,4 @@ jobs:
     - name: Start containers
       run: docker-compose -f "docker/workstation_computer/docker-compose-gui.yml" up -d --build
     - name: Stop containers
-      if: always()
-      run: docker-compose -f "docker-compose.yml" down      
+      run: docker-compose -f "docker/workstation_computer/docker-compose-gui.yml" down      
