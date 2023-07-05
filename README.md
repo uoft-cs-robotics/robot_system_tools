@@ -1,3 +1,4 @@
+[![Docker](https://github.com/pairlab/franka_arm_infra/actions/workflows/main.yml/badge.svg)](https://github.com/pairlab/franka_arm_infra/actions/workflows/main.yml)
 ## Description 
 This repository contains scripts and off-the-shelf starter scripts for developping and running algorithms for the Franka Emika Panda arms. 
 - In the [docker](docker) folder you can find the docker compose yaml and Dockerfiles to setup the docker environment for the realtime computer and workstation computer interfacing with the Franka arms. [frankapy](https://github.com/iamlab-cmu/frankapy) and [frank-interface](https://github.com/iamlab-cmu/franka-interface) are also compiled in the docker environments and you should be able to use frankapy APIs out of the box through this repo. 
