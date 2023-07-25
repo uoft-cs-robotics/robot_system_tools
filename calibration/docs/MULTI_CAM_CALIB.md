@@ -32,11 +32,32 @@ cd $HOME/git/kalibr
 
 docker build -t kalibr -f Dockerfile_ros1_20_04 . # change this to whatever ubuntu version you want
 ```
-2. 
+2. run the docker container with:
+
+```
+xhost +local:root
+xhost +local:docker
+FOLDER=/home/ruthrash/utm/data
+sudo docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
+    -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    -v "$FOLDER:/data" kalibr
+```
+where FOLDER is the location where we would store our rosbags. **make sure** it points to the right path in your local machine
 
 3. Now, use the kalibr_create_target_pdf node to create a calibration target as described [here](https://github.com/ethz-asl/kalibr/wiki/calibration-targets)
 
 - We suggest using Aprilgrid over the checkerboard as their points can be detected even under partial occlusion of tags 
 - We also suggest to create a calibration tag as big as possible with maximum possible dimensions of the april tag marker and separation between them. 
 - an example command would be: 
+```
+source devel/setup.bash
+rosrun kalibr kalibr_create_target_pdf --nx 3 --ny 3 --tsize 0.045 --tspace 0.2 --type apriltag
+```
+follow instructions [here](https://github.com/ethz-asl/kalibr/wiki/calibration-targets) to figure out tspace and tsize
 
+4. Once you have collected the data, you can run the calibration node like so, 
+```
+source devel/setup.bash
+rosrun kalibr kalibr_calibrate_cameras --bag /data/ball_dropping/calibration.bag --target /data/3x5.yaml --models pinhole-radtan pinhole-radtan pinhole-radtan  --topics /cam_1/color/image_raw /cam_2/color/image_raw /cam_3/color/image_raw
+```
+Here we are calibrating 3 cameras with pinhole-radtan model. **make sure** to modify the command for your case
