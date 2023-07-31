@@ -78,6 +78,7 @@ class CameraRobotCalibration(BaseRobotCameraCalibration):
                 ee_rotation_matrix, ee_position  = self.get_ee_pose_zmq() 
                 color_im_, depth_im_ = self.sensor.frames()
                 color_im = color_im_.raw_data
+<<<<<<< Updated upstream
                 depth_im = depth_im_.raw_data
                 o3d_flag = True
                 if o3d_flag:
@@ -100,6 +101,10 @@ class CameraRobotCalibration(BaseRobotCameraCalibration):
                     o3d.visualization.draw_geometries([pcd2], point_show_normal=False)
                 # image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
                 corners, ids, rvec, tvec, reproj_error, obj_pts, img_pts = self.process_image_for_aruco(color_im  , prev_tag_pose)
+=======
+                image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
+                corners, ids, rvec, tvec, reproj_error = self.process_image_for_aruco(color_im, prev_tag_pose )
+>>>>>>> Stashed changes
                 if ids is not None:                    
                     if reproj_error > self.REPROJ_THRESH:
                         continue                

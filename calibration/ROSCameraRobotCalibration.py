@@ -17,7 +17,7 @@ from frankapy import FrankaArm
 
 class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
     def __init__(self, args,
-                reproj_error_thresh=0.3,
+                reproj_error_thresh=0.7,
                 aruco_marker_length=0.025,
                 aruco_marker_separation=0.005,
                 aruco_board_n_rows=5,
@@ -47,7 +47,9 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         self.processed_image = 0   
         self.bool_kill_thread = False
         if self.args.move_robot_automatically:
-            self.abs_poses = get_absolute_poses(movement_pose_file)#gets command poses for frankapy to move robot automatically
+            self.fa_object.reset_joints()
+            self.abs_poses = get_randomized_absolute_poses(self.fa_object.get_pose())
+            # self.abs_poses = get_absolute_poses(movement_pose_file)#gets command poses for frankapy to move robot automatically
         else: 
             self.abs_poses = None
 
@@ -77,8 +79,10 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         prev_tag_pose = None 
         while(True): 
             if(self.abs_poses is not None and len(self.abs_poses)!=0 ):
+                goal = self.abs_poses.pop(0)
+
                 self.fa_object.reset_joints()
-                self.fa_object.goto_pose(self.abs_poses.pop(0),ignore_virtual_walls=True, use_impedance=False)
+                self.fa_object.goto_pose(goal,ignore_virtual_walls=True, use_impedance=False)
                 time.sleep(1.0) 
             elif (self.abs_poses is not None and len(self.abs_poses)==0):
                 rospy.core.signal_shutdown('keyboard interrupt')

@@ -3,8 +3,16 @@ import numpy.matlib as npm
 import cv2
 import copy
 from autolab_core import RigidTransform
+import tf.transformations as tf_utils
+import random
+import math
 
 
+from itertools import cycle
+toggle_signage = cycle([-1.0000,1.0000])
+
+def toggle_sign():
+    return toggle_signage.__next__()
 
 def str2bool(value):
     if isinstance(value, bool):
@@ -112,7 +120,35 @@ def get_absolute_poses(file_name):
                                         translation=ee_pose_tf[0:3, -1]/1000.0)
         ee_poses.append(abs_pose)
     return ee_poses
-    
+
+def get_randomized_absolute_poses(initial_pose, n_poses=20):
+    ee_poses = []
+    ee_poses.append(initial_pose)
+    r,p,y = tf_utils.euler_from_matrix(initial_pose.rotation,'rxyz')
+    initial_translation = initial_pose.translation
+    z_grid = np.array([1.0, 0.0, -1.0]) * 0.05
+    signage = [-1.0000,1.0000]
+    goal_pose = initial_pose.copy()
+    for i in range(n_poses):
+        x_offset = i % int(n_poses/len(z_grid))
+        y_offset = i % int(n_poses/len(z_grid))
+        sign = toggle_sign()
+        x_offset *= 0.01 * random.choice(signage)
+        y_offset *= 0.01 * random.choice(signage)    
+        z_offset = random.choice(z_grid)
+
+        r_new = r + math.radians(random.uniform(0.0,30.0)) * random.choice(signage)
+        p_new = p + math.radians(random.uniform(0.0,30.0)) * random.choice(signage)
+        y_new = y + math.radians(random.uniform(0.0,80.0)) * random.choice(signage)
+        goal_pose = RigidTransform(from_frame='franka_tool', 
+                                        to_frame='world',
+                                        rotation=tf_utils.euler_matrix(r_new, p_new, y_new, 'rxyz')[0:3,0:3],
+                                        translation=initial_pose.translation + np.array([x_offset, y_offset, z_offset]))
+        ee_poses.append(goal_pose)
+        print(r_new,p_new,y_new,x_offset,y_offset,z_offset)
+    return ee_poses
+
+
 # print(ee_rotation)
 # rvec = cv2.Rodrigues(ee_rotation)[0]
 # print(rvec)

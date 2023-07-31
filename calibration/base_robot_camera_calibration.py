@@ -109,6 +109,7 @@ class BaseRobotCameraCalibration:
 
     def process_image_msg_for_aruco(self, img_msg, prev_tag_pose=None):
         color_im = self.cv_bridge.imgmsg_to_cv2(img_msg)         
+<<<<<<< Updated upstream
         # image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
         return self.process_image_for_aruco(color_im, prev_tag_pose)
 
@@ -140,6 +141,12 @@ class BaseRobotCameraCalibration:
 
     def process_image_for_aruco(self, color_im, prev_tag_pose=None):    
         image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)          
+=======
+        return self.process_image_for_aruco(color_im, prev_tag_pose)
+
+    def process_image_for_aruco(self, color_im, prev_tag_pose=None): 
+        image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)
+>>>>>>> Stashed changes
         corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
         refine_corners(image_gray, corners)
         self.processed_image += 1
@@ -151,9 +158,16 @@ class BaseRobotCameraCalibration:
             # print(objPoints, imgPoints)                    
             retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
             if(self.args.debug_image):
+<<<<<<< Updated upstream
                 cv2.aruco.drawDetectedMarkers(image_gray, corners, borderColor=(0, 0, 255))
                 cv2.drawFrameAxes(image_gray, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+=======
+                print("debugging image")
+                cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
+                cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+>>>>>>> Stashed changes
                 img_file_name = "data/image/image_"+str(self.detections_count-1)+".jpg"
+                print(img_file_name)
                 cv2.imwrite(img_file_name, color_im)
             reproj_error =  reprojection_error(corners,
                                                 ids,
