@@ -151,8 +151,8 @@ class BaseRobotCameraCalibration:
             # print(objPoints, imgPoints)                    
             retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
             if(self.args.debug_image):
-                cv2.aruco.drawDetectedMarkers(color_im, corners, borderColor=(0, 0, 255))
-                cv2.drawFrameAxes(color_im, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                cv2.aruco.drawDetectedMarkers(image_gray, corners, borderColor=(0, 0, 255))
+                cv2.drawFrameAxes(image_gray, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                 img_file_name = "data/image/image_"+str(self.detections_count-1)+".jpg"
                 cv2.imwrite(img_file_name, color_im)
             reproj_error =  reprojection_error(corners,

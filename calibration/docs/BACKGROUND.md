@@ -48,3 +48,17 @@ Few Referenced from [here](https://github.com/IFL-CAMP/easy_handeye#:~:text=can%
 ## References: 
 - [opencv documentation]( https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gaebfc1c9f7434196a374c382abf43439b)
 - [TUM documentation](https://campar.in.tum.de/Chair/HandEyeCalibration)
+
+
+## Other similar and relevant frameworks for multicamera calibration and robot-camera calibration: 
+
+- easy-handeye(uses opencv solvers)
+    - https://github.com/IFL-CAMP/easy_handeye
+- vicalib 
+    - https://github.com/arpg/vicalib
+- mccalib 
+    - https://github.com/rameau-fr/MC-Calib/issues/4
+- atom
+    - https://github.com/lardemua/atom
+- robot_calibration 
+    - https://github.com/mikeferguson/robot_calibration
