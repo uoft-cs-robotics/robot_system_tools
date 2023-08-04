@@ -19,4 +19,5 @@ services:
     volumes:
       - ../../calibration:/root/git/calibration
       - ../../tests/frankapy_control_test_scripts:/root/git/tests/frankapy_control_test_scripts
+      - ../../refactor:/root/git/refactor
 
