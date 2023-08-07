@@ -220,7 +220,7 @@ python3 docker_frankapy_test.py
 
 ## Using calibration
 
-Please checkout [calibration/docs](calibration/docs) for documentations of hand-eye calibration, usage of this tool 
+Please checkout [robot_toolkit/docs](robot_toolkit/docs) for documentations of robot camera extrinsic calibration, usage of this tool. 
 
 
 ## Test robotiq gripper
