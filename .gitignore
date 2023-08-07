@@ -9,3 +9,4 @@ calibration/data/fg/*.jpg
 *.pdf
 *.pyc   
 *.jpg
+*.csv
