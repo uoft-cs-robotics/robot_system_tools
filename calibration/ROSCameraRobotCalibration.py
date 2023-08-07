@@ -63,6 +63,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
         if(self.camera_matrix is None):
             self.dist_coeffs = np.array(info_msg.D[:4])
             self.camera_matrix = np.array(info_msg.K).reshape(3,3)
+
         else: 
             return        
 
@@ -150,6 +151,7 @@ class ROSCameraRobotCalibration(BaseRobotCameraCalibration):
             tag_pose_line = [str(i) for i in [tag_rot[0][0], tag_rot[1][0], tag_rot[2][0], tag_trans[0][0], tag_trans[1][0], tag_trans[2][0] ]]
             line = ee_pose_line + tag_pose_line
             write_to_file(line, self.DATA_FILE_NAME)    
+        print(self.camera_matrix)
  
 def main(args):
     # calibration_object = ROSCameraRobotCalibration(args, 
@@ -158,10 +160,10 @@ def main(args):
     #                                             aruco_marker_separation=0.0057,)
     calibration_object = ROSCameraRobotCalibration(args, 
                                                 reproj_error_thresh=0.7,
-                                                aruco_marker_length=0.0387,
+                                                aruco_marker_length=0.0265,
                                                 aruco_marker_separation= 0.0057,
-                                                aruco_board_n_rows=4,
-                                                aruco_board_n_cols=5)    
+                                                aruco_board_n_rows=5,
+                                                aruco_board_n_cols=7)    
     if (not args.only_calibration):
         rate = rospy.Rate(30) # 30hz
         x = threading.Thread(target=calibration_object.user_robot_move_function)

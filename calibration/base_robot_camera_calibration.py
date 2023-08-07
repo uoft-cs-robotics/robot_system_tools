@@ -138,7 +138,8 @@ class BaseRobotCameraCalibration:
                 imgpt = np.squeeze(imgpt)
                 print(str(imgpt[0])+" "+str(imgpt[1])+", "+str(objpt[0])+" "+str(objpt[1])+" "+str(objpt[2]), file=f)
 
-    def process_image_for_aruco(self, color_im, prev_tag_pose=None):    
+    def process_image_for_aruco(self, color_im, prev_tag_pose=None):  
+        debug_imag = color_im.copy()  
         image_gray = cv2.cvtColor(color_im, cv2.COLOR_BGR2GRAY)          
         corners, ids, rejectedImgPoints = self.detector.detectMarkers(image_gray)  # First, detect markers
         refine_corners(image_gray, corners)
@@ -151,21 +152,24 @@ class BaseRobotCameraCalibration:
             # print(objPoints, imgPoints)                    
             retval, rvec, tvec = cv2.solvePnP(objPoints, imgPoints, self.camera_matrix, rvec, tvec)
             if(self.args.debug_image):
-                cv2.aruco.drawDetectedMarkers(image_gray, corners, borderColor=(0, 0, 255))
-                cv2.drawFrameAxes(image_gray, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+                cv2.aruco.drawDetectedMarkers(debug_imag, corners, borderColor=(0, 0, 255))
+                cv2.drawFrameAxes(debug_imag, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
                 img_file_name = "data/image/image_"+str(self.detections_count-1)+".jpg"
                 print(img_file_name)
-                cv2.imwrite(img_file_name, color_im)
+                cv2.imwrite(img_file_name, debug_imag)
             reproj_error =  reprojection_error(corners,
                                                 ids,
                                                 rvec, tvec,
                                                 self.board, 
                                                 self.camera_matrix, 
-                                                self.dist_coeffs)  
+                                                self.dist_coeffs) 
+            reproj_error_, variance = compute_reprojection_error(rvec, tvec, objPoints, imgPoints,self.camera_matrix,self.dist_coeffs) 
         else: 
             return None, None, None, None, None, None, None
    
-        print("reprojection error",reproj_error)
+        print("reprojection error", reproj_error, reproj_error * 2.0)
+        print("reprojection error new",reproj_error_, variance, reproj_error_ / reproj_error)
+
         if reproj_error > self.REPROJ_THRESH:
             if(self.detections_count > 0 and prev_tag_pose is not None):
                 current = np.eye(4); current[0:3, 0:3] = cv2.Rodrigues(rvec)[0]; current[0:3, -1] = np.squeeze(tvec)
@@ -179,3 +183,5 @@ class BaseRobotCameraCalibration:
             print("#### Ignoring this sample ####")          
 
         return corners, ids, rvec, tvec, reproj_error, objPoints, imgPoints
+
+

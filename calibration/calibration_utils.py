@@ -145,7 +145,7 @@ def get_randomized_absolute_poses(initial_pose, n_poses=20):
                                         rotation=tf_utils.euler_matrix(r_new, p_new, y_new, 'rxyz')[0:3,0:3],
                                         translation=initial_pose.translation + np.array([x_offset, y_offset, z_offset]))
         ee_poses.append(goal_pose)
-        print(r_new,p_new,y_new,x_offset,y_offset,z_offset)
+        print(math.degrees(r_new),math.degrees(p_new),math.degrees(y_new),x_offset,y_offset,z_offset)
     return ee_poses
 
 
@@ -322,6 +322,20 @@ def reprojection_error( all_corners, ids,  rvec, tvec, board, camera_matrix, dis
         error = cv2.norm(corners[0], proj_img_point[:,0,:], cv2.NORM_L2)/len(proj_img_point)
         mean_error += error
     return mean_error/len(ids)
+
+def compute_reprojection_error(rvec, tvec, obj_points, img_points, camera_matrix, dist_coeffs):
+    errors = []  
+    for img_point, obj_point in zip(img_points, obj_points):
+        proj_img_point, _ = cv2.projectPoints(obj_point,
+                                            rvec,
+                                            tvec,
+                                            camera_matrix,
+                                            dist_coeffs) 
+        error = cv2.norm(np.squeeze(img_point), np.squeeze(proj_img_point), cv2.NORM_L2)     
+        errors.append(error)
+    return np.mean(errors), np.var(errors)   
+
+
 
 def reprojection_error_single_aruco_tag(corners, markerPoints, rvec, tvec, camera_matrix, dist_coeffs, id=0):
     mean_error = 0.0
