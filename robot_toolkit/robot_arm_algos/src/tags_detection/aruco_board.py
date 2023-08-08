@@ -18,9 +18,9 @@ class ArucoBoardData:
 class ArucoBoard(Fiducial):
     def __init__(self, aruco_board_data:ArucoBoardData):
         Fiducial.__init__(self, "aruco_board")
-        self.create_aruco_detector(aruco_board_data)
+        self.create_aruco_board_detector(aruco_board_data)
 
-    def create_aruco_detector(self, aruco_board_data):
+    def create_aruco_board_detector(self, aruco_board_data):
         try:
             dictionary = ARUCO_DICT[aruco_board_data.dictionary]
         except KeyError:
