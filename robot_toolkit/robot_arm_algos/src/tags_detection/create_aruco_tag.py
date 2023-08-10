@@ -1,6 +1,6 @@
 import cv2 
-from ..robot_arm_algos.src.tags_detection._fiducial import ARUCO_DICT
-from ..robot_arm_algos.src.logger import logger
+from ._fiducial import ARUCO_DICT
+from ...src.logger import logger
 
 def create_and_save_arucotag(output_image_file, dictionary, id_ = 0):
     try:
@@ -24,5 +24,6 @@ def create_and_save_arucoboard(output_image_file, dictionary, n_rows, n_cols, ma
                                 marker_separation, 
                                 aruco_dict,
                                 ids = ids)    
-    color_image = cv2.drawPlanarBoard(board, (3300,3300))
+    color_image = None
+    color_image = board.generateImage((3300,3300), color_image)
     return cv2.imwrite(output_image_file, color_image)

@@ -14,7 +14,7 @@ def main(args):
     if(config_dict["move_robot_automatically"]):
         robot_arm_object = robot_arm_object = RobotFrankaPy(init_node = False, 
                                                             with_franka_gripper = config_dict["with_gripper"])   
-        robot_arm_object.fpy_object.reset_joints() 
+        # robot_arm_object.fpy_object.reset_joints() 
 
     robot_camera_calibrator = RobotCameraCalibrator(robot_pose_collector,
                                                     tag_pose_collector,
