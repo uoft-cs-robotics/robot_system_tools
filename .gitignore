@@ -1,12 +1,16 @@
 franka_control_suite/build/
 .vscode/
 #calibration/data/
-calibration/data/fg/*.csv 
-calibration/data/fg/*.jpg 
-!calibration/calibration_board/target_A4.pdf
-!calibration/calibration_board/target_US_letter.pdf
+# calibration/data/fg/*.csv 
+# calibration/data/fg/*.jpg 
+
 *.png
 *.pdf
 *.pyc   
 *.jpg
 *.csv
+
+!robot_toolkit/calibration_board/target_A4.pdf
+!robot_toolkit/calibration_board/target_US_letter.pdf
+!robot_toolkit/tests/data/*.png 
+!robot_toolkit/tests/data/*.pdf
