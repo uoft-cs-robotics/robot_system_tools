@@ -26,4 +26,4 @@ def create_and_save_arucoboard(output_image_file, dictionary, n_rows, n_cols, ma
                                 ids = ids)    
     color_image = None
     color_image = board.generateImage((3300,3300), color_image)
-    return cv2.imwrite(output_image_file, color_image)
+    return cv2.imwrite(output_image_file, color_image)  
