@@ -1,8 +1,8 @@
-only_calibration: True
+only_calibration: False 
 n_data: 20
 move_robot_automatically: True
 debug_image: True
-with_gripper: True
+with_gripper: False 
 camera_in_hand: True
 output_file: "robot_arm_algos/robot_camera_extrinsics.yaml"
 calib_data_file_name: "robot_arm_algos/src/robot_camera_calibration/data/file.txt"
@@ -17,10 +17,10 @@ ros_tf:
 
 aruco_board:
   dictionary: "DICT_6X6_1000"
-  marker_length: 0.025
-  marker_separation: 0.005
-  n_rows: 5
-  n_cols: 7
+  marker_length: 0.0397
+  marker_separation: 0.0056
+  n_rows: 4
+  n_cols: 5
 
 zmq:
   zmq_server_ip: 192.168.0.3 #same as realtime pc's IP

@@ -56,7 +56,11 @@ def get_tag_pose_collector(config_dict):
     return tag_pose_collector
 
 def get_robot_pose_collector(config_dict):
-    if(config_dict["robot_pose_collector"] == "ros_tf" ):
+    if(config_dict["robot_pose_collector"] == "ros_tf"):
+        if(not config_dict["move_robot_automatically"]):
+            logger.error(f"Cannot manually collect data if you want to get end-effector pose from a ROS TF tree")
+            return
+        logger.info("Ensure an active ROS TF of the robot arm is running")
         try:
             robot_pose_collector = ROSRobotPoseCollector(ee_frame = config_dict["ros_tf"]["ee_frame"],
                                                         base_frame = config_dict["ros_tf"]["base_frame"],
@@ -65,6 +69,10 @@ def get_robot_pose_collector(config_dict):
             logger.error(f"Failed to create setup configuration for calibration with error = {error}")
             return 
     elif(config_dict["robot_pose_collector"] == "zmq"):
+        if(config_dict["move_robot_automatically"]):
+            logger.error(f"Cannot automatically move robot collect data if you want to get end-effector pose using ZMQ server")
+            return        
+        logger.info("Ensure the zmq server is running in the realtime computer/docker")
         try:
             assert(config_dict["move_robot_automatically"] == False)
             robot_pose_collector = ZmqRobotPoseCollector(zmq_ip=config_dict["zmq"]["zmq_server_ip"],
