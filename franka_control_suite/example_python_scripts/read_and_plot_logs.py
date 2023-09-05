@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import matplotlib.pyplot as plt
 import numpy as np
-file_name = "/home/pairlab/log.txt"
-
+file_name_leader = "/home/ruthrash/Desktop/log_leader.txt"
+file_name_follower = "/home/ruthrash/Desktop/log_follower.txt"
 
 
 def read_logs_and_store_dictionary(file_name:str, joint_space_flag=True):
@@ -40,7 +40,7 @@ def read_logs_and_store_dictionary(file_name:str, joint_space_flag=True):
 
     return  logs_dict
 
-def plot_data(data_dict:dict, joint_space_flag=True, velocity_flag=True):
+def plot_data(data_dict_leader:dict,data_dict_follower:dict, joint_space_flag=True, velocity_flag=False):
     if joint_space_flag:
         fig, axs = plt.subplots(7,2)
         fig.suptitle('Vertically stacked joint space subplots')
@@ -48,26 +48,62 @@ def plot_data(data_dict:dict, joint_space_flag=True, velocity_flag=True):
             x = []
             ynow = []; ydesired = []
             count = 0
-            for q_now, q_desired in zip(data_dict['q_now'], data_dict['q_desired']):
+            for q_now, q_desired in zip(data_dict_leader['q_now'], data_dict_leader['q_desired']):
                 ynow.append(q_now[i])
                 ydesired.append(q_desired[i])
                 x.append(count)
                 count += 1
-            axs[i, 0].plot(x, ynow,color='r', label='now')
-            axs[i, 0].plot(x, ydesired,color='g', label='desired')
+            axs[i, 0].plot(x, ynow,color='r', label='leader')
+            # axs[i, 0].plot(x, ydesired,color='g', label='desired')
             axs[i, 0].set_title('joint_{}'.format(i))
         for i in range(7):
             x = []
             ynow = []; ydesired = []
             count = 0
-            for dq_now, dq_desired in zip(data_dict['dq_now'], data_dict['dq_desired']):
-                ynow.append(dq_now[i])
-                ydesired.append(dq_desired[i])
+            for q_now, q_desired in zip(data_dict_follower['q_now'], data_dict_follower['q_desired']):
+                ynow.append(q_now[i])
+                ydesired.append(q_desired[i])
                 x.append(count)
                 count += 1
-            axs[i, 1].plot(x, ynow,color='r', label='now')
-            axs[i, 1].plot(x, ydesired,color='g', label='desired')
+            axs[i, 0].plot(x, ynow,color='b', label='follower')
+            # axs[i, 0].plot(x, ydesired,color='g', label='desired')
+            axs[i, 0].set_title('joint_{}'.format(i))    
+        for i in range(7):
+            x = []
+            ynow = []; ydesired = []
+            count = 0
+            for q_now, q_desired in zip(data_dict_leader['dq_now'], data_dict_leader['dq_desired']):
+                ynow.append(q_now[i])
+                ydesired.append(q_desired[i])
+                x.append(count)
+                count += 1
+            axs[i, 1].plot(x, ynow,color='r', label='leader')
+            # axs[i, 0].plot(x, ydesired,color='g', label='desired')
             axs[i, 1].set_title('joint_{}'.format(i))
+        for i in range(7):
+            x = []
+            ynow = []; ydesired = []
+            count = 0
+            for q_now, q_desired in zip(data_dict_follower['dq_now'], data_dict_follower['dq_desired']):
+                ynow.append(q_now[i])
+                ydesired.append(q_desired[i])
+                x.append(count)
+                count += 1
+            axs[i, 1].plot(x, ynow,color='b', label='follower')
+            # axs[i, 0].plot(x, ydesired,color='g', label='desired')
+            axs[i, 1].set_title('joint_{}'.format(i))                        
+        # for i in range(7):
+        #     x = []
+        #     ynow = []; ydesired = []
+        #     count = 0
+        #     for dq_now, dq_desired in zip(data_dict['dq_now'], data_dict['dq_desired']):
+        #         ynow.append(dq_now[i])
+        #         ydesired.append(dq_desired[i])
+        #         x.append(count)
+        #         count += 1
+        #     axs[i, 1].plot(x, ynow,color='r', label='now')
+        #     axs[i, 1].plot(x, ydesired,color='g', label='desired')
+        #     axs[i, 1].set_title('joint_{}'.format(i))
     else:
         fig, axs = plt.subplots(3,2)
         fig.suptitle('Vertically stacked cartesian space subplots')
@@ -99,6 +135,9 @@ def plot_data(data_dict:dict, joint_space_flag=True, velocity_flag=True):
     plt.show()
 
 joint_space_flag = True
-log_dict = read_logs_and_store_dictionary(file_name, joint_space_flag=joint_space_flag)
-plot_data(log_dict, joint_space_flag=joint_space_flag)
+log_dict_leader= read_logs_and_store_dictionary(file_name_leader, joint_space_flag=joint_space_flag)
+log_dict_follower= read_logs_and_store_dictionary(file_name_follower, joint_space_flag=joint_space_flag)
+
+plot_data(log_dict_leader, log_dict_follower, joint_space_flag=joint_space_flag)
+
 

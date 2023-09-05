@@ -77,7 +77,8 @@ RUN cd \
     && make -j$(nproc) \
     && make check -j$(nproc) \ 
     && sudo make install \ 
-    && sudo ldconfig 
+    && sudo ldconfig \
+    && rm /root/git/protobuf-all-3.11.4.zip
 
 # Dependencies for franka-interface and protobuf
 RUN apt-get install -y \
@@ -128,7 +129,16 @@ RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
 #reinstalling numba seems to solve an error when we import FrankaArm from frankapy
-RUN pip3 install zmq pyrealsense2 numba  scipy
+RUN pip3 install zmq pyrealsense2 numba scipy open3d 
+
+
+# install librealsense sdk
+# RUN mkdir -p /etc/apt/keyrings \ 
+#     && echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
+#     sudo tee /etc/apt/sources.list.d/librealsense.list \
+#     && apt-get update \ 
+#     && apt-get install librealsense2-dkms \ 
+#     && apt-get install librealsense2-utils
 
 # RUN cd /root/git/franka_arm_infra/franka_control_suite \
 #     && mkdir build \

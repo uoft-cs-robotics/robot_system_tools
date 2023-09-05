@@ -3,7 +3,7 @@
 This repository contains scripts and off-the-shelf starter scripts for developping and running algorithms for the Franka Emika Panda arms. 
 - In the [docker](docker) folder you can find the docker compose yaml and Dockerfiles to setup the docker environment for the realtime computer and workstation computer interfacing with the Franka arms. [frankapy](https://github.com/iamlab-cmu/frankapy) and [frank-interface](https://github.com/iamlab-cmu/franka-interface) are also compiled in the docker environments and you should be able to use frankapy APIs out of the box through this repo. 
 
-- In the [calibration](calibration) folder you can find the calibration scripts to run robot camera calibration routine(currently) and multi camera calibration routine (soon), find more info [here](calibration/docs). 
+- In the [robot_toolkit](robot_toolkit) folder you can find the calibration scripts to run robot camera calibration routine(currently) and multi camera calibration routine (soon), find more info [here](robot_toolkit/docs). 
 
 - In the [franka_control_suite](franka_control_suite)(Work in Progress) folder you can find experimental feedback controllers implemented in libfranka.
 
@@ -107,13 +107,9 @@ ssh-add ~/.ssh/id_rsa
 
 # Usage Instructions 
 
-Note: docker-compose provides several commands to use the docker containers that we built in previous steps. They are ["up, start and run"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start). In our docker containers we have not yet defined explicit services, so we can either use up or run. "up" creates or recreates the container(if you made changes to dockerfile or .yml files), therefore you might lose changes you made in the container, like [adding ssh-key](#ssh-key), one way to deal with this is to use "up" command with --no-recreate flag. Additionally, when you run the "up" command, it by default starts with an "attaching" mode where it blocks the terminal and prints error logs if any. Another option as shown below is to use the start command, where the container runs in the background, make sure to "stop" the container when done
+Note: docker-compose provides several commands to use the docker containers that we built in previous steps. They are ["up, start and run"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start). In our docker containers we have not yet defined explicit services, so we will use "run". "up" creates or recreates the container(if you made changes to dockerfile or .yml files), therefore you might lose changes you made in the container, like [adding ssh-key](#ssh-key). As shown below we use the "start" command to run the container we built in the previous step, make sure to "stop" the container when done
 ## [Real time Computer](#realtime)
 In the realtime host computer terminal, bring the built docker container up 
-```
-sudo docker-compose --no-recreate -f docker/realtime_computer/docker-compose-gui.yml up 
-```
-or 
 ```
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
 ```
@@ -130,10 +126,6 @@ To open a bash terminal inside the docker container
 
 ## [Workstation Computer](#workstation) 
 In a terminal in the workstation computer
-```
-sudo docker-compose --no-recreate -f docker/workstation_computer/docker-compose-gui.yml up 
-```
-or
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
 ```
@@ -156,10 +148,6 @@ Frankapy can be used with the real time docker and optionally with workstation_c
 
 **First** In your realtime pc, start the realtime computer docker with,
 ```
-sudo docker-compose --no-recreate -f docker/realtime_computer/docker-compose-gui.yml up 
-```
-or 
-```
 sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
 ```
 and when you are done with the container, run 
@@ -175,10 +163,6 @@ as mentioned [here](https://stackoverflow.com/questions/69872788/docker-could-no
 xhost +local:docker 
 ```
 then in the same terminal, run,
-```
-sudo docker-compose --no-recreate -f docker/workstation_computer/docker-compose-gui.yml up 
-```
-or
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
 ```
@@ -220,7 +204,7 @@ python3 docker_frankapy_test.py
 
 ## Using calibration
 
-Please checkout [calibration/docs](calibration/docs) for documentations of hand-eye calibration, usage of this tool 
+Please checkout [robot_toolkit/docs](robot_toolkit/docs) for documentations of robot camera extrinsic calibration, usage of this tool. 
 
 
 ## Test robotiq gripper
