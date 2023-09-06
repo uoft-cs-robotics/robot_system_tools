@@ -30,13 +30,13 @@ Scripts to test controllers provided in frankapy. Inside the workstation docker,
 
 This script can be used to test to see if both the realtime and workstation docker installations work without any errors along with running frankapy. Expected output: the robot arm "resets joints" to go to the home configuration. 
 
-###[test_ee_pose_control.py](test_ee_pose_control.py):
+### [test_ee_pose_control.py](test_ee_pose_control.py):
 
 This script uses dynamic pose control mode of frankapy to stream a square on the YZ plane (in robot base frame). We also set higher stiffness values than default values to get accurate pose tracking. 
 
 In lines 20-30 you can specify the edge length of the square trajectory, speed at which we want the end-effector to trace one edge of the square, delta time steps at which we sample the desired square trajectory and the no.of cycles of tracing the square trajectory, rotational and translational stiffness of the cartesian impedance control (roll, pitch, yaw of the square in the robot base frame, but its not implemented right now). After executing the input trajectory the commanded and actual end-effector positions are plotted. 
 
-###[test_ee_pose_impedance_control.py](test_ee_pose_impedance_control.py):
+### [test_ee_pose_impedance_control.py](test_ee_pose_impedance_control.py):
 
 This script uses dynamic pose control mode of frankapy to stream a square on the YZ plane (in robot base frame). We also test variable impedance capability of the controller. 
 
