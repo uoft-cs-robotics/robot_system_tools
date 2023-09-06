@@ -10,6 +10,7 @@ SHELL ["/bin/bash", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG workstation_ip=192.168.0.1
+ARG use_robotiq=0
 
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
@@ -76,7 +77,8 @@ RUN cd \
     && make -j$(nproc) \
     && make check -j$(nproc) \ 
     && sudo make install \ 
-    && sudo ldconfig 
+    && sudo ldconfig \
+    && rm /root/git/protobuf-all-3.11.4.zip
 
 # Dependencies for franka-interface and protobuf
 RUN apt-get install -y \
@@ -119,7 +121,7 @@ RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
 # RUN echo "export ROS_IP=192.168.0.1" >> ~/.bashrc
 # RUN echo "export ROS_MASTER_URI=http://192.168.0.1:11311" >> ~/.bashrc
 
-RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
+# RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_IP=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
 
@@ -127,7 +129,16 @@ RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
 #reinstalling numba seems to solve an error when we import FrankaArm from frankapy
-RUN pip3 install zmq pyrealsense2 numba  scipy
+RUN pip3 install zmq pyrealsense2 numba scipy open3d 
+
+
+# install librealsense sdk
+# RUN mkdir -p /etc/apt/keyrings \ 
+#     && echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
+#     sudo tee /etc/apt/sources.list.d/librealsense.list \
+#     && apt-get update \ 
+#     && apt-get install librealsense2-dkms \ 
+#     && apt-get install librealsense2-utils
 
 # RUN cd /root/git/franka_arm_infra/franka_control_suite \
 #     && mkdir build \
@@ -136,3 +147,16 @@ RUN pip3 install zmq pyrealsense2 numba  scipy
 #     && make
 ARG DEBIAN_FRONTEND=dialog
 
+RUN if [[ "x$use_robotiq" == "x1" ]] ;\
+    then echo "use_robotiq is set to TRUE" \
+    && apt-get install ros-noetic-soem \
+    && pip3 install -U pymodbus==2.5.3 \
+    && cd ~/git \
+    && mkdir -p robotiq_ws/src \
+    && cd robotiq_ws/src \
+    && git clone https://github.com/pairlab/robotiq.git \
+    && cd ../ \ 
+    && source /opt/ros/${ROS_DISTRO}/setup.bash\
+    && catkin build \
+    && echo "source ~/git/robotiq_ws/devel/setup.bash" >> ~/.bashrc ; \
+    fi
