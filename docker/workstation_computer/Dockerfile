@@ -1,16 +1,13 @@
-#FROM ubuntu:focal
-
-FROM osrf/ros:noetic-desktop-full
-
+ARG DEBIAN_FRONTEND=noninteractive
+ARG workstation_ip=192.168.0.1
+ARG use_robotiq=0
+ARG image=nvidia/cudagl:11.3.0-devel-ubuntu20.04
+FROM ${image}
 
 ENV WS_DIR="/root/git"
 WORKDIR ${WS_DIR}
 
 SHELL ["/bin/bash", "-c"]
-
-ARG DEBIAN_FRONTEND=noninteractive
-ARG workstation_ip=192.168.0.1
-ARG use_robotiq=0
 
 # Dependencies for latency plot
 RUN apt-get update && apt-get install -y \
@@ -22,25 +19,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-distutils \
     gnuplot-qt \ 
-    sshpass 
-# Dependencies for Bash unit-tests
-RUN apt-get update && apt-get install -y \
-    bats \
-    dialog \
-    tmux \
-    iputils-ping 	
-
-# Fetch most recent version of rt-tests and mklatencyplot
-# Dependencies for latency plot
-RUN apt-get update && apt-get install -y \
-    curl \
-    grep \
-    build-essential \
-    make \
-    libnuma-dev \
-    python3 \
-    python3-distutils \
-    gnuplot-qt\
+    sshpass \
     iproute2 \
     python3-pip \
     gnome-terminal\
@@ -51,7 +30,28 @@ RUN apt-get update && apt-get install -y \
     bats \
     dialog \
     tmux \
-    iputils-ping 
+    iputils-ping 	
+
+# ROS INstall
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+RUN echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-vcstools \
+    python3-catkin-tools \
+    ros-noetic-jsk-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN rosdep init && \
+    rosdep update
+
+RUN apt-get update && apt-get install -y \
+    ros-noetic-desktop-full \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV ROS_DISTRO noetic
 
 # Dependencies for franka-interface and protobuf
 RUN apt-get update && apt-get install -y \
@@ -156,7 +156,7 @@ RUN if [[ "x$use_robotiq" == "x1" ]] ;\
     && cd robotiq_ws/src \
     && git clone https://github.com/pairlab/robotiq.git \
     && cd ../ \ 
-    && source /opt/ros/${ROS_DISTRO}/setup.bash\
+    && source /opt/ros/noetic/setup.bash\
     && catkin build \
     && echo "source ~/git/robotiq_ws/devel/setup.bash" >> ~/.bashrc ; \
     fi
