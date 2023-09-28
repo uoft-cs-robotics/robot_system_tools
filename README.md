@@ -68,6 +68,7 @@ sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
                                                         
 ```
+**Note:** The default CUDA version is 11.3 and Ubuntu version is 20.04, if you would like to change these, please aquire an appropriate docker image and use `--build-arg image=<your image>`.
 **Note:** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
 
 Note: While building the docker container, the above command might print warnings in red color, don't be alarmed and let the process run. If it stops building, that's when there is an error. 
