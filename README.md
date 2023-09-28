@@ -58,12 +58,14 @@ make
 ```
 
 ## [Workstation Computer](#workstation)
-Build docker container for the workstation computer that has GPU/nvidia drivers 
+Build, create, and start the docker container for the workstation computer that has GPU/nvidia drivers 
 
 **Note: it is important to pass the workstation IP address as seen by the Realtime computer here**
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
                             --build-arg workstation_ip=<workstation_ip address>
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
+sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
                                                         
 ```
 **Note:** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
