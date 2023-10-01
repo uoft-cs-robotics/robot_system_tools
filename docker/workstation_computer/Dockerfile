@@ -1,8 +1,9 @@
+ARG image=nvidia/cudagl:11.3.0-devel-ubuntu20.04
+FROM ${image}
+
 ARG DEBIAN_FRONTEND=noninteractive
 ARG workstation_ip=192.168.0.1
 ARG use_robotiq=0
-ARG image=nvidia/cudagl:11.3.0-devel-ubuntu20.04
-FROM ${image}
 
 ENV WS_DIR="/root/git"
 WORKDIR ${WS_DIR}
