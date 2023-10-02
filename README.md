@@ -20,6 +20,20 @@ sudo apt-get install docker.io docker-compose git
 ```
 install openssh-server, following instructions [here](https://www.cyberciti.biz/faq/ubuntu-linux-install-openssh-server/)
 
+If you would like to use the GPU and CUDA in the docker containers, install and configure the nvidia container toolkit using the following:
+```
+ curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+   && \
+     sudo apt-get update
+ sudo apt-get install -y nvidia-container-toolkit
+ sudo nvidia-ctk runtime configure --runtime=docker
+ sudo systemctl restart docker
+```
+If anythign goes wrong please refer to the official NVIDIA instructions: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+
 # Build Instructions
 
 Before building the docker environments, you need to add your user to the docker group as mentioned [here](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo), so that you can run the docker commands without sudo preveileges and therefore need not type in your password everytime. 
