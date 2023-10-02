@@ -64,8 +64,8 @@ Build, create, and start the docker container for the workstation computer that 
 ```
 sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
                             --build-arg workstation_ip=<workstation_ip address>
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
                                                         
 ```
 **Note:** The default CUDA version is 11.3 and Ubuntu version is 20.04, if you would like to change these, please aquire an appropriate docker image and use `--build-arg image=<your image>`.
