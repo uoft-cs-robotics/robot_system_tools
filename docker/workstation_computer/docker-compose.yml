@@ -8,6 +8,8 @@ services:
     tty: true
     cap_add:
       - SYS_NICE
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
     ulimits:
       rtprio: 99
       rttime: -1
