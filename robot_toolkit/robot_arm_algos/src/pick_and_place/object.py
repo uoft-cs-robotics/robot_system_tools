@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from .aruco_board import ArucoBoard
+# from .aruco_board import ArucoBoard
 from ..robot_camera_calibration._calibration_data_utils import tf_from_rvectvec, rvectvec_from_tf
 from ..logger import logger
 from ._fiducial import TagDetection
@@ -13,7 +13,7 @@ class Object:
         self.object_name = object_name
         self.tag = tag
         self.object2tag_offset = object2tag_offset
-    
+
     def get_object_pose(self, rvec_tag2world, tvec_tag2world):
         tf_tag2world = tf_from_rvectvec(rvec_tag2world, tvec_tag2world)
         return rvectvec_from_tf(np.matmul(tf_tag2world, self.object2tag_offset))
