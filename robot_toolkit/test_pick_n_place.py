@@ -16,7 +16,7 @@ test_config = {
                                 marker_separation = 0.0025,
                                 n_rows = 2,
                                 n_cols = 2,
-                                ids = np.array([0,1,2,3])),      
+                                ids = [0,1,2,3]),      
     "camera_in_hand": True
     }
 
