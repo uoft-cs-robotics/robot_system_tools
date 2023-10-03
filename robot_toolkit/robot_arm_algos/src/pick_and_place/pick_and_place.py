@@ -1,17 +1,208 @@
+"""
+Pick n Place example with one robot and one camera with known robot camera extrinsics.
 
+Author: Ruthrash Hari
+Date: 2/10/23 
+"""
 import numpy as np
-from ..robot_camera_calibration._calibration_data_utils import tf_from_rvectvec, rvectvec_from_tf
+import dataclasses
+from ..robot_camera_calibration._calibration_data_utils import tf_from_rvectvec
 from ..logger import logger
-"""
-Pick n Place example with one robot and one camera wit known robot camera extrinsics
-object to be picked and placed is detected with an aruco tag object with a known offset to object centroid
-"""
-class PickNPlace:
-    def __init__(self, robot_arm_object, camera_object, cam_extrinsics):
+from ..config_reader import read_yaml_file
+
+def get_offset_from_pose(pose, offset_dist = 0.15, offset_in_obj_frame = True):
+    offsetvect_poseframe = np.array([0.0, 0.0, offset_dist])
+    offset_pose = pose.copy()  
+    if offset_in_obj_frame:
+        grasp2robotbase_rot = offset_pose[0:3, 0:3]
+        offsetvect_robotbaseframe = np.matmul(grasp2robotbase_rot, -1.0 * offsetvect_poseframe)
+    else:
+        offsetvect_robotbaseframe = offsetvect_poseframe
+    offset_pose[0:3,-1] += offsetvect_robotbaseframe
+    return offset_pose
+
+class PickAndPlace:
+    def __init__(self, robot_arm_object, camera, cam_extrinsics, camera_in_hand = True):
         self.robot_arm = robot_arm_object
-        self.camera_object = camera_object
+        self.camera = camera
         self.cam_extrinsics = cam_extrinsics#either cam2base: camera in environment or cam2gripper: camera in hand
+        self.camera_in_hand = camera_in_hand 
+        
+    def get_cam2base_tf(self,):
+        if(self.camera_in_hand):        
+            ee2base_tf = self.robot_arm.get_ee_frame()
+            return np.matmul(ee2base_tf, self.cam_extrinsics)
+        else: 
+            return self.cam_extrinsics
     
+    def pick_object(self, object, grasps_file, grasp_name = None):
+        logger.debug(f"performing grasps for object{dataclasses.asdict(object.tag.fiducial_data)}")
+        grasp_pose = self.get_grasp_pose(object = object,
+                                         grasps_file = grasps_file,
+                                         grasp_name = grasp_name)
+        pre_grasp_pose = get_offset_from_pose(pose = grasp_pose, offset_in_obj_frame = True)
+        post_grasp_pose = get_offset_from_pose(pose = grasp_pose, offset_in_obj_frame = False)
+        self.robot_arm.open_gripper()
+        self.robot_arm.go_to_ee_pose(pre_grasp_pose)
+        self.robot_arm.go_to_ee_pose(grasp_pose)
+        self.robot_arm.close_gripper()
+        self.robot_arm.go_to_ee_pose(post_grasp_pose)
+        return grasp_pose
+    
+    def place_object(self, place_pose):
+        
+        place_pose[2,3] += 0.05
+        preplace_pose = get_offset_from_pose(pose = place_pose, offset_in_obj_frame = True)
+        postplace_pose = get_offset_from_pose(pose = place_pose, offset_in_obj_frame = False)
+        self.robot_arm.go_to_ee_pose(preplace_pose)
+        self.robot_arm.go_to_ee_pose(place_pose)
+        self.robot_arm.open_gripper()
+        self.robot_arm.go_to_ee_pose(postplace_pose)
+        return place_pose
+        
+    def get_grasp_pose(self, object, grasps_file, grasp_name=None):
+        pre_recorded_grasps = read_yaml_file(grasps_file)
+        if grasp_name is None:
+            desired_grasp2obj_tf = list(pre_recorded_grasps["grasps"].values())[0]
+        else: 
+            desired_grasp2obj_tf = pre_recorded_grasps["grasps"][grasp_name]           
+             
+        obj2cam_rvec, obj2cam_tvec, _ =  object.get_object_pose(color_image = self.camera.get_current_rgb_frame(),
+                                                        camera = self.camera)        
+        obj2cam_tf = tf_from_rvectvec(obj2cam_rvec, obj2cam_tvec)
+        grasp_pose_in_base = np.matmul(self.get_cam2base_tf(),
+                                    np.matmul(obj2cam_tf, desired_grasp2obj_tf))       
+        return grasp_pose_in_base
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    # def grasp_object(self,):
+    #     pass
+            
+    # def grasp(self, object, grasps_file, grasp_name=None):
+    #     self.robot_arm.open_gripper()
+    #     pre_recorded_grasps = read_yaml_file(grasps_file)
+    #     if grasp_name is None:
+    #         desired_grasp2obj_tf = list(pre_recorded_grasps["grasps"].values())[0]
+    #     else: 
+    #         desired_grasp2obj_tf = pre_recorded_grasps["grasps"][grasp_name]
+    #     obj2cam_rvec, obj2cam_tvec, _ =  object.get_object_pose(color_image = self.camera.get_current_rgb_frame(),
+    #                                                     camera = self.camera)        
+    #     obj2cam_tf = tf_from_rvectvec(obj2cam_rvec, obj2cam_tvec)
+    #     grasp_pose_in_base = np.matmul(self.get_cam2base_tf(),
+    #                                    np.matmul(obj2cam_tf, desired_grasp2obj_tf))
+    #     grasp_pose_in_base[2,3] += 0.2
+    #     self.robot_arm.go_to_ee_pose(grasp_pose_in_base)
+        
+    #     grasp_pose_in_base[2,3] -= 0.2
+    #     self.robot_arm.go_to_ee_pose(grasp_pose_in_base)        
+    #     self.robot_arm.close_gripper()
+
+        
+
+#get_grasp_pose 
+#compute_pregrasp_pose
+#get pickup pose  
+#get_place_pose
+#compute_preplace_pose
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+
     def detect_object(self, object_, debug_image = True):
         return object_.compute_object_pose(color_image = self.camera_object.get_current_rgb_frame(),
                             camera = self.camera_object,
@@ -112,3 +303,4 @@ class PickNPlace:
         tvec_postplace[2] += 0.15
         rvec_postplace = place_rvec.copy()
         return rvec_postplace, tvec_postplace
+'''

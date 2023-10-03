@@ -79,8 +79,7 @@ class RobotCameraCalibrationDataCollector():
                 return
 
         while(True):
-            logger.info(f"Press Enter to continue collecting \
-                    current sample....else space bar to stop")
+            logger.info(f"Press Enter to continue collecting current sample....else space bar to stop")
 
             ip = input()
             if (ip == ""):
@@ -139,14 +138,11 @@ class RobotCameraCalibrationDataCollector():
             logger.error(" You must pass a robot arm object if you want to collect data automatically")
             return
         else:
-            logger.info(f"Make sure you point the robot to a good initial \
-                        configuration looking at the calibration tag")        
+            logger.info(f"Make sure you point the robot to a good initial configuration looking at the calibration tag")        
         return
         
     def move_and_collect_data(self,):
-        logger.info(f"Press Enter if you are happy with the initial \
-                    configuration and ready to start collecting data autonomously....\
-                    else space bar and Enter to stop")
+        logger.info(f"Press Enter if you are happy with the initial configuration and ready to start collecting data autonomously....else space bar and Enter to stop")
         ip = input()    
         if(ip != ""):
             return 

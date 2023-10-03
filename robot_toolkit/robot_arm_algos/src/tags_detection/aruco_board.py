@@ -17,7 +17,7 @@ class ArucoBoardData:
 
 class ArucoBoard(Fiducial):
     def __init__(self, aruco_board_data:ArucoBoardData):
-        Fiducial.__init__(self, "aruco_board")
+        Fiducial.__init__(self, "aruco_board", aruco_board_data)
         self.create_aruco_board_detector(aruco_board_data)
 
     def create_aruco_board_detector(self, aruco_board_data):
@@ -35,6 +35,7 @@ class ArucoBoard(Fiducial):
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, 
                                                 self.aruco_params)
+        self.fiducial_data = aruco_board_data
     
     def refine_corners(self, image, corners):
         winSize = [5, 5]

@@ -5,6 +5,7 @@ import tf.transformations as ros_tf_utils
 from autolab_core import RigidTransform
 from frankapy import FrankaArm
 from ._robot_arm import RobotArm
+from ..logger import logger
 
 class RobotFrankaPy(RobotArm):
     def __init__(self, with_franka_gripper = True ,robot_id = 1, init_node = True):
@@ -36,10 +37,19 @@ class RobotFrankaPy(RobotArm):
                             ignore_virtual_walls = True, 
                             use_impedance = False, 
                             duration = 3):
-        self.fpy_object.goto_pose(tool_pose = goal_ee_pose, 
+        
+        if isinstance(goal_ee_pose, np.ndarray):
+            goal_pose_fpy = RigidTransform(from_frame='franka_tool', 
+                                    to_frame ='world',
+                                    rotation = goal_ee_pose[0:3, 0:3],
+                                    translation = goal_ee_pose[0:3, -1])   
+        else:
+            goal_pose_fpy = goal_ee_pose
+        logger.info(goal_pose_fpy)
+        self.fpy_object.goto_pose(tool_pose = goal_pose_fpy, 
                                 ignore_virtual_walls=ignore_virtual_walls, 
                                 use_impedance=use_impedance, 
-                                duration = duration)
+                                duration = duration)                 
         return
 
     def go_to_ee_pose_delta(self, delta_ee_pose, 
