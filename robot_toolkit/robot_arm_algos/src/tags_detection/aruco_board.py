@@ -13,7 +13,7 @@ class ArucoBoardData:
     marker_separation: float 
     n_rows: int
     n_cols: int
-    ids: Optional[np.ndarray] = None
+    ids: Optional[list] = None
 
 class ArucoBoard(Fiducial):
     def __init__(self, aruco_board_data:ArucoBoardData):
@@ -31,7 +31,7 @@ class ArucoBoard(Fiducial):
                                         aruco_board_data.marker_length, 
                                         aruco_board_data.marker_separation, 
                                         self.aruco_dict,
-                                        ids = aruco_board_data.ids)
+                                        ids = np.array(aruco_board_data.ids))
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, 
                                                 self.aruco_params)

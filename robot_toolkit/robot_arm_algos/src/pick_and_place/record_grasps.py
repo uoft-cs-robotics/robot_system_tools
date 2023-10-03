@@ -17,11 +17,11 @@ from ..logger import logger
 
 
 class RecordGrasps:
-    def __init__(self, object, camera, extrinsics_file, grasps_file, robot_pose_collector, output_file, camera_in_hand = True) -> None:
+    def __init__(self, object, camera, extrinsics_file, robot_pose_collector, output_file, camera_in_hand = True) -> None:
         self.object = object    
         self.camera = camera
         self.extrinsics = read_cam_robot_extrinsics(extrinsics_file_name = extrinsics_file)
-        self.grasps_file = grasps_file
+        # self.grasps_file = grasps_file
         self.camera_in_hand = camera_in_hand
         self.robot_pose_collector = robot_pose_collector
         self.output_file = output_file
