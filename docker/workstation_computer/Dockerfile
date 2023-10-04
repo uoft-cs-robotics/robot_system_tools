@@ -13,7 +13,7 @@ ARG workstation_ip=192.168.0.1
 ARG use_robotiq=0
 
 # Dependencies for latency plot
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     curl \
     grep \
     build-essential \
@@ -109,6 +109,10 @@ RUN cd ~/git/frankapy \
     && source /opt/ros/noetic/setup.bash \
     && ./bash_scripts/make_catkin.sh
 
+RUN echo "compiling custom protobuf messages"
+RUN cd ~/git/frankapy \ 
+    && ./bash_scripts/make_proto.sh
+
 RUN apt-get install -y \
     ros-noetic-libfranka \
     ros-noetic-franka-ros \
@@ -124,6 +128,8 @@ RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
 # RUN echo "export ROS_HOSTNAME=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_IP=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
+RUN echo "export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python" >> ~/.bashrc
+
 
 RUN sudo pip3 install --upgrade protobuf
 
