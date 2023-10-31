@@ -130,7 +130,7 @@ RUN sudo pip3 install --upgrade protobuf
 
 RUN sudo pip3 install numpy --force-reinstall
 #reinstalling numba seems to solve an error when we import FrankaArm from frankapy
-RUN pip3 install zmq pyrealsense2 numba scipy open3d 
+RUN pip3 install zmq pyrealsense2 numba scipy open3d   wrapt_timeout_decorator
 
 
 # install librealsense sdk

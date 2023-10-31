@@ -2,7 +2,16 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import cv2
 from .data_collector._data_collector import CalibrationSolverData, CalibrationData
-    
+# from ._calibration_solver import solvers
+from ..logger import logger
+from ..config_reader import read_yaml_file
+
+
+solvers = {"HAND_EYE_ANDREFF": cv2.CALIB_HAND_EYE_ANDREFF,
+            "HAND_EYE_DANIILIDIS": cv2.CALIB_HAND_EYE_DANIILIDIS,
+            "HAND_EYE_HORAUD" : cv2.CALIB_HAND_EYE_HORAUD,  
+            "HAND_EYE_PARK" : cv2.CALIB_HAND_EYE_PARK,
+            "HAND_EYE_TSAI" : cv2.CALIB_HAND_EYE_TSAI}     
 
 def tf_from_rvectvec(rvec, tvec):
     out = np.eye(4)
@@ -98,15 +107,27 @@ def write_calibration_data_file(calib_data, file_name):
         output_each_line = ee_pose_line + tag_pose_line
         write_to_file(output_each_line, file_name)
 
-
-
-
+def read_cam_robot_extrinsics(extrinsics_file_name, method="HAND_EYE_DANIILIDIS"):
+    if method not in list(solvers.keys()):
+        logger.error("f{method} not prsent in the list of available solvers}")
+        return
+    extrinsics_dict = read_yaml_file(extrinsics_file_name)
+    return extrinsics_dict["HAND_EYE_DANIILIDIS"]    
+    
 def write_to_file(line_list, file_name):
     # open file in append mode
     line  = ",".join(line_list)
     with open(file_name, 'a') as f:
         f.write(line)
         f.write('\n') 
+        
+def transform_between_cam_robot_frames(cam2base_tf, rvec, tvec, to_camera_frame=True):
+    if to_camera_frame:
+        frame_in_base = tf_from_rvectvec(rvec, tvec)
+        base2cam = np.linalg.inv(cam2base_tf)   
+        return rvectvec_from_tf(np.matmul(base2cam, frame_in_base))
+    frame_in_cam = tf_from_rvectvec(rvec, tvec)
+    return rvectvec_from_tf(np.matmul(cam2base_tf, frame_in_cam))        
 
 """todo"""
 # erb to a static frame publisher in launch file

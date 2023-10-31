@@ -13,11 +13,11 @@ class ArucoBoardData:
     marker_separation: float 
     n_rows: int
     n_cols: int
-    ids: Optional[np.ndarray] = None
+    ids: Optional[list] = None
 
 class ArucoBoard(Fiducial):
     def __init__(self, aruco_board_data:ArucoBoardData):
-        Fiducial.__init__(self, "aruco_board")
+        Fiducial.__init__(self, "aruco_board", aruco_board_data)
         self.create_aruco_board_detector(aruco_board_data)
 
     def create_aruco_board_detector(self, aruco_board_data):
@@ -31,10 +31,11 @@ class ArucoBoard(Fiducial):
                                         aruco_board_data.marker_length, 
                                         aruco_board_data.marker_separation, 
                                         self.aruco_dict,
-                                        ids = aruco_board_data.ids)
+                                        ids = np.array(aruco_board_data.ids))
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, 
                                                 self.aruco_params)
+        self.fiducial_data = aruco_board_data
     
     def refine_corners(self, image, corners):
         winSize = [5, 5]
