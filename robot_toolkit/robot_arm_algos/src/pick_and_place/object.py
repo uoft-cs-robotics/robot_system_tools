@@ -18,7 +18,10 @@ def plot_image(image, blocking = False, transient = True, transient_time = 3.5):
     if transient:
         plt.pause(transient_time)
         plt.close() 
-    
+        
+def draw_estimated_frame(color_image, camera, rvec, tvec):
+    cv2.drawFrameAxes(color_image, camera.camera_matrix, camera.dist_coeffs, rvec, tvec, 0.05)
+    return color_image    
 class Object:
     def __init__(self, object_name,
                         tag=None,
@@ -30,12 +33,12 @@ class Object:
         self.grasp_predictor = grasp_predictor
         assert(not(tag is None and pose_estimator is None and grasp_predictor is None)), "You need to provide a pose estimator or grasp predictor if an AR tag is not attached to the object."
 
-    def get_object_pose(self, color_image, camera, debug_image = False, use_tag_to_find_pose = True):
+    def get_object_pose(self, color_image, camera, debug_image = False, use_tag_to_find_pose = False):
         if self.pose_estimator is None or use_tag_to_find_pose: 
             return self.get_tag_pose(color_image = color_image, 
                                 camera = camera, 
                                 debug_image = debug_image)
-        return self.pose_estimator.estimate_pose()# if using a pose estimator 
+        return self.pose_estimator.estimate_pose(camera, debug_image)# if using a pose estimator 
 
     def get_tag_pose(self, color_image, camera, debug_image = False):
         corners, ids, _ = self.tag.detect_markers(color_image)
@@ -71,7 +74,6 @@ class Object:
                                         matched_img_pts=img_points,
                                         matched_obj_pts=obj_points)                                                      
         
-
     # def get_object_pose(self, rvec_tag2world, tvec_tag2world):
     #     tf_tag2world = tf_from_rvectvec(rvec_tag2world, tvec_tag2world)
     #     return rvectvec_from_tf(np.matmul(tf_tag2world, self.object2tag_offset))

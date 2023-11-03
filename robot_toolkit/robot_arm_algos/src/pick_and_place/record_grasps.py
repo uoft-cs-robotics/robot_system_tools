@@ -8,6 +8,7 @@ allows recording of desired grasps on objects by first performing pose estimatio
 of the object and then recording the desired grasp obtained by moving the end effector manually. 
 '''
 import numpy as np
+import cv2
 import matplotlib.pyplot as plt
 import dataclasses
 from ..pick_and_place.object import transform_2_object_frame
@@ -15,6 +16,9 @@ from ..robot_camera_calibration._calibration_data_utils import tf_from_rvectvec,
 from ..config_reader import write_dict_to_yaml
 from ..logger import logger
 
+def draw_estimated_frame(color_image, camera, rvec, tvec):
+    cv2.drawFrameAxes(color_image, camera.camera_matrix, camera.dist_coeffs, rvec, tvec, 0.05)
+    return color_image
 
 class RecordGrasps:
     def __init__(self, object, camera, extrinsics_file, robot_pose_collector, output_file, camera_in_hand = True) -> None:
@@ -48,7 +52,7 @@ class RecordGrasps:
     
     def plot_image_with_frame(self, color_image, frame2cam_rvec, frame2cam_tvec):
         color_image = color_image.copy()
-        color_image = self.object.tag.draw_estimated_frame(color_image = color_image,
+        color_image = draw_estimated_frame(color_image = color_image,
                                                         camera = self.camera,
                                                         rvec = frame2cam_rvec,
                                                         tvec =  frame2cam_tvec)
@@ -60,7 +64,7 @@ class RecordGrasps:
             color_image = self.camera.get_current_rgb_frame()
             tag_rvec, tag_tvec, tag_detection = self.object.get_object_pose(color_image = self.camera.get_current_rgb_frame(), 
                                                                         camera = self.camera, 
-                                                                        debug_image = False)
+                                                                        debug_image = True)
             # print tag detection variance
             self.plot_image_with_frame(color_image = color_image,
                                         frame2cam_rvec = tag_rvec,
