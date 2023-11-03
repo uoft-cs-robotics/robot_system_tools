@@ -128,7 +128,7 @@ class RobotCameraCalibrationDataCollector():
         self.calib_data.tvecs_ee2base.append(tvec_ee)
         self.calib_data.rvecs_tag2cam.append(rvec_tag)
         self.calib_data.tvecs_tag2cam.append(tvec_tag)
-        logger.info(f"data collected so far: {self.data_idx+1}")
+        logger.info(f"data collected so far: {self.data_idx+1}/{self.n_data}")
         # logger.info(f"{rvec_ee}, {tvec_ee}, {rvec_tag}, {tvec_tag}")
         self.data_idx += 1        
 
