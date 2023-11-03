@@ -14,3 +14,9 @@ franka_control_suite/build/
 !robot_toolkit/calibration_board/target_US_letter.pdf
 !robot_toolkit/tests/data/*.png 
 !robot_toolkit/tests/data/*.pdf
+
+*.mtl
+*.dae
+*.mtl 
+*.obj 
+*.ply
