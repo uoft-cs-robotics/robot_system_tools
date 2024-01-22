@@ -33,7 +33,7 @@ if __name__ == "__main__":
                    joints_0[2],
                    joints_0[3]+ generate_sinusoidal_delta_joint_angle(t),
                    joints_0[4]+ generate_sinusoidal_delta_joint_angle(t),
-                   joints_0[5]+ generate_sinusoidal_delta_joint_angle(t),
+                   joints_0[5],
                    joints_0[6]] for t in ts]
     
     rospy.loginfo('Initializing Sensor Publisher')
@@ -83,4 +83,5 @@ if __name__ == "__main__":
                     qs_commmanded=qs_cmd, 
                     dqs_real=dqs_measured, 
                     dqs_commanded=dqs_cmd)
+    print(len(qs_cmd), len(qs_measured), len(joints_traj), len(ts))
 
