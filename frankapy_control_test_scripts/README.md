@@ -72,3 +72,7 @@ This script resets the robot joints to home configuration and tries to set low t
     * This script is tested for the Franka arm with and without franka gripper.
     * First launch franka-interface following instructions [here](https://github.com/pairlab/franka_arm_infra/tree/master#using-frankapy)     
     * Edit line 17 in the test_config to reflect your robot case.    
+- Operation
+    * This script tests direct torque control by applying 0.0 torque to all joints in libfranka. libfranka applies joint torque to cancel gravity. So this scripts basically runs gravity compensation mode
+- Expected Output: 
+    * While the script is running, you should be move the robot smoothly by hand as if its weightless
