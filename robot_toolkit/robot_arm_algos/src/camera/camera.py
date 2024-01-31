@@ -119,4 +119,15 @@ def get_segmap_from_bbox(image, bbox):
     output = np.zeros(np.shape(image)[:-1])
     output[bbox.ymin:bbox.ymax, bbox.xmin:bbox.xmax] = 255
     return output
-    
+
+def get_segmap_from_bbox_with_depth(rgb_image, depth_image, bbox):
+    # output = np.zeros(np.shape(image)[:-1])
+    output = np.zeros(np.shape(depth_image))
+    cropped_depth = depth_image[bbox.ymin:bbox.ymax, bbox.xmin:bbox.xmax]
+    avg_depth = np.mean(cropped_depth)
+    output[depth_image < avg_depth ] = 255 
+    output[:bbox.ymin, :] = 0
+    output[bbox.ymax:, :] = 0
+    output[:, :bbox.xmin] = 0
+    output[:, bbox.xmax:] = 0    
+    return output
