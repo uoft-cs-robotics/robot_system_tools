@@ -45,7 +45,7 @@ class RobotFrankaPy(RobotArm):
                                     translation = goal_ee_pose[0:3, -1])   
         else:
             goal_pose_fpy = goal_ee_pose
-        logger.info(goal_pose_fpy)
+        # logger.info(goal_pose_fpy)
         self.fpy_object.goto_pose(tool_pose = goal_pose_fpy, 
                                 ignore_virtual_walls=ignore_virtual_walls, 
                                 use_impedance=use_impedance, 
