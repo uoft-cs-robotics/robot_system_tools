@@ -27,18 +27,25 @@ class ArucoBoard(Fiducial):
             logger.error(f"{aruco_board_data.dictionary} is unknown dictionary.")
 
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary)
-        self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
-                                        aruco_board_data.marker_length, 
-                                        aruco_board_data.marker_separation, 
-                                        self.aruco_dict,
-                                        ids = np.array(aruco_board_data.ids))
+        logger.info(np.array(aruco_board_data.ids))
+        if aruco_board_data.ids is not None:
+            self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
+                                            aruco_board_data.marker_length, 
+                                            aruco_board_data.marker_separation, 
+                                            self.aruco_dict,
+                                            ids = np.array(aruco_board_data.ids))
+        else:
+            self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
+                                            aruco_board_data.marker_length, 
+                                            aruco_board_data.marker_separation, 
+                                            self.aruco_dict)            
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, 
                                                 self.aruco_params)
         self.fiducial_data = aruco_board_data
     
     def refine_corners(self, image, corners):
-        winSize = [5, 5]
+        winSize = [5, 2]
         zeroZone = [-1, -1]
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TermCriteria_COUNT, 30, 0.001)
         for corner in corners: 
