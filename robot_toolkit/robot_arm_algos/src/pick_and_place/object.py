@@ -33,7 +33,7 @@ class Object:
         self.grasp_predictor = grasp_predictor
         assert(not(tag is None and pose_estimator is None and grasp_predictor is None)), "You need to provide a pose estimator or grasp predictor if an AR tag is not attached to the object."
 
-    def get_object_pose(self, color_image, camera, debug_image = False, use_tag_to_find_pose = False):
+    def get_object_pose(self, color_image, camera, debug_image = True, use_tag_to_find_pose = False):
         if self.pose_estimator is None or use_tag_to_find_pose: 
             return self.get_tag_pose(color_image = color_image, 
                                 camera = camera, 
@@ -52,6 +52,7 @@ class Object:
                                 corners = corners)
 
         obj_points, img_points = self.tag.get_matched_object_points(corners, ids)
+        # obj_points, img_points = self.tag.get_matched_object_points(corners)
         rvec, tvec = self.tag.estimate_pose(obj_points, img_points, camera)
         reproj_error, error_variance = self.tag.compute_reprojection_error(rvec,
                                                             tvec,
