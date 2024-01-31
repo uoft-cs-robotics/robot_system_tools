@@ -125,17 +125,19 @@ class MegaPose6D(ObjectPoseEstimator):#(object)
                 object_mesh = o3d.io.read_triangle_mesh(self.obj_dir_path + "/meshes/" + self.object_name + "/textured.obj").transform(output.poses[0].cpu().detach().numpy())
                 frame_mesh = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2).transform(output.poses[0].cpu().detach().numpy())
                 
-                vis = o3d.visualization.Visualizer()
-                vis.create_window()
-                vis.add_geometry(pcd)
-                vis.add_geometry(frame_mesh)
-                vis.add_geometry(object_mesh)
-                vis.run()
-                sleep(3.0)
-                vis.destroy_window()
-                # o3d.visualization.draw_geometries([pcd, frame_mesh, object_mesh])
+                # vis = o3d.visualization.Visualizer()
+                # vis.create_window()
+                # vis.add_geometry(pcd)
+                # vis.add_geometry(frame_mesh)
+                # vis.add_geometry(object_mesh)
+                # vis.run()
                 # sleep(3.0)
                 # vis.destroy_window()
-        except:
+                o3d.visualization.draw_geometries([pcd, frame_mesh, object_mesh])
+                
+                # sleep(3.0)
+                # vis.dery_window()
+        except Exception as e: 
+            logger.error(e)
             pass
         return rvec, tvec, output   
