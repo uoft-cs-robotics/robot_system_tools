@@ -68,7 +68,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     python3-catkin-tools \ 
     python3-tk
-    
+
 # Build and install Protobuf 
 RUN cd \
     # && mkdir git \
@@ -149,8 +149,8 @@ RUN if [[ "x$build_contactgraspnet" == "x1" ]] ;\
     && echo "Building conda for contact_graspnet" \
     && apt-get update && apt-get upgrade -y && apt-get install -y  freeglut3-dev\
     && export CONDA_DIR=/opt/conda \
-    && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda \ 
+    && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh  \
+    && /bin/bash ~/miniconda.sh -b -p /opt/conda \ 
     && export PATH=$CONDA_DIR/bin:$PATH \ 
     && cd /root/git \ 
     && git clone https://github.com/NVlabs/contact_graspnet \
