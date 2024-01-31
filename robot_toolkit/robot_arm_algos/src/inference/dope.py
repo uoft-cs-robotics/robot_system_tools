@@ -2,7 +2,6 @@ import yaml
 import numpy as np
 import cv2
 import tf.transformations
-# import resource_retriever
 # from ..config_reader import  read_yaml_file
 from dope.inference.cuboid import Cuboid3d
 from dope.inference.cuboid_pnp_solver import CuboidPNPSolver
@@ -15,7 +14,7 @@ from vision_msgs.msg import Detection3D, Detection3DArray, ObjectHypothesisWithP
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import PoseStamped
 from ._object_pose_estimator import ObjectPoseEstimator
-
+from ..logger import logger
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
     vector = np.array(vector, dtype='float64')
@@ -35,7 +34,7 @@ def draw_estimated_frame(color_image, camera, rvec, tvec):
     
 class DOPEPoseDetection(ObjectPoseEstimator):#(object)
     def __init__(self,
-                # model_weights_path,
+                model_weights_path,
                 dope_config_pose_file,
                 object_model_name = "soup",
                 input_is_rectified = True,
@@ -72,9 +71,7 @@ class DOPEPoseDetection(ObjectPoseEstimator):#(object)
         weights_url = self.config_dope_dict["weights"][model]
         
         self.dnn_model = ModelData(model,
-                                   "/root/git/dope/weights/soup_60.pth")
-                                   #resource_retriever.get_filename(weights_url,
-                                   #                                 use_protocol=False))
+                                    model_weights_path)
         self.dnn_model.load_net_model()        
         try: 
             M = np.array(self.config_dope_dict["model_transform"][model], dtype='float64')
@@ -102,7 +99,7 @@ class DOPEPoseDetection(ObjectPoseEstimator):#(object)
         self.pnp_solver = CuboidPNPSolver(model,
                                         cuboid3d=Cuboid3d(self.config_dope_dict["dimensions"][model]))
 
-    def estimate_pose(self, camera):
+    def estimate_pose(self, camera, save_image_file_path=None):
         rgb_image = camera.get_current_rgb_frame()
         camera_matrix = camera.camera_matrix 
         dist_coeffs = camera.dist_coeffs
@@ -150,13 +147,13 @@ class DOPEPoseDetection(ObjectPoseEstimator):#(object)
             pose_msg.pose.orientation.w = transformed_ori[3]
 
             # Draw the cube
-            if None not in result['projected_points']:
+            if None not in result['projected_points'] and save_image_file_path is not None:
                 points2d = []
                 for pair in result['projected_points']:
                     points2d.append(tuple(pair))
                 draw.draw_cube(points2d, self.draw_colors)            
-                im.show()
-                im.save("/root/git/scratchpad/test.png")
+                logger.info("Image saved at " + save_image_file_path)
+                im.save(save_image_file_path)
             
 class Draw(object):
     """Drawing helper class to visualize the neural network output"""
