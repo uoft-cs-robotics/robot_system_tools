@@ -29,7 +29,45 @@ In this repo, one could also find a list of "test" scripts that test functionali
 - Expected output: 
     * An image of an arucoboard with parameters specified in the script store in [here](../tests/data/aruco_board_2x2.png)
 
-### [test_grasp_recorder.py](../test_grasp_recorder.py):
+### [test_bbox_annotator.py](test_bbox_annotator.py):
+- Operation:
+    * Gets a live image from a realsense RGBD camera 
+    * Opens up a window where you can click the top-left and bottom-right vertices of the 2D bbox, press escape after recording these two point clicks. 
+
+- Expected output: 
+    * Shows the image with a bounding box drawn 
+    * shows only the region inside the bbox. 
+    * Shows a segmentation map of the bounding box 
+    * Shows segmentation performed by filtering pixels greater than average depth
+
+## [test_contact_graspnet.py](test_contact_graspnet.py):
+Note: make sure you have activated the right conda environment
+- Operation: 
+    * Loads weights mentioned in test_config dictionary
+    * Gets a live RGBD image from a camera 
+    * Should get input bounding box from the user 
+    * Gets segmap from bounding box based on boolean variable in test_config dictionary
+- Expected Output
+    * Asks user to click the top-left and bottom-right corner of the bounding box of the object we wish to grasp.
+    * Run contactgraspnet inference and shows gripper pose frames in pointcloud in an open3d window.
+
+### [test_dope.py](../test_dope.py):
+Note: make sure you have activated the right conda environment
+- Operation:
+    * Gets an image using camera driver and displays that image in a gui 
+    * Loads dope model based on .yaml file to load weights for soupcan detector 
+    * Performs Pose estimation on the input image to detect pose of a YCB soupcan
+    * Make sure there's is a YCB soupcan in the field-of-view of the camera.
+- Expected output: 
+    * An image named test.jpg with 3D bounding box overlayed [here](../../docker/scratchpad/)
+
+### [test_franka_hand_mesh](../test_franka_hand_mesh.py):
+- Operation:
+    * Loads mesh for the franka gripper 
+- Expected output: 
+    * shows a open3d window visualizing franka gripper
+
+### [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py):
 - Pre-requesites: 
     * This script is used to show how we could record desired grasps for any arbitrary object. using **default franka arm and franka gripper**
     * This script also assume only one realsense camera is connected to the workstation computer
@@ -41,7 +79,7 @@ In this repo, one could also find a list of "test" scripts that test functionali
     cd <path_to_franka_control_suite>/franka_control_suite/build 
     ./read_states <robot_ip> <realtime_pc_ip> <zmq_port_number>
     ```
-    * Edit lines 8-18 [test_grasp_recorder.py](../test_grasp_recorder.py) to your corresponding test case. 
+    * Edit lines 8-18 [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py) to your corresponding test case. 
     * **Ensure the object is not moved throught the time this script is run**
 - Operation:
     * The object's pose is first estimated using the AR tag pose estimator(can also be replaced by any pose estimator for the object)
@@ -53,7 +91,8 @@ In this repo, one could also find a list of "test" scripts that test functionali
 
 ### [test_pick_n_place.py](../test_pick_n_place.py):
 - Pre-requesites: 
-    * This script is used to perform pick and place operations for objects for which we have already recorded desired grasps using [test_grasp_recorder.py](../test_grasp_recorder.py) using **default franka arm and franka gripper**
+    * This is an object centric pick and place script. The object can be either defined using an arucoboard or is an object detected by megapose, this choice is passed to the test_config dictionary in "use_aruco_board_pose_estimation" key
+    * This script is used to perform pick and place operations for objects for which we have already recorded desired grasps using one of [test_grasp_recorder_megapose.py](../test_grasp_recorder_megapose.py) or [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py) and this test is for **default franka arm and franka gripper**
     * This script assumes the robot and camera already calibrate extrinsically and it works for both camera in hand and in env case.
     * This script also assumes only one realsense camera is connected to the workstation computer. 
     * Frankapy's server should have already started and the status LED should be blue. 
