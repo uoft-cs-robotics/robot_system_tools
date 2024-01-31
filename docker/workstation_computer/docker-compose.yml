@@ -21,7 +21,7 @@ services:
     runtime: nvidia
     volumes:
       # - ../../calibration:/root/git/calibration
-      - ../../tests/frankapy_control_test_scripts:/root/git/tests/frankapy_control_test_scripts
+      - ../../frankapy_control_test_scripts:/root/git/frankapy_control_test_scripts
       - ../../robot_toolkit:/root/git/robot_toolkit
       - ../scratchpad:/root/git/scratchpad
 

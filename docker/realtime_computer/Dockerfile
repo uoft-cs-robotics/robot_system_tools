@@ -66,7 +66,7 @@ RUN apt-get install -y \
     ros-noetic-realsense2-camera
 
 RUN cd ~/git \ 
-    && git clone --recurse-submodules https://github.com/iamlab-cmu/franka-interface \
+    && git clone --recurse-submodules https://github.com/Ruthrash/franka-interface \
     && cd franka-interface 
 
 RUN echo "cloning libfranka"

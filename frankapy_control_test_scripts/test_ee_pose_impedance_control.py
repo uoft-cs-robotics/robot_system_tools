@@ -22,6 +22,7 @@ test_config = {
     "dt" : 0.001,
     "velocity" : 0.1,
     "cycles" : 2,
+    "with_gripper" : False,    
     # below unused at the moment
     "roll_deg": 10, 
     "pitch_deg": 10, 
@@ -30,7 +31,7 @@ test_config = {
 }
 
 if __name__ == "__main__":
-    fa = FrankaArm()
+    fa = FrankaArm(with_gripper = test_config["with_gripper"])
     fa.reset_joints()
     synch_messages_object = SynchMessages(commands_topic_name=FC.DEFAULT_SENSOR_PUBLISHER_TOPIC)
 

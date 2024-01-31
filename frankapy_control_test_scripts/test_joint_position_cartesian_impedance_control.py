@@ -14,12 +14,13 @@ import rospy
 from control_test_utils import *
 from control_test_utils import SynchMessages
 
-# test_config = {
-#     "amp" : 
-# }
+test_config = {
+    "with_gripper" : False
+}
+
 
 if __name__ == "__main__":
-    fa = FrankaArm()
+    fa = FrankaArm(with_gripper = test_config["with_gripper"])
     fa.reset_joints()
     synch_messages_object = SynchMessages()
     

@@ -25,7 +25,7 @@ install openssh-server, following instructions [here](https://www.cyberciti.biz/
 Before building the docker environments, you need to add your user to the docker group as mentioned [here](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo), so that you can run the docker commands without sudo preveileges and therefore need not type in your password everytime. 
 
 ```
- sudo usermod -aG docker $USER
+sudo usermod -aG docker $USER
 ```
 Note: If using docker-compose version 2, just replace commands containing "docker-compose" with "docker compose" 
 installing docker dependancies 
@@ -35,10 +35,11 @@ installing docker dependancies
 ## [Real time Computer](#realtime)
 Build docker container for the real time computer directly connected to Franka's control. 
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml build \
                             --build-arg workstation_ip=<workstation_ip address>\
                             --build-arg realtime_computer_ip=<realtime_computer_ip address>\
                             --build-arg robot_server_version=<robot_server_version>
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml create             
 ```
 Note: To find your robot server version, first find your robot systems version in Franka Desk -> Settings -> System -> Version. Next find your robot server version corresponding to your system version [here](https://frankaemika.github.io/docs/compatibility.html#compatibility-with-libfranka). eg. for robot system version >=4.2.1, robot server version is 5. 
 
@@ -47,7 +48,7 @@ Note: While building the docker container, the above command might print warning
 ### Build franka_control_suite in the realtime docker environment **(optional and not required to use frankapy)**
 open a bash terminal inside the realtime docker container 
 ```
-(sudo) docker exec -it realtime_docker bash
+docker exec -it realtime_docker bash
 ```
 go to franka_control_suite and build it
 ```
@@ -62,7 +63,7 @@ Build, create, and start the docker container for the workstation computer that 
 
 **Note: it is important to pass the workstation IP address as seen by the Realtime computer here**
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
                             --build-arg workstation_ip=<workstation_ip address>
 docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
 docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
@@ -114,27 +115,27 @@ Note: docker-compose provides several commands to use the docker containers that
 ## [Real time Computer](#realtime)
 In the realtime host computer terminal, bring the built docker container up 
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
 ```
 and when you are done with the container, run 
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
 ```
 this would get the container running. Then in a new terminal in the realtime host machine, run, 
 
 To open a bash terminal inside the docker container 
 ```
-(sudo) docker exec -it realtime_docker bash
+docker exec -it realtime_docker bash
 ```
 
 ## [Workstation Computer](#workstation) 
 In a terminal in the workstation computer
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
 ```
 and when you are done with the container, run 
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
 ```
 In a new terminal in the workstation host machine, to allow GUI usage, first run, 
 ```
@@ -143,7 +144,7 @@ xhost +local:docker
 
 then to open a bash terminal inside the workstation docker container that we started running above, run
 ```
-(sudo) docker exec -it workstation_computer_docker bash
+docker exec -it workstation_computer_docker bash
 ```
 
 ## Using frankapy 
@@ -151,11 +152,11 @@ Frankapy can be used with the real time docker and optionally with workstation_c
 
 **First** In your realtime pc, start the realtime computer docker with,
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml start
 ```
 and when you are done with the container, run 
 ```
-sudo docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
+docker-compose -f docker/realtime_computer/docker-compose-gui.yml stop
 ```
 
 if you are using workstation docker, **in a new terminal** start it with, 
@@ -167,11 +168,11 @@ xhost +local:docker
 ```
 then in the same terminal, run,
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
 ```
 and when you are done with the container, run 
 ```
-sudo docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml stop
 ```
 
 
@@ -180,7 +181,7 @@ To test the installation and setup of Frankapy,
 If using workstation docker, 
 
 ```
-(sudo) docker exec -it workstation_computer_docker bash
+docker exec -it workstation_computer_docker bash
 cd /root/git/frankapy 
 bash ./bash_scripts/start_control_pc.sh -i (realtime computer ip) -u (realtimecomputer username) -d /root/git/franka-interface -a (robot_ip) -w (workstation IP)
 ```
@@ -213,7 +214,7 @@ Please checkout [robot_toolkit/docs](robot_toolkit/docs) for documentations of r
 ## Test robotiq gripper
 To run the robotiq device, first in a terminal do
 ```sh
-(sudo) docker exec -it workstation_computer_docker bash
+docker exec -it workstation_computer_docker bash
 source ~/git/catkin_ws/devel/setup.bash
 rosrun robotiq_2f_gripper_control Robotiq2FGripperRtuNode.py /dev/ttyUSB0
 ```
@@ -221,7 +222,7 @@ rosrun robotiq_2f_gripper_control Robotiq2FGripperRtuNode.py /dev/ttyUSB0
 
 In another terminal do
 ```sh
-(sudo) docker exec -it workstation_computer_docker bash
+docker exec -it workstation_computer_docker bash
 source ~/git/catkin_ws/devel/setup.bash
 rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
 ```
