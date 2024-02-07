@@ -27,8 +27,9 @@ class ArucoBoard(Fiducial):
             logger.error(f"{aruco_board_data.dictionary} is unknown dictionary.")
 
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary)
-        logger.info(np.array(aruco_board_data.ids))
+        
         if aruco_board_data.ids is not None:
+            logger.info("IDs:", np.array(aruco_board_data.ids))
             self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
                                             aruco_board_data.marker_length, 
                                             aruco_board_data.marker_separation, 
