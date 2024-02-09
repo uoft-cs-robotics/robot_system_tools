@@ -26,14 +26,16 @@ class ArucoBoardDataCollector(ArucoBoard, CameraDataCollector):
                                                             obj_points,
                                                             img_points,
                                                             camera)     
+     
         if self.debug_detection_image:
-            self.draw_detections(color_image = color_image,
+            color_image_ = color_image.copy() 
+            self.draw_detections(color_image = color_image_,
                                 corners = corners)
-            self.draw_estimated_frame(color_image = color_image,
+            self.draw_estimated_frame(color_image = color_image_,
                                         camera = camera,
                                         rvec = rvec,
                                         tvec = tvec)
-            plt.imshow(color_image)
+            plt.imshow(color_image_)
             plt.show(block=False)
             plt.pause(2.5)
             plt.close()

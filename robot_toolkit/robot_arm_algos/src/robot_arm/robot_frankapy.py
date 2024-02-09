@@ -6,8 +6,10 @@ from autolab_core import RigidTransform
 from frankapy import FrankaArm
 from ._robot_arm import RobotArm
 from ..logger import logger
-
+from wrapt_timeout_decorator import *
 class RobotFrankaPy(RobotArm):
+    
+    @timeout(5.0)
     def __init__(self, with_franka_gripper = True ,robot_id = 1, init_node = True):
         self.fpy_object = FrankaArm(robot_num = robot_id,
                                     with_gripper = with_franka_gripper,
