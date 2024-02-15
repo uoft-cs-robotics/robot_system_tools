@@ -3,7 +3,7 @@ FROM ${image}
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG workstation_ip=192.168.0.1
-ARG use_robotiq=0
+ARG use_robotiq=1
 ARG build_dope=1
 ARG build_contactgraspnet=1
 ARG build_megapose=1
@@ -90,22 +90,34 @@ RUN apt-get install -y \
     ros-noetic-franka-gripper \
     ros-noetic-realsense2-camera
 
+RUN echo "Installing conda"
+ENV PATH /opt/conda/bin:$PATH
+RUN  export CONDA_DIR=/opt/conda \
+    && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh  \
+    && /bin/bash ~/miniconda.sh -b -p /opt/conda \ 
+    && export PATH=$CONDA_DIR/bin:$PATH \ 
+    && conda config --set auto_activate_base false \ 
+    && conda init bash 
+    # && conda deactivate
+
 RUN echo "cloning building autolab perception"
 RUN cd ~/git \ 
     && git clone --recurse-submodules https://github.com/BerkeleyAutomation/perception
 RUN cd ~/git/perception \
-    && sudo pip3 install -e .
+    && pip3 install -e .
+
+RUN pip3 install -U rosdep rosinstall_generator wstool rosinstall six vcstools
 
 RUN echo "cloning frankapy"
-
 RUN cd ~/git \ 
     && git clone --recurse-submodules https://github.com/Ruthrash/frankapy 
 
 RUN echo "building frankapy python modules"
 RUN cd ~/git/frankapy \
-    && sudo pip3 install -e .
+    && pip3 install empy==3.3.4 \
+    &&  pip3 install -e .
 
-RUN echo "compiling catkin_ws"
+RUN echo "compiling frankapy catkin_ws"
 RUN cd ~/git/frankapy \ 
     && source /opt/ros/noetic/setup.bash \
     && ./bash_scripts/make_catkin.sh
@@ -121,24 +133,22 @@ RUN apt-get install -y \
     ros-noetic-rosbash ros-noetic-ros-comm
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-RUN echo "source ~/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
+RUN echo "source /root/git/frankapy/catkin_ws/devel/setup.bash " >> ~/.bashrc
  
 RUN echo "export ROS_IP=${workstation_ip}" >> ~/.bashrc
 RUN echo "export ROS_MASTER_URI=http://${workstation_ip}:11311" >> ~/.bashrc
 RUN echo "export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python" >> ~/.bashrc
+    
 
+RUN pip3 install --upgrade protobuf
 
-RUN sudo pip3 install --upgrade protobuf
-
-RUN sudo pip3 install numpy --force-reinstall
+RUN pip3 install numpy --force-reinstall
 #reinstalling numba seems to solve an error when we import FrankaArm from frankapy
-RUN pip3 install zmq pyrealsense2 numba scipy open3d   wrapt_timeout_decorator
-
-
+RUN pip3 install zmq pyrealsense2 numba scipy open3d  opencv-python  wrapt_timeout_decorator
 RUN if [[ "x$use_robotiq" == "x1" ]] ;\
     then echo "use_robotiq is set to TRUE" \
     && apt-get install ros-noetic-soem \
-    && pip3 install -U pymodbus==2.5.3 \
+    && pip3 install -U pymodbus==2.5.3 empy==3.3.4 \
     && cd ~/git \
     && mkdir -p robotiq_ws/src \
     && cd robotiq_ws/src \
@@ -146,24 +156,24 @@ RUN if [[ "x$use_robotiq" == "x1" ]] ;\
     && cd ../ \ 
     && source /opt/ros/noetic/setup.bash\
     && catkin build \
-    && echo "source ~/git/robotiq_ws/devel/setup.bash" >> ~/.bashrc ; \
+    && echo "source ~/git/robotiq_ws/devel/setup.bash --extend"  >> ~/.bashrc ; \
     fi
-
 
 RUN if [[ "x$build_contactgraspnet" == "x1" ]] ;\
     then echo "build_contactgraspnet is set to TRUE" \
     && echo "Building conda for contact_graspnet" \
     && apt-get update && apt-get upgrade -y && apt-get install -y  freeglut3-dev\
-    && export CONDA_DIR=/opt/conda \
-    && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh  \
-    && /bin/bash ~/miniconda.sh -b -p /opt/conda \ 
-    && export PATH=$CONDA_DIR/bin:$PATH \ 
     && cd /root/git \ 
     && git clone https://github.com/NVlabs/contact_graspnet \
     && cd contact_graspnet\
-    && pip3 install open3d pyrealsense2\
     && conda env create -f contact_graspnet_env.yml \
-    && conda init bash ; \
+    && source activate contact_graspnet_env\
+    && pip3 install open3d pyrealsense2\
+    && cd ~/git/frankapy \
+    # && pip install empy==3.3.4 \
+    && pip3 install -e . \
+    && conda deactivate\    
+    && conda deactivate; \     
     fi
 
     
@@ -174,17 +184,19 @@ RUN if [[ "x$build_dope" == "x1" ]] ;\
     && cd /root/git && git clone https://github.com/NVlabs/Deep_Object_Pose.git dope \
     && export CONDA_DIR=/opt/conda && export PATH=$CONDA_DIR/bin:$PATH \
     && conda create --name dope python=3.8 \
-    && source activate dope\    
-    && conda install -c conda-forge ros-rospy \
+    && source activate dope\ 
+    && pip3 install catkin_pkg\  
     && cd dope && python3 -m pip install -r requirements.txt\
     && pip3 install -e . \ 
     && pip3 install torch torchvision --upgrade \ 
     && pip3 install numpy==1.20.3 \
-    && pip3 install open3d pyrealsense2 \ 
+    && pip3 install open3d pyrealsense2  \ 
+    && cd ~/git/frankapy \
+    # && pip install empy==3.3.4 \
+    && pip3 install -e . \    
+    && conda deactivate \
     && conda deactivate;\
     fi
-
-ENV PATH /opt/conda/bin:$PATH
 
 RUN if [[ "x$build_megapose" == "x1" ]] ;\
     then echo "build_megapose is set to TRUE" \
@@ -199,7 +211,11 @@ RUN if [[ "x$build_megapose" == "x1" ]] ;\
     && pip3 install torch torchvision --upgrade \ 
     # && pip3 install numpy==1.20.3 \
     && pip3 install open3d pyrealsense2 \ 
+    && cd ~/git/frankapy \
+    && pip install empy==3.3.4 \
+    && pip3 install -e . \    
     && conda deactivate\
+    && conda deactivate \ 
     && pip3 install rospkg  wrapt-timeout-decorator;\
     fi    
 
