@@ -96,8 +96,10 @@ RUN  export CONDA_DIR=/opt/conda \
     && wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh  \
     && /bin/bash ~/miniconda.sh -b -p /opt/conda \ 
     && export PATH=$CONDA_DIR/bin:$PATH \ 
+    && source ~/.bashrc
     && conda config --set auto_activate_base false \ 
-    && conda init bash 
+    && conda init bash \ 
+    && conda install python=3.8
     # && conda deactivate
 
 RUN echo "cloning building autolab perception"
