@@ -19,6 +19,16 @@ cp <weights file> /root/git/dope/weights
 - Download the weights from [here](https://drive.google.com/drive/folders/1tBHKf60K8DLM5arm-Chyf7jxkzOr5zGl)
 - Copy the weights file to [docker/scratchpad](../../docker/scratchpad) 
 
+Troubleshooting: 
+- If the inference time for contactgraspnet is very high(in minutes) or you notice that the predicted grasps are way off, this means that your tensorflow version could be off as reported [here](https://github.com/NVlabs/contact_graspnet/issues/9)
+- To solve this, 
+    - First, consider getting the right cuda version for your GPU, if you think the version is not matching with what is installed in the docker (see line 1 in [Dockerfile](../../docker/workstation_computer/Dockerfile))
+    - You can edit above mentioned line 1 with the image name that has the right CUDA version [here](https://hub.docker.com/r/nvidia/cuda/tags)
+    - Upgrade tensorlow by running (make sure the conda environment for contact graspnet is active) ```pip3 install tensorflow --upgrade```
+    - The opensourced contact graspnet model is compiled with cuDNN 8.1.1 so we need to install that as well, following instructions in [here](./nvidia-container-toolkit.md)
+    - recompile pointnet model as mentioned [here](https://github.com/NVlabs/contact_graspnet?tab=readme-ov-file#troubleshooting) 
+    - This shold solve the above menntioned problem
+    - Note: We tested contactgraspnet with tensorflow 2.11, CUDA 11.1.1, CUDNN 8.1.1
 
 ## Megapose Usage 
 - Megapose models are already downloaded for you with a python command in the workstation/Dockerfile. 

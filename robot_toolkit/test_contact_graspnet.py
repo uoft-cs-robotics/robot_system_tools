@@ -14,7 +14,7 @@ def main():
     rs_camera = RealSenseCamera()
     global_config = config_utils.load_config(test_config["checkpoint_dir"], batch_size=1, arg_configs=[])
     cgn_ = cgn(global_config, test_config["checkpoint_dir"] )
-    grasps, scores, contact_points = cgn_.generate_grasps(rs_camera, use_depth_for_seg = test_config["use_depth"])
+    grasps, scores, contact_points = cgn_.generate_grasps(rs_camera, use_depth_for_seg = test_config["use_depth"], is_visualize_grasps = True)
     
     # sorted_grasps = [x for _, x in sorted(zip(grasps[255.0], scores[255.0])) ]
     sorted_grasps = grasps[255.0][np.argsort(scores[255.0])]

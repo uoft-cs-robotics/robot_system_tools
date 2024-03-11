@@ -20,6 +20,7 @@ franka_control_suite/build/
 *.mtl 
 *.obj 
 *.ply
+*.tgz
 
 !robot_toolkit/robot_arm_algos/src/inference/objects/**/*.dae
 !robot_toolkit/robot_arm_algos/src/inference/objects/**/*.mtl
