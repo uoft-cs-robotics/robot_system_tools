@@ -41,7 +41,7 @@ class RobotArm(ABC):
 
     @abstractmethod
     def go_to_ee_pose_delta(self, delta_ee_pose):
-        """Abstract method that moves the end-effector to a desired pose defined in the base frame
+        """Abstract method that moves the end-effector to a desired delta pose defined in the base frame
         Args:
             goal_ee_pose (numpy array): 4x4 Matrix of the desired End-Effector frame in the robot base frame
         """        

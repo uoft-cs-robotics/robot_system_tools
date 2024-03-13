@@ -48,7 +48,7 @@ class RobotFrankaPy(RobotArm):
                                 ignore_virtual_walls = True, 
                                 use_impedance = False, 
                                 duration = 5):
-        """Abstract function implementation of RobotArm class
+        """Abstract function implementation of RobotArm class. Moves the robot arm to a desired joint angle configuration
 
         Args:
             goal_joint_config (numpy array): Desired joint angle configuration to go to
@@ -66,7 +66,7 @@ class RobotFrankaPy(RobotArm):
                             ignore_virtual_walls = True, 
                             use_impedance = False, 
                             duration = 3):
-        """Abstract function implementation of RobotArm Class
+        """Abstract function implementation of RobotArm Class. Moves the end-effector to a desired pose defined in the base frame
 
         Args:
             goal_ee_pose (numpy array): 4x4 Transformation Matrix of desired End-Effector pose in the Robot base frame.
@@ -92,7 +92,7 @@ class RobotFrankaPy(RobotArm):
                                 ignore_virtual_walls = True, 
                                 use_impedance = False, 
                                 duration = 3):
-        """_summary_
+        """Abstract function implementation of RobotArm Class. Moves the end-effector to a desired delta pose defined in the base frame
 
         Args:
             delta_ee_pose (_type_): Desired 4x4 Transformation Matrix of desired delta pose from currrent End-Effector pose in the Robot base frame.
