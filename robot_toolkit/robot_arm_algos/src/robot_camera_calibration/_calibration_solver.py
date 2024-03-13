@@ -11,14 +11,13 @@ solvers = {"HAND_EYE_ANDREFF": cv2.CALIB_HAND_EYE_ANDREFF,
             "HAND_EYE_TSAI": cv2.CALIB_HAND_EYE_TSAI}     
 
 class CalibrationSolver:
-    """Class that is responsible to solve the robot camera calibration problem by solving AX = XB system of equations. Uses Solvers implemented in OpenCV 
+    """! Class that is responsible to solve the robot camera calibration problem by solving AX = XB system of equations. Uses Solvers implemented in OpenCV 
     """
     def __init__(self, calib_data_file_name, flag_camera_in_hand=True):
-        """CalibrationSolver Class Constructor
+        """! CalibrationSolver Class Constructor
 
-        Args:
-            calib_data_file_name (str): Path to the file where calibration pose data are stored
-            flag_camera_in_hand (bool, optional): Is the camera attached to the robot's hand or to its environment. Defaults to True.
+        @param    calib_data_file_name (str): Path to the file where calibration pose data are stored
+        @param    flag_camera_in_hand (bool, optional): Is the camera attached to the robot's hand or to its environment. Defaults to True.
         """
         self.calib_solver_data = read_calibration_data_from_file(calib_data_file_name, 
                                                             flag_camera_in_hand)
@@ -30,13 +29,11 @@ class CalibrationSolver:
         pass
 
     def run_calibration_solver(self, solver_name):
-        """Runs the calibration solver on the collected robot end-effector and calibration tag pose data
+        """! Runs the calibration solver on the collected robot end-effector and calibration tag pose data
 
-        Args:
-            solver_name (str): Name of the solver in OpenCV to be used for calibration
-            
-        Returns: 
-            numpy array: 4x4 transformation matrix of the camera frame in the end-effector frame(for camera in hand case) or in the robot's base frame(for camera in the environment case)
+        @param    solver_name (str): Name of the solver in OpenCV to be used for calibration
+             
+        @return    numpy array: 4x4 transformation matrix of the camera frame in the end-effector frame(for camera in hand case) or in the robot's base frame(for camera in the environment case)
         """
         if(solver_name not in list(self.solvers.keys())):
             logger.error("Invalid robot camera calibration solver requested")
@@ -59,10 +56,9 @@ class CalibrationSolver:
 
     
     def run_calibration_all_solvers(self,):
-        """Runs Calibration on all available AX = XB solvers in OpenCV 
+        """! Runs Calibration on all available AX = XB solvers in OpenCV 
 
-        Returns:
-            tuple list: a list of tuples of (4x4 calibration matrix output, solver name) for all OpenCV AX = XB solvers
+        @return    tuple list: a list of tuples of (4x4 calibration matrix output, solver name) for all OpenCV AX = XB solvers
         """
         out = []
         for solver_name, _ in self.solvers.items():
@@ -70,15 +66,14 @@ class CalibrationSolver:
         return out
       
     def compute_calibration_error_fulldataset(self, output_tf):
-        """
+        """!
         Computes Calibration error by computing AX - XB where X is the output of calibration solver for AX = XB. 
         AX - XB will be a transformation matrix and its rotation as euler angles in degrees and translation in cms are reported 
         with mean and variance in error computed with all A's and B's from the calibration pose data. 
-        Args:
-            output_tf (numpy array): 4x4 Transformation matrix output from the calibration solver. 
 
-        Returns:
-            tuple: (mean rotation error in degrees , variance rotation error in degrees), (mean translation error in cms, variance translation error in cms))
+        @param    output_tf (numpy array): 4x4 Transformation matrix output from the calibration solver. 
+
+        @return    tuple: (mean rotation error in degrees , variance rotation error in degrees), (mean translation error in cms, variance translation error in cms))
         """
         indices = range(len(self.calib_solver_data.As_tf))
         pairs = [(a, b) for idx, a in enumerate(indices) for b in indices[idx + 1:]]

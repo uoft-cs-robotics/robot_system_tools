@@ -5,16 +5,15 @@ from ._data_collector import RobotPoseCollector
 
 
 class ZmqRobotPoseCollector(RobotPoseCollector):
-    """RobotPoseCollector Class Abstract implementation based on zmq server. This class expects a zmq server to run on the realtime computer connected to the robot. 
+    """! RobotPoseCollector Class Abstract implementation based on zmq server. This class expects a zmq server to run on the realtime computer connected to the robot. 
     Useful to move Franka manually when status LED is white. ROS TF tree maybe corrupted when status LED is turned white when using frankapy.
 
     """
     def __init__(self, zmq_ip, zmq_port):
-        """ZmqRobotPoseCollector Class Constructor. Sets up a ZMQ client
+        """! ZmqRobotPoseCollector Class Constructor. Sets up a ZMQ client
 
-        Args:
-            zmq_ip (str): IP address of the computer in which the zmq server is running
-            zmq_port (str): arbitrary zmq port. ensure it is the same port on the zmq server running on the realtime computer
+        @param    zmq_ip (str): IP address of the computer in which the zmq server is running
+        @param    zmq_port (str): arbitrary zmq port. ensure it is the same port on the zmq server running on the realtime computer
         """
         RobotPoseCollector.__init__(self)
         self.context = zmq.Context()
@@ -23,11 +22,10 @@ class ZmqRobotPoseCollector(RobotPoseCollector):
         self.socket.connect(socket_address)
     
     def get_ee_frame(self,):
-        """Returns the robot's end-effector pose measured in the robot's base frame 
+        """! Returns the robot's end-effector pose measured in the robot's base frame 
 
-        Returns:
-            numpy array: 3x1 angle-axis representation of rotation
-            numpy array: 3x1 translation vector
+        @return    numpy array: 3x1 angle-axis representation of rotation
+        @return    numpy array: 3x1 translation vector
         """
         self.socket.send_string("data")#even an empty message would do
         message = self.socket.recv()# receives EE pose 

@@ -5,14 +5,12 @@ from .data_collector._data_collector import CalibrationSolverData, CalibrationDa
     
 
 def tf_from_rvectvec(rvec, tvec):
-    """Gets 4x4 Transformation matrix for 3x1 angle-axis rotation and 3x1 translation
+    """! Gets 4x4 Transformation matrix for 3x1 angle-axis rotation and 3x1 translation
 
-    Args:
-        rvec (numpy array): 3x1 angle-axis rotation vector
-        tvec (numpy array): 3x1 translation vector
+    @param:    rvec (numpy array): 3x1 angle-axis rotation vector
+    @param:    tvec (numpy array): 3x1 translation vector
 
-    Returns:
-        numpy array: 4x4 Transformation matrix
+    @return    numpy array: 4x4 Transformation matrix
     """
     out = np.eye(4)
     out[0:3, -1] = np.squeeze(tvec)
@@ -23,14 +21,12 @@ def tf_from_rvectvec(rvec, tvec):
     return out
 
 def rvectvec_from_tf(tf):
-    """Gets 3x1 angle-axis rotation and 3x1 translation from 4x4 Transformation matrix
+    """! Gets 3x1 angle-axis rotation and 3x1 translation from 4x4 Transformation matrix
 
-    Args:
-        tf (numpy array): 4x4 Transformation matrix
+    @param    tf (numpy array): 4x4 Transformation matrix
 
-    Returns:
-        numpy array: 3x1 angle-axis rotation vector
-        numpy array: 3x1 translation vector
+    @return    numpy array: 3x1 angle-axis rotation vector
+    @return    numpy array: 3x1 translation vector
     """
     rvec = cv2.Rodrigues(tf[0:3,0:3])[0]
     tvec = tf[0:3, -1]
@@ -39,13 +35,11 @@ def rvectvec_from_tf(tf):
 def error_rot_trans(tf1, tf2):
     """Computes Difference between two transformation matrices
 
-    Args:
-        tf1 (numpy array): 4x4 Transformation matrix
-        tf2 (numpy array): 4x4 Transformation matrix
+    @param    tf1 (numpy array): 4x4 Transformation matrix
+    @param     tf2 (numpy array): 4x4 Transformation matrix
 
-    Returns:
-        numpy array: 3x1 rotation error as euler angles in degrees
-        numpy array: 3x1 translation error vector in centimeters
+    @return    numpy array: 3x1 rotation error as euler angles in degrees
+    @return    numpy array: 3x1 translation error vector in centimeters
     """
     assert(np.shape(tf1)==(4,4))
     assert(np.shape(tf2)==(4,4))
@@ -60,14 +54,12 @@ def store_robot_cam_extrinsics_result():
     pass
 
 def read_calibration_data_from_file(file_name:str, flag_camera_in_hand=True):
-    """Reads pose data collected and stored in a file and prepares it for the calibration solver. 
+    """! Reads pose data collected and stored in a file and prepares it for the calibration solver. 
 
-    Args:
-        file_name (str): Path to the text file in which calibration pose data is stored
-        flag_camera_in_hand (bool, optional): If the camera is attached to the robot's hand or its environment. Defaults to True.
+    @param     file_name (str): Path to the text file in which calibration pose data is stored
+    @param     flag_camera_in_hand (bool, optional): If the camera is attached to the robot's hand or its environment. Defaults to True.
 
-    Returns:
-        CalibrationSolverData: all the robot end-effector and calibration tag pose data collected for robot camera calibration's solver. 
+    @return    CalibrationSolverData: all the robot end-effector and calibration tag pose data collected for robot camera calibration's solver. 
     """
     calib_solver_data = CalibrationSolverData()
     with open(file_name, 'r') as fp:
@@ -114,11 +106,10 @@ def read_calibration_data_from_file(file_name:str, flag_camera_in_hand=True):
 
 
 def write_calibration_data_file(calib_data, file_name):
-    """This function writes the robot end-effector and calibration tag pose data collected into a text file that can be used to run calibration routine later on. 
+    """! This function writes the robot end-effector and calibration tag pose data collected into a text file that can be used to run calibration routine later on. 
 
-    Args:
-        calib_data (CalibrationData): Angle-axis rotatin and translation vectors of robot-end effector and calibration tag pose pairs
-        file_name (str): Path of the text file to which the calibration pose data is written to 
+    @return    calib_data (CalibrationData): Angle-axis rotatin and translation vectors of robot-end effector and calibration tag pose pairs
+    @return    file_name (str): Path of the text file to which the calibration pose data is written to 
     """
     open(file_name, 'w').close()#emptys the file
 
@@ -145,10 +136,10 @@ def write_calibration_data_file(calib_data, file_name):
 
 
 def write_to_file(line_list, file_name):
-    """Appends line by line to a file
-    Args:
-        line_list (str list): list of lines of text to be added to the text file. 
-        file_name (str): Path to the text file in which we want to write 
+    """! Appends line by line to a file
+    
+    @param    line_list (str list): list of lines of text to be added to the text file. 
+    @param    file_name (str): Path to the text file in which we want to write 
     """
     # open file in append mode
     line  = ",".join(line_list)

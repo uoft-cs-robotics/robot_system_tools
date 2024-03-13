@@ -6,7 +6,7 @@ from ..camera.camera import RGBCamera
 
 @dataclass
 class TagDetection:
-    """
+    """!
     DataClass containing information pertaining to fiducial marker detection in the image. reproj_error_mean is the mean reprojection error of all the markers in a board and reproj_error_variance is its variance. 
     matched_obj_pts and matched_img_pts are the 3D locations of the corners of each marker in the tag's coordinate frame and its corresponding 2D location in the image respectively. 
     """    
@@ -16,23 +16,21 @@ class TagDetection:
     matched_img_pts: np.ndarray
 
 class Fiducial(ABC):
-    """
+    """!
     Abstract Class that needs to be implemented for all types of fiducial marker patterns
     """
     def __init__(self, marker_type):
-        """Fiducial Class Constructor 
+        """!Fiducial Class Constructor 
 
-		Args:
-			marker_type (str): Name of the type of fiducial marker pattern
+		@param	marker_type (str): Name of the type of fiducial marker pattern
 		"""
         self.fiducial_type = marker_type
     
     @abstractmethod
     def detect_markers(self, color_image):
-        """Detects the fiducial markers in the RGB image
+        """! Detects the fiducial markers in the RGB image
 
-		Args:
-			color_image (numpy array): 3 channel numpy matrix of the RGB image
+		@param	color_image (numpy array): 3 channel numpy matrix of the RGB image
 		"""
         pass
     
@@ -40,12 +38,11 @@ class Fiducial(ABC):
     def estimate_pose(self, img_points, 
 							obj_points, 
 							camera:RGBCamera):
-        """Estimates the pose of the fiducial pattern with respect to the camera frame
+        """! Estimates the pose of the fiducial pattern with respect to the camera frame
         
-		Args:
-			img_points (numpy array): 2D locations of the fiducial marker's corners in the image.
-			obj_points (numpy array): corresponding 3D locations of the fiducial marker's corners in the fiducial marker's frame of reference.
-			camera (RGBCamera): Camera object that contains the intrinsics and lens distortion parameters
+		@param	img_points (numpy array): 2D locations of the fiducial marker's corners in the image.
+		@param	obj_points (numpy array): corresponding 3D locations of the fiducial marker's corners in the fiducial marker's frame of reference.
+		@param	camera (RGBCamera): Camera object that contains the intrinsics and lens distortion parameters
 		"""
         pass
 
@@ -55,14 +52,13 @@ class Fiducial(ABC):
 										obj_points, 
 										img_points, 
 										camera:RGBCamera):
-        """Computes reprojection error for the estimated pose of the fiducial marker using the fiducial markers detection in the image and its corresponding 3D location in the fiducial marker frame. 
+        """! Computes reprojection error for the estimated pose of the fiducial marker using the fiducial markers detection in the image and its corresponding 3D location in the fiducial marker frame. 
 
-		Args:
-			rvec (numpy array): 3x1 angle axis rotation vector of the fiducial marker's pose
-			tvec (numpy array): 3x1 translation vector of the fiducial marker's pose
-			img_points (numpy array): 2D locations of the fiducial marker's corners in the image.
-			obj_points (numpy array): corresponding 3D locations of the fiducial marker's corners in the fiducial marker's frame of reference.
-			camera (RGBCamera): Camera object that contains the intrinsics and lens distortion parameters
+		@param	rvec (numpy array): 3x1 angle axis rotation vector of the fiducial marker's pose
+		@param	tvec (numpy array): 3x1 translation vector of the fiducial marker's pose
+		@param	img_points (numpy array): 2D locations of the fiducial marker's corners in the image.
+		@param	obj_points (numpy array): corresponding 3D locations of the fiducial marker's corners in the fiducial marker's frame of reference.
+		@param	camera (RGBCamera): Camera object that contains the intrinsics and lens distortion parameters
 		"""
         pass	
 

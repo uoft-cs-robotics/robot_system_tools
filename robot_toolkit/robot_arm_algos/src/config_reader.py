@@ -9,13 +9,11 @@ from .robot_camera_calibration.data_collector.zmq_robot_pose_collector import Zm
 from .logger import logger
 
 def read_yaml_file(file_path):
-    """Reads a *.yaml or *.yml file.
+    """! Reads a *.yaml or *.yml file.
 
-    Args:
-        file_path (str): Path of the YAML file.
+    @param    file_path (str): Path of the YAML file.
 
-    Returns:
-        dict: YAML data is returned as a dictionary.
+    @return    dict: YAML data is returned as a dictionary.
     """
     with open(file_path, 'r') as file:
         data = yaml.safe_load(file)
@@ -24,25 +22,21 @@ def read_yaml_file(file_path):
 def write_dict_to_yaml(data_dict, file_path):
     """Writes a dict object as a YAML file.
 
-    Args:
-        data_dict (dict): Dictionary to be written tot the file. 
-        file_path (str): Path of the YAML file.
+    @param    data_dict (dict): Dictionary to be written tot the file. 
+    @param    file_path (str): Path of the YAML file.
     """
     with open(file_path, 'w') as file:
         yaml.dump(data_dict, file)
 
 def get_camera(config_dict):
-    """Gets the appropriate Camera object based on the configuration file for robot camera calibration. 
+    """! Gets the appropriate Camera object based on the configuration file for robot camera calibration. 
 
-    Args:
-        config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
+    @param    config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
 
-    Returns:
-        Camera: appropriate camera object based on configuration file.
-    
-    Raises: 
-        Exception: Failed to create setup configuration for calibration.
-        KeyError : configuration yaml file for robot camera calibration is not properly setup.
+    @return    Camera: appropriate camera object based on configuration file.
+
+    @exception    Exception: Failed to create setup configuration for calibration.
+    @exception    KeyError : configuration yaml file for robot camera calibration is not properly setup.
     """
     if(config_dict["camera"] == "realsense_camera"):
         camera = RealSenseCamera()
@@ -64,16 +58,13 @@ def get_camera(config_dict):
     return camera
 
 def get_tag_pose_collector(config_dict):
-    """Gets the appropriate TagPoseCollector object based on the configuration file for robot camera calibration. 
+    """! Gets the appropriate TagPoseCollector object based on the configuration file for robot camera calibration. 
 
-    Args:
-        config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
+    @param    config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
 
-    Returns:
-        TagPoseCollector: appropriate TagPoseCollector object based on configuration file.
-    
-    Raises:
-        Exception: Failed to create setup configuration for calibration.
+    @return    TagPoseCollector: appropriate TagPoseCollector object based on configuration file.
+
+    @exception    Exception: Failed to create setup configuration for calibration.
     """
     if(config_dict["tag_pose_collector"] == "aruco_board"):    
         try:
@@ -93,16 +84,13 @@ def get_tag_pose_collector(config_dict):
     return tag_pose_collector
 
 def get_robot_pose_collector(config_dict):
-    """Gets the appropriate RobotPoseCollector object based on the configuration file for robot camera calibration. 
+    """! Gets the appropriate RobotPoseCollector object based on the configuration file for robot camera calibration. 
 
-    Args:
-        config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
+    @param    config_dict (dict): robot camera calibraton configuration file that is loaded as a dict.
 
-    Returns:
-        RobotPoseCollector: appropriate RobotPoseCollector object based on configuration file.
-    
-    Raises: 
-        Exception: Failed to create setup configuration for calibration
+    @return    RobotPoseCollector: appropriate RobotPoseCollector object based on configuration file.
+
+    @exception    Exception: Failed to create setup configuration for calibration
     """
     if(config_dict["robot_pose_collector"] == "ros_tf"):
         if(not config_dict["move_robot_automatically"]):
@@ -135,16 +123,14 @@ def get_robot_pose_collector(config_dict):
     return robot_pose_collector
 
 def get_robot_camera_calib_config(file_path):
-    """Gets all approprite objects required for robot camera calibration based on configuration described in YAML file located at "file_path"
+    """! Gets all approprite objects required for robot camera calibration based on configuration described in YAML file located at "file_path"
 
-    Args:
-        file_path (str): Path to the YAML file of the congiruation file for robot camera calibration. 
+    @param    file_path (str): Path to the YAML file of the congiruation file for robot camera calibration. 
 
-    Returns:
-        TagPoseCollector: TagPoseCollector object that is used to get the calibration tag's pose in the camera frame.
-        RobotPoseCollector: RobotPoseCollector object that is used to get the robot's end-effector's pose in the robot's base frame. 
-        Camera: Camera object for the camera to be calibrated with robotarm.
-        dict: Dictionary containing the configuration of the robot camera calibration setup.
+    @return    TagPoseCollector: TagPoseCollector object that is used to get the calibration tag's pose in the camera frame.
+    @return    RobotPoseCollector: RobotPoseCollector object that is used to get the robot's end-effector's pose in the robot's base frame. 
+    @return    Camera: Camera object for the camera to be calibrated with robotarm.
+    @return    dict: Dictionary containing the configuration of the robot camera calibration setup.
     """
 
     config_dict = read_yaml_file(file_path)

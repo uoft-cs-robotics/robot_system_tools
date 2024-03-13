@@ -4,15 +4,15 @@ import open3d as o3d
 from ..logger import logger
 
 class Camera:
-    """Abstract Camera Class that can be used to define APIs for
+    """! Abstract Camera Class that can be used to define APIs for
     RGB/RGBD Cameras as ROS Camera nodes, Realsense Camera etc
     """    
     def __init__(self, camera_matrix, dist_coeffs, camera_id = 1):
-        """Camera Class Constructor
-        Args:
-            camera_matrix (numpy array): The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
-            camera_id (int): Useful for realsense cameras and multi-camera setups
+        """! Camera Class Constructor
+        
+        @param camera_matrix (numpy array): The camera matrix with intrinsic parameters
+        @param dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+        @param camera_id (int): Useful for realsense cameras and multi-camera setups
         """           
         self.camera_matrix = camera_matrix
         self.dist_coeffs = dist_coeffs
@@ -24,17 +24,17 @@ class Camera:
         
 
 class RGBCamera(ABC, Camera):
-    """Abstract RGB Camera Class as ROS Camera nodes, Realsense Camera etc"""
-    """Each object, 
+    """! Abstract RGB Camera Class as ROS Camera nodes, Realsense Camera etc
+        Each object, 
         1. Inherits from the Camera class 
         2. Has a function that returns current RGB image as numpy matrix
     """
     def __init__(self, camera_matrix, dist_coeffs, camera_id = 1):
-        """RGBCamera Class Constructor 
-        Args:
-            camera_matrix (numpy array): The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
-            camera_id (int): Useful for realsense cameras and multi-camera setups  
+        """! RGBCamera Class Constructor 
+        
+        @param camera_matrix (numpy array): The camera matrix with intrinsic parameters
+        @param dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+        @param camera_id (int): Useful for realsense cameras and multi-camera setups  
         """            
         Camera.__init__(self, camera_matrix,
                             dist_coeffs,
@@ -42,54 +42,52 @@ class RGBCamera(ABC, Camera):
     
     @abstractmethod
     def get_current_rgb_frame(self,):
-        """Abstract function. Needs to be implemented for RGB cameras
+        """! Abstract function. Needs to be implemented for RGB cameras
         
-        Returns:
-            numpy array: a 3 channel RGB image
+
+        @return numpy array: a 3 channel RGB image
         """
         pass
     
 
 class RGBDCamera(RGBCamera):
-    """Abstract RGBD Camera Class as ROS Camera nodes, Realsense Camera etc"""
+    """! Abstract RGBD Camera Class as ROS Camera nodes, Realsense Camera etc"""
     def __init__(self, camera_matrix, dist_coeffs, camera_id):
-        """Camera Class Constructor
-        Args:
-            camera_matrix (numpy array): The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
-            camera_id (int): Useful for realsense cameras and multi-camera setups
+        """! Camera Class Constructor
+
+        @param camera_matrix (numpy array): The camera matrix with intrinsic parameters
+        @param dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+        @param camera_id (int): Useful for realsense cameras and multi-camera setups
         """        
         RGBCamera.__init__(self, camera_matrix,
                                     dist_coeffs,
                                     camera_id)
     @abstractmethod
     def get_current_rgbd_frames(self,):
-        """Abstract function. Needs to be implemented for RGBDs cameras for eg. realsense D400 series
+        """! Abstract function. Needs to be implemented for RGBDs cameras for eg. realsense D400 series
         
-        Returns:
-            numpy array: 3 channel RGB image
-            numpy array: 1 channel Depth image
+        @return numpy array: 3 channel RGB image
+        @return numpy array: 1 channel Depth image
         """
         pass
 
     @abstractmethod
     def get_current_depth_frame(self,):
-        """Abstract function. Needs to be implemented for Depth cameras
+        """! Abstract function. Needs to be implemented for Depth cameras
         
-        Returns:
-            numpy array: 1 channel Depth image
+        
+        @return: numpy array: 1 channel Depth image
         """        
         pass 
 
     def get_pointcloud_rgbd(self, color_im = None, depth_im = None):
-        """Construct open3d pointcloud from depth and color images
+        """! Construct open3d pointcloud from depth and color images
         
-        Args:
-            color_im (numpy array): Color image as a numpy matrix
-            depth_im (numpy array): Depth image as a numpy matrix
         
-        Returns:       
-            open3d.pointcloud: colored pointcloud from color_im and depth_im
+        @param color_im (numpy array): Color image as a numpy matrix
+        @param depth_im (numpy array): Depth image as a numpy matrix
+               
+        @return open3d.pointcloud: colored pointcloud from color_im and depth_im
         """             
         if color_im is None and depth_im is None:
             color_im, depth_im = self.get_current_rgbd_frames()
@@ -110,13 +108,13 @@ class RGBDCamera(RGBCamera):
         return pcd   
     
     def get_pointcloud_depth(self, depth_im = None):
-        """Construct open3d pointcloud from depth image
+        """! Construct open3d pointcloud from depth image
         
-        Args:    
-            depth_im (numpy array): Depth image as a numpy matrix
+   
+        @param depth_im (numpy array): Depth image as a numpy matrix
         
-        Returns:
-            open3d.pointcloud: non-colored pointcloud from depth_im
+
+        @return open3d.pointcloud: non-colored pointcloud from depth_im
         """            
         if depth_im is None:
             depth_im = self.get_current_depth_frame()
@@ -134,7 +132,7 @@ class RGBDCamera(RGBCamera):
 
 @dataclass
 class BBox:
-    """
+    """!
     Data Class to store top left and bottom right corners of a bounding box in image
     """
     xmin: int
@@ -147,16 +145,14 @@ import cv2
 
 
 def get_bbox_annotations(rgb_image): 
-    """Opens image in an OpenCV GUI to get bounding box co-ordinates from mouse clicks
+    """! Opens image in an OpenCV GUI to get bounding box co-ordinates from mouse clicks
     The user should click the top left coordinate and the bottom right coordinate and 
     then press Esc
     
-    Args:      
-        rgb_image (numpy array): Depth image as a numpy matrix
+    @param rgb_image (numpy array): Depth image as a numpy matrix
     
-    Returns:       
-        BBox:  BBox dataclass object with bounding box coordinates
-        numpy array: Only part of the image within the bounding box as a numpy matrix 
+    @return BBox:  BBox dataclass object with bounding box coordinates
+    @return numpy array: Only part of the image within the bounding box as a numpy matrix 
     """     
     # Mouse callback function
     global click_list
@@ -184,31 +180,28 @@ def get_bbox_annotations(rgb_image):
     return bbox, rgb_image[bbox.ymin:bbox.ymax, bbox.xmin:bbox.xmax]
 
 def get_segmap_from_bbox(image, bbox):
-    """Creates a segmentation mask from the bbox co-ordinates. Region of image within bounding box is 255 
+    """! Creates a segmentation mask from the bbox co-ordinates. Region of image within bounding box is 255 
     and outside is 0
     
-    Args: 
-        image (numpy array): Numpy matrix with the size of the required segmentation mask 
-        bbox (BBox): BBox dataclass object with the bounding box coordinates
+    @param image (numpy array): Numpy matrix with the size of the required segmentation mask 
+    @param bbox (BBox): BBox dataclass object with the bounding box coordinates
     
-    Returns:
-        numpy array: a segmentation mask of the size `image` rom the bbox co-ordinates in `bbox`
+    @return numpy array: a segmentation mask of the size `image` rom the bbox co-ordinates in `bbox`
     """     
     output = np.zeros(np.shape(image)[:-1])
     output[bbox.ymin:bbox.ymax, bbox.xmin:bbox.xmax] = 255
     return output
 
 def get_segmap_from_bbox_with_depth(rgb_image, depth_image, bbox):
-    """Get segmentation map by filtering out points greater than average depth inside the bounding box. 
+    """! Get segmentation map by filtering out points greater than average depth inside the bounding box. 
     This is a heuristic method to subtract background depth pixels
 
-    Args:
-        rgb_image (numpy array): Color image whose size is that of the segmentation mask
-        depth_image (numpy_array): Depth image used for filtering 
-        bbox (BBox): Contains bounding box coordinates
+    @param rgb_image (numpy array): Color image whose size is that of the segmentation mask
+    @param depth_image (numpy_array): Depth image used for filtering 
+    @param bbox (BBox): Contains bounding box coordinates
 
-    Returns:
-        numpy array: of size rgb_image and having value as 255 for pixels with depth less than average depth of pixels 
+    
+    @return numpy array: of size rgb_image and having value as 255 for pixels with depth less than average depth of pixels 
                     inside the pointcloud
     """
     # output = np.zeros(np.shape(image)[:-1])
