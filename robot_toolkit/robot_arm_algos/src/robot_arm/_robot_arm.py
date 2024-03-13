@@ -27,7 +27,7 @@ class RobotArm(ABC):
         """Abstract method that moves the robot arm to a desired joint angle configuration
 
         Args:
-            goal_joint_config : desired joint angle configuration 
+            goal_joint_config: desired joint angle configuration 
         """
         pass
 

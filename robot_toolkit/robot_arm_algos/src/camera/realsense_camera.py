@@ -12,10 +12,10 @@ class RealSenseCamera(RGBDCamera):
         """RealSense Camera Class constructor
 
         Args:
-            camera_matrix (_type_, optional): _description_. Defaults to None.
-            dist_coeffs (_type_, optional): _description_. Defaults to None.
-            start_camera (bool, optional): _description_. Defaults to True.
-            camera_id (_type_, optional): _description_. Defaults to None.
+            camera_matrix (numpy array, optional): 3x3 camera matrix. Defaults to None.
+            dist_coeffs (numpy array, optional): 1 dimensional array of distortion parameters. Defaults to None.
+            start_camera (bool, optional): Boolean variable that powers on the Camera if set true. Defaults to True.
+            camera_id (int, optional): ID of the camera. useful for realsense cameras and for multiple cameras setup. Defaults to None.
 
         Raises:
             Exception: If unable to detect/start the realsense camera driver

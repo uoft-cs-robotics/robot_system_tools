@@ -40,7 +40,7 @@ class RobotFrankaPy(RobotArm):
         """Abstract function implementation of RobotArm class
         
         Returns:
-            numpy array : Franka Arms current joint angle configuration
+            numpy array: Franka Arms current joint angle configuration
         """
         return self.fpy_object.get_joints()
     
@@ -95,7 +95,7 @@ class RobotFrankaPy(RobotArm):
         """Abstract function implementation of RobotArm Class. Moves the end-effector to a desired delta pose defined in the base frame
 
         Args:
-            delta_ee_pose (_type_): Desired 4x4 Transformation Matrix of desired delta pose from currrent End-Effector pose in the Robot base frame.
+            delta_ee_pose (numpy array): Desired 4x4 Transformation Matrix of desired delta pose from currrent End-Effector pose in the Robot base frame.
             ignore_virtual_walls (bool, optional): Should frankapy ignore virtual walls. Defaults to True.
             use_impedance (bool, optional): Should we run impedance control or position control. Defaults to False.
             duration (int, optional): Frankapy needs to know the duration the joint position/impedance controller will run for in secs. Defaults to 3.
@@ -127,11 +127,11 @@ class RobotFrankaPy(RobotArm):
         This is achieved by very small translation and larger rotations round initial pose.
 
         Args:
-            n_poses (_type_): number of end-effector poses to sample from
+            n_poses (int): number of end-effector poses to sample from
             flag_camera_in_hand (bool, optional): Is a Camera attached to the robot hand or to its environment. Defaults to True.
 
         Returns:
-            RigidTransform list : list of randomly sample End-Effector poses around current end-effector pose
+            RigidTransform list: list of randomly sample End-Effector poses around current end-effector pose
         """
         initial_pose = self.fpy_object.get_pose()
         from itertools import cycle

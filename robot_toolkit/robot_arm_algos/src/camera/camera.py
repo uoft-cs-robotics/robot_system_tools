@@ -10,9 +10,9 @@ class Camera:
     def __init__(self, camera_matrix, dist_coeffs, camera_id = 1):
         """Camera Class Constructor
         Args:
-            camera_matrix (numpy array) : The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array) : Distortion co-effecients of the Camera matrix 
-            camera_id (int) : Useful for realsense cameras and multi-camera setups
+            camera_matrix (numpy array): The camera matrix with intrinsic parameters
+            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+            camera_id (int): Useful for realsense cameras and multi-camera setups
         """           
         self.camera_matrix = camera_matrix
         self.dist_coeffs = dist_coeffs
@@ -32,9 +32,9 @@ class RGBCamera(ABC, Camera):
     def __init__(self, camera_matrix, dist_coeffs, camera_id = 1):
         """RGBCamera Class Constructor 
         Args:
-            camera_matrix (numpy array) : The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array) : Distortion co-effecients of the Camera matrix 
-            camera_id (int) : Useful for realsense cameras and multi-camera setups  
+            camera_matrix (numpy array): The camera matrix with intrinsic parameters
+            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+            camera_id (int): Useful for realsense cameras and multi-camera setups  
         """            
         Camera.__init__(self, camera_matrix,
                             dist_coeffs,
@@ -55,9 +55,9 @@ class RGBDCamera(RGBCamera):
     def __init__(self, camera_matrix, dist_coeffs, camera_id):
         """Camera Class Constructor
         Args:
-            camera_matrix (numpy array) : The camera matrix with intrinsic parameters
-            dist_coeffs (numpy array) : Distortion co-effecients of the Camera matrix 
-            camera_id (int) : Useful for realsense cameras and multi-camera setups
+            camera_matrix (numpy array): The camera matrix with intrinsic parameters
+            dist_coeffs (numpy array): Distortion co-effecients of the Camera matrix 
+            camera_id (int): Useful for realsense cameras and multi-camera setups
         """        
         RGBCamera.__init__(self, camera_matrix,
                                     dist_coeffs,
@@ -85,8 +85,8 @@ class RGBDCamera(RGBCamera):
         """Construct open3d pointcloud from depth and color images
         
         Args:
-            color_im (numpy array) : Color image as a numpy matrix
-            depth_im (numpy array) : Depth image as a numpy matrix
+            color_im (numpy array): Color image as a numpy matrix
+            depth_im (numpy array): Depth image as a numpy matrix
         
         Returns:       
             open3d.pointcloud: colored pointcloud from color_im and depth_im
@@ -113,7 +113,7 @@ class RGBDCamera(RGBCamera):
         """Construct open3d pointcloud from depth image
         
         Args:    
-            depth_im (numpy array) : Depth image as a numpy matrix
+            depth_im (numpy array): Depth image as a numpy matrix
         
         Returns:
             open3d.pointcloud: non-colored pointcloud from depth_im
@@ -152,11 +152,11 @@ def get_bbox_annotations(rgb_image):
     then press Esc
     
     Args:      
-        rgb_image (numpy array) : Depth image as a numpy matrix
+        rgb_image (numpy array): Depth image as a numpy matrix
     
     Returns:       
-        BBox :  BBox dataclass object with bounding box coordinates
-        numpy array : Only part of the image within the bounding box as a numpy matrix 
+        BBox:  BBox dataclass object with bounding box coordinates
+        numpy array: Only part of the image within the bounding box as a numpy matrix 
     """     
     # Mouse callback function
     global click_list
@@ -188,11 +188,11 @@ def get_segmap_from_bbox(image, bbox):
     and outside is 0
     
     Args: 
-        image (numpy array) : Numpy matrix with the size of the required segmentation mask 
+        image (numpy array): Numpy matrix with the size of the required segmentation mask 
         bbox (BBox): BBox dataclass object with the bounding box coordinates
     
     Returns:
-        numpy array : a segmentation mask of the size `image` rom the bbox co-ordinates in `bbox`
+        numpy array: a segmentation mask of the size `image` rom the bbox co-ordinates in `bbox`
     """     
     output = np.zeros(np.shape(image)[:-1])
     output[bbox.ymin:bbox.ymax, bbox.xmin:bbox.xmax] = 255
@@ -208,7 +208,8 @@ def get_segmap_from_bbox_with_depth(rgb_image, depth_image, bbox):
         bbox (BBox): Contains bounding box coordinates
 
     Returns:
-        _type_: _description_
+        numpy array: of size rgb_image and having value as 255 for pixels with depth less than average depth of pixels 
+                    inside the pointcloud
     """
     # output = np.zeros(np.shape(image)[:-1])
     output = np.zeros(np.shape(depth_image))

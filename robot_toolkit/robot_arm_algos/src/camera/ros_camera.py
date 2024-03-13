@@ -76,8 +76,8 @@ class ROSCamera(RGBCamera):
     def get_camera_params(self, camera_info_msg):
         """Gets camera matrix and distortion coeffecients
         Returns:
-            numpy array(3x3) : camera matrix 
-            numpy array(1x4) : distortion coeffecients
+            numpy array(3x3): camera matrix 
+            numpy array(1x4): distortion coeffecients
         """            
         dist_coeffs = np.array(camera_info_msg.D[:4])
         camera_matrix = np.array(camera_info_msg.K).reshape(3,3)

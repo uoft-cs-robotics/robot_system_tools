@@ -40,22 +40,22 @@ class RealSenseDriver(object):
         """RealSenseDriver Class Constructors. Allows setting custom Camera settings
 
         Args:
-            serial_number (_type_): _description_
-            laser_power (int, optional): _description_. Defaults to 16.
-            accuracy (int, optional): _description_. Defaults to 1.
-            color_width (int, optional): _description_. Defaults to 1280.
-            color_height (int, optional): _description_. Defaults to 720.
-            color_fps (int, optional): _description_. Defaults to 30.
-            depth_width (int, optional): _description_. Defaults to 1280.
-            depth_height (int, optional): _description_. Defaults to 720.
-            depth_fps (int, optional): _description_. Defaults to 30.
-            motion_range (int, optional): _description_. Defaults to 0.
-            filter_option (int, optional): _description_. Defaults to 3.
-            confidence_threshold (int, optional): _description_. Defaults to 1.
-            near_threshold (float, optional): _description_. Defaults to 0.1.
-            far_threshold (float, optional): _description_. Defaults to 6.0.
-            use_filters (bool, optional): _description_. Defaults to True.
-            only_depth (bool, optional): _description_. Defaults to False.
+            serial_number (int): realsense camera's serial number
+            laser_power (int, optional): level of IR pattern laser's power. Defaults to 16.
+            accuracy (int, optional): accuracy option of realsense cameras. Defaults to 1.
+            color_width (int, optional): width of the color image. Defaults to 1280.
+            color_height (int, optional): height of the color image. Defaults to 720.
+            color_fps (int, optional): FPS of the color camera. Defaults to 30.
+            depth_width (int, optional): width of the depth image. Defaults to 1280.
+            depth_height (int, optional): height of the depth image. Defaults to 720.
+            depth_fps (int, optional): FPS of the depth camera. Defaults to 30.
+            motion_range (int, optional): motion_range option of realsense cameras. Defaults to 0.
+            filter_option (int, optional): filter_option of realsense cameras. Defaults to 3.
+            confidence_threshold (int, optional): confidence_threshold option for realsense cameras. Defaults to 1.
+            near_threshold (float, optional): near_threshold option for realsense cameras. Defaults to 0.1.
+            far_threshold (float, optional): far_threshold option for realsense cameras. Defaults to 6.0.
+            use_filters (bool, optional): use_filters option for realsense cameras. Defaults to True.
+            only_depth (bool, optional): only_depth option for realsense cameras, if true only depth camera is powered ON. Defaults to False.
         """
         self.serial_number = serial_number
         self.laser_power = laser_power
@@ -85,7 +85,7 @@ class RealSenseDriver(object):
         """Gets Camera's serial number
 
         Returns:
-            str : camera serial number
+            str: camera serial number
         """
         return self._serial_number
 
@@ -98,7 +98,7 @@ class RealSenseDriver(object):
         """Gets Cameras laser power. Only works for D415/D435(i)
 
         Returns:
-            int : Power of laser to use in mW.
+            int: Power of laser to use in mW.
         """
         return self._laser_power
 
@@ -108,7 +108,7 @@ class RealSenseDriver(object):
 
     @property
     def accuracy(self):
-        """int : .
+        """int: .
         """
         return self._accuracy
 
@@ -118,7 +118,7 @@ class RealSenseDriver(object):
 
     @property
     def motion_range(self):
-        """int : .
+        """int: .
         """
         return self._motion_range
 
@@ -128,7 +128,7 @@ class RealSenseDriver(object):
 
     @property
     def filter_option(self):
-        """int : .
+        """int: .
         """
         return self._filter_option
 
@@ -138,7 +138,7 @@ class RealSenseDriver(object):
 
     @property
     def confidence_threshold(self):
-        """int : .
+        """int: .
         """
         return self._confidence_threshold
 
@@ -148,7 +148,7 @@ class RealSenseDriver(object):
 
     @property
     def near_threshold(self):
-        """int : .
+        """int: .
         """
         return self._near_threshold
 
@@ -158,7 +158,7 @@ class RealSenseDriver(object):
 
     @property
     def far_threshold(self):
-        """int : .
+        """int: .
         """
         return self._far_threshold
 
@@ -168,7 +168,7 @@ class RealSenseDriver(object):
 
     @property
     def use_filters(self):
-        """bool : Whether to use simple filters to improve depth quality.
+        """bool: Whether to use simple filters to improve depth quality.
         """
         return self._use_filters
 
@@ -180,7 +180,7 @@ class RealSenseDriver(object):
         """Start the sensor driver.
         
         Raises: 
-            Exception : If unable to detect/power ON the realsense camera
+            Exception: If unable to detect/power ON the realsense camera
         """
         if self._is_running:
             return True
@@ -253,12 +253,12 @@ class RealSenseDriver(object):
         """Read data from the sensor and return it.
 
         Raises:
-            Exception : Failed to read frames from Intel RealSense Camera
-            Exception : RealSense Camera not connected
+            Exception: Failed to read frames from Intel RealSense Camera
+            Exception: RealSense Camera not connected
             
         Returns:
             uint8 numpy array (3,h,w):  The color data.
-            float numpy array (h,w) : The depth data
+            float numpy array (h,w): The depth data
         """
 
         if not self._is_running:
@@ -321,7 +321,7 @@ class RealSenseDriver(object):
     def get_all_device_serials():
         """Get the serial numbers for all connected sensors.
 
-        Returns : 
+        Returns: 
             str list: The serial numbers.
         """
         ctx = rs.context()

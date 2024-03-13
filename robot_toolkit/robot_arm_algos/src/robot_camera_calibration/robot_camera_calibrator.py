@@ -5,11 +5,10 @@ from .data_collector._data_collector import RobotCameraCalibrationDataCollector
 from ._calibration_data_utils import write_calibration_data_file
 from ..logger import logger
 from ..config_reader import write_dict_to_yaml
-"""
-collects pose data for robot camera extrinsics calibration 
-and outputs results from calibration problem solver
-"""
+
 class RobotCameraCalibrator(RobotCameraCalibrationDataCollector, CalibrationSolver):
+    """collects pose data for robot camera extrinsics calibration and outputs results from calibration problem solver
+    """
     def __init__(self, robot_pose_collector, 
                 tag_pose_collector,
                 camera,
@@ -21,6 +20,24 @@ class RobotCameraCalibrator(RobotCameraCalibrationDataCollector, CalibrationSolv
                 fg_data_folder_path = None,
                 flag_camera_in_hand = True,
                 collect_data_and_calibrate = True):
+        """RobotCameraCalibrator Class Constructor. Collects pose datas used for robot camera calibration.
+
+        Args:
+            robot_pose_collector (RobotPoseCollector): RobotPoseCollector Class object that is used to get the robot's end-effector pose in the robot base frame.
+            tag_pose_collector (CameraDataCollector): CameraDataCollector Class object that is used to get the calibration tag's pose in the camera frame.
+            camera (Camera): Camera Class object that has the camera intrinsics and functions to get the current RGB image frame.
+            n_data (int): Number of calibration tag and robot end-effector pose pairs to be collected for calibration.
+            calib_data_file_name (str): Path to the text file where robot end-effector and calibration tag's pose are written to. 
+            output_file (str): Path to the YAML file to which the robot camera calibration results are stored in 
+            move_robot_automatically (bool): Is the robot going to move automatically to sample robot end-effector and calibration tag pose pairs?
+            robot_arm_object (RobotArm, optional): A RobotArm Class object that is used to position control of the robot arm in the joint and end-effector space. Defaults to None.
+            fg_data_folder_path (str, optional): Path to the folder where measurements are stored to in the format required to run factor graph based optimization for calibration. Defaults to None.
+            flag_camera_in_hand (bool, optional): Is the camera attached to the robot's end-effector. false means it is attached to the robot's environment. Defaults to True.
+            collect_data_and_calibrate (bool, optional): If true, new pose data are collected and calibration solver is run on them. If false, calibration solver is run on previously collected pose data . Defaults to True.
+        
+        Raises: 
+            Exception: If < 3 robot end-effector, calibration tag pose pairs are only present in the calibration solver data. 
+        """
         RobotCameraCalibrationDataCollector.__init__(self, robot_pose_collector,
                                                     tag_pose_collector,
                                                     camera,
@@ -41,6 +58,12 @@ class RobotCameraCalibrator(RobotCameraCalibrationDataCollector, CalibrationSolv
         self.output_file = output_file
     
     def run_calibration(self, solver = None):
+        """Runs Calibration solver/routine on the collected robot end-effector, calibration tag pairs of pose data
+
+        Args:
+            solver (str, optional): Name of the OpenCV Solver to use. If None, all solvers are run. Defaults to None.
+
+        """
         if solver is None:
             results = self.run_calibration_all_solvers()
             file_output = dict()
