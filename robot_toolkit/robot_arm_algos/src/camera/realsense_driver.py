@@ -3,8 +3,13 @@ import numpy as np
 import pyrealsense2 as rs
 from ..logger import logger
 
+"""
+Data class to store Camera Intrinsic information
+"""
 @dataclass
 class Intrinsics:
+    """A data class for the Camera Intrinsic Parameters 
+    """    
     fx: float
     fy: float
     cx: float
@@ -13,30 +18,7 @@ class Intrinsics:
     height: int
 
 class RealSenseDriver(object):
-    """A driver for Intel RealSense D415 cameras.
-
-    Parameters
-    ----------
-    serial_number : str
-        The serial number of the camera to connect to.
-    laser_power : int
-        Value between 0 and 16. Sets the laser power.
-    accuracy : int
-        Value between 0 and 3.
-    motion_range : int
-        Value between 0 and 220
-    filter_option: int
-        Value between 0 and 7.
-    confidence_threshold : int
-        Value between 0 and 15.
-    near_threshold : float
-        Near distance threshold for the image.
-    far_threshold : float
-        Far distance threshold for the image.
-    use_filters : bool
-        If ``True``, this driver cleans up the depth with basic filtering.
-    only_depth : bool
-        If ``True``, only the depth image is used.
+    """A driver Class for Intel RealSense D415/D435 cameras.
     """
 
     def __init__(self, serial_number, 
@@ -55,6 +37,26 @@ class RealSenseDriver(object):
                 far_threshold=6.0, 
                 use_filters=True,
                 only_depth=False):
+        """RealSenseDriver Class Constructors. Allows setting custom Camera settings
+
+        Args:
+            serial_number (_type_): _description_
+            laser_power (int, optional): _description_. Defaults to 16.
+            accuracy (int, optional): _description_. Defaults to 1.
+            color_width (int, optional): _description_. Defaults to 1280.
+            color_height (int, optional): _description_. Defaults to 720.
+            color_fps (int, optional): _description_. Defaults to 30.
+            depth_width (int, optional): _description_. Defaults to 1280.
+            depth_height (int, optional): _description_. Defaults to 720.
+            depth_fps (int, optional): _description_. Defaults to 30.
+            motion_range (int, optional): _description_. Defaults to 0.
+            filter_option (int, optional): _description_. Defaults to 3.
+            confidence_threshold (int, optional): _description_. Defaults to 1.
+            near_threshold (float, optional): _description_. Defaults to 0.1.
+            far_threshold (float, optional): _description_. Defaults to 6.0.
+            use_filters (bool, optional): _description_. Defaults to True.
+            only_depth (bool, optional): _description_. Defaults to False.
+        """
         self.serial_number = serial_number
         self.laser_power = laser_power
         self.accuracy = accuracy#
@@ -80,7 +82,10 @@ class RealSenseDriver(object):
 
     @property
     def serial_number(self):
-        """str : The serial number of the camera to connect to.
+        """Gets Camera's serial number
+
+        Returns:
+            str : camera serial number
         """
         return self._serial_number
 
@@ -90,7 +95,10 @@ class RealSenseDriver(object):
 
     @property
     def laser_power(self):
-        """int : Power of laser to use in mW.
+        """Gets Cameras laser power. Only works for D415/D435(i)
+
+        Returns:
+            int : Power of laser to use in mW.
         """
         return self._laser_power
 
@@ -170,6 +178,9 @@ class RealSenseDriver(object):
 
     def start(self):
         """Start the sensor driver.
+        
+        Raises: 
+            Exception : If unable to detect/power ON the realsense camera
         """
         if self._is_running:
             return True
@@ -241,13 +252,15 @@ class RealSenseDriver(object):
     def read(self):
         """Read data from the sensor and return it.
 
-        Returns
-        -------
-        color : (h,w,3) uint8
-            The color data.
-        depth : (h,w) float
-            The depth
+        Raises:
+            Exception : Failed to read frames from Intel RealSense Camera
+            Exception : RealSense Camera not connected
+            
+        Returns:
+            uint8 numpy array (3,h,w):  The color data.
+            float numpy array (h,w) : The depth data
         """
+
         if not self._is_running:
             raise Exception('Intel RealSense {} not connected'.format(
                 self.serial_number
@@ -280,10 +293,11 @@ class RealSenseDriver(object):
     def get_intrinsics(self):
         """Get the intrinsics from the running sensor.
 
-        Returns
-        -------
-        intr : :class:`.Intrinsics`
-            The intrinsics for the active sensor.
+        Returns:
+            Intrinsics: The intrinsics for the active sensor.
+        
+        Raises: 
+            Exception: Failed to read frames from Intel RealSense Camera
         """
         if not self._is_running:
             raise Exception('Intel RealSense {} not connected'.format(
@@ -307,10 +321,8 @@ class RealSenseDriver(object):
     def get_all_device_serials():
         """Get the serial numbers for all connected sensors.
 
-        Returns
-        -------
-        serials : list of str
-            The serial numbers.
+        Returns : 
+            str list: The serial numbers.
         """
         ctx = rs.context()
         serials = []
