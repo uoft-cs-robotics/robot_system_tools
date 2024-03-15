@@ -87,7 +87,7 @@ class PickAndPlace:
             return self.cam_extrinsics
     
     def pick_object(self, object_, grasps_file, grasp_name = None):
-        """Computes a desired end-effector pose to grasp the `object_` and moves the robot arm to a pre-grasp pose, then to the grasp pose, closes gripper to grasp object and then moves to a post-grasp pose. 
+        """! Computes a desired end-effector pose to grasp the `object_` and moves the robot arm to a pre-grasp pose, then to the grasp pose, closes gripper to grasp object and then moves to a post-grasp pose. 
 
         @param    object_ (Object): A predefined Object class' object. 
         @param    grasps_file (str): Path to the file where pre defined grasp poses with respect to a canonical oject frame is stored using RecordGrasps class. 
@@ -109,7 +109,7 @@ class PickAndPlace:
         return grasp_pose
     
     def place_object(self, place_pose):
-        """Places the `object_` in a desired place_pose by first moving the robot end-effector to the pre-place pose, then to the place pose, opens the gripper and then moves to a post-place pose. 
+        """! Places the `object_` in a desired place_pose by first moving the robot end-effector to the pre-place pose, then to the place pose, opens the gripper and then moves to a post-place pose. 
         
         @param    place_pose (numpy arra): 4x4 Transformation matrix of the desired end-effector pose to place the `object_`.
         
@@ -126,7 +126,7 @@ class PickAndPlace:
         return place_pose
         
     def get_grasp_pose(self, object_, grasps_file, grasp_name=None):
-        """Computes a desired end-effector pose to grasp the `object_`
+        """! Computes a desired end-effector pose to grasp the `object_`
 
         @param    object_ (Object): an object of the Object class encapsulating the physical object that we want to grasp.
         @param    grasps_file (str): path to the file containing grasp poses in the object canonical frame collected prior using the RecordGrasps Class. 
