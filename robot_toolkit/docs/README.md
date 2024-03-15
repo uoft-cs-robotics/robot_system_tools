@@ -29,8 +29,83 @@ In this repo, one could also find a list of "test" scripts that test functionali
 - Expected output: 
     * An image of an arucoboard with parameters specified in the script store in [here](../tests/data/aruco_board_2x2.png)
 
+### [test_bbox_annotator.py](test_bbox_annotator.py):
+- Operation:
+    * Gets a live image from a realsense RGBD camera 
+    * Opens up a window where you can click the top-left and bottom-right vertices of the 2D bbox, press escape after recording these two point clicks. 
+
+- Expected output: 
+    * Shows the image with a bounding box drawn 
+    * shows only the region inside the bbox. 
+    * Shows a segmentation map of the bounding box 
+    * Shows segmentation performed by filtering pixels greater than average depth
+
+## [test_contact_graspnet.py](test_contact_graspnet.py):
+Note: make sure you have activated the right conda environment
+- Operation: 
+    * Loads weights mentioned in test_config dictionary
+    * Gets a live RGBD image from a camera 
+    * Should get input bounding box from the user 
+    * Gets segmap from bounding box based on boolean variable in test_config dictionary
+- Expected Output
+    * Asks user to click the top-left and bottom-right corner of the bounding box of the object we wish to grasp.
+    * Run contactgraspnet inference and shows gripper pose frames in pointcloud in an open3d window.
+
+### [test_dope.py](../test_dope.py):
+Note: make sure you have activated the right conda environment
+- Operation:
+    * Gets an image using camera driver and displays that image in a gui 
+    * Loads dope model based on .yaml file to load weights for soupcan detector 
+    * Performs Pose estimation on the input image to detect pose of a YCB soupcan
+    * Make sure there's is a YCB soupcan in the field-of-view of the camera.
+- Expected output: 
+    * An image named test.jpg with 3D bounding box overlayed [here](../../docker/scratchpad/)
+
+### [test_franka_hand_mesh](../test_franka_hand_mesh.py):
+- Operation:
+    * Loads mesh for the franka gripper 
+- Expected output: 
+    * shows a open3d window visualizing franka gripper
+
+### [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py):
+- Pre-requesites: 
+    * This script is used to show how we could record desired grasps for any arbitrary object. using **default franka arm and franka gripper**
+    * This script also assume only one realsense camera is connected to the workstation computer
+    * The object can have any one of the available AR markers or we can use a pose estimator 
+    * This script assumes the robot and camera already calibrate extrinsically and it works for both camera in hand and in env case
+    * The robot needs to be in "white" status LED mode. 
+    * In the realtime computer, ensure "read_states" server is running by running the following instruction in the realtime computer(docker). 
+    ```
+    cd <path_to_franka_control_suite>/franka_control_suite/build 
+    ./read_states <robot_ip> <realtime_pc_ip> <zmq_port_number>
+    ```
+    * Edit lines 8-18 [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py) to your corresponding test case. 
+    * **Ensure the object is not moved throught the time this script is run**
+- Operation:
+    * The object's pose is first estimated using the AR tag pose estimator(can also be replaced by any pose estimator for the object)
+    * Now we can move the gripper by hand (in gravity compensation mode) to desired grasp poses. **Note: Do not close the gripper** and record this pose with respect to the object's frame of reference. 
+    * Collect as many grasp poses as you want. 
+- Expected Output: 
+    * A yaml file specified at the location in the test_config dictionary to contain 4x4 arrays representing grasp poses. 
+
+
 ### [test_pick_n_place.py](../test_pick_n_place.py):
-- Pre-requisites: 
+- Pre-requesites: 
+    * This is an object centric pick and place script. The object can be either defined using an arucoboard or is an object detected by megapose, this choice is passed to the test_config dictionary in "use_aruco_board_pose_estimation" key
+    * This script is used to perform pick and place operations for objects for which we have already recorded desired grasps using one of [test_grasp_recorder_megapose.py](../test_grasp_recorder_megapose.py) or [test_grasp_recorder_aruco.py](../test_grasp_recorder_aruco.py) and this test is for **default franka arm and franka gripper**
+    * This script assumes the robot and camera already calibrate extrinsically and it works for both camera in hand and in env case.
+    * This script also assumes only one realsense camera is connected to the workstation computer. 
+    * Frankapy's server should have already started and the status LED should be blue. 
+    * Edit lines 12-20 [test_pick_n_place.py](../test_pick_n_place.py) to your corresponding test case.     
+- Operation:
+    * The object to be grasped is first localized using pose estimation using AR markers(can also be replaced by any pose estimator for the object)
+    * A grasp is selected from the grasps already recorded using [test_grasp_recorder.py](../test_grasp_recorder.py)
+    * This grasp is used to pick the object and then place at a position offset in the +ve X direction in the robot base frame. 
+- Expected output: 
+    * The end-effector first goes to pregrasp pose and then to the grasp pose 
+    * Picks up the object 
+    * Then places the object at a position offset in the +ve X direction in the robot base frame. 
+<!-- - Pre-requisites: 
     * This testscript is implemented for the **Franka Emika robot arm + Franka Emika gripper** with "camera in the hand" configuration. 
     * It detects the pose of a cube of dimension 5cm with an ArucoBoard affixed on one of its faces.
     * The frame of the object(cube) used for grasping is set as an offset to the arucoboard's frame attached to it when calling the constructor of the "Object" class. 
@@ -51,7 +126,7 @@ In this repo, one could also find a list of "test" scripts that test functionali
     * gripper closes once the object is in its tool center point i.e between two parallel fingers. 
     * The object is picked up 
     * The object is then placed in the "place pose" passed as an argument to the place_object method, which in this case is the pick pose. 
-    * Therefore, the object is picked and placed back in its original pose. 
+    * Therefore, the object is picked and placed back in its original pose.  -->
 
 
 ### [test_realsense_camera.py](../test_realsense_camera.py):

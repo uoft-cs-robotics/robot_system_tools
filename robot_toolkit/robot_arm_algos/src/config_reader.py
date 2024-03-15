@@ -122,10 +122,10 @@ def get_robot_pose_collector(config_dict):
 
     return robot_pose_collector
 
-def get_robot_camera_calib_config(file_path):
+def get_robot_camera_calib_config(config_dict):
     """! Gets all approprite objects required for robot camera calibration based on configuration described in YAML file located at "file_path"
 
-    @param    file_path (str): Path to the YAML file of the congiruation file for robot camera calibration. 
+    @param    config_dict (dict): Dictionary with the configuration information for robot camera calibration. 
 
     @return    TagPoseCollector: TagPoseCollector object that is used to get the calibration tag's pose in the camera frame.
     @return    RobotPoseCollector: RobotPoseCollector object that is used to get the robot's end-effector's pose in the robot's base frame. 
@@ -133,11 +133,13 @@ def get_robot_camera_calib_config(file_path):
     @return    dict: Dictionary containing the configuration of the robot camera calibration setup.
     """
 
-    config_dict = read_yaml_file(file_path)
     if(config_dict["only_calibration"]):
-        return None, None, None, config_dict
+        return None, None, None
     
     camera = get_camera(config_dict)
     tag_pose_collector = get_tag_pose_collector(config_dict)
     robot_pose_collector = get_robot_pose_collector(config_dict)
-    return tag_pose_collector, robot_pose_collector, camera, config_dict
+    return tag_pose_collector, robot_pose_collector, camera
+
+
+    

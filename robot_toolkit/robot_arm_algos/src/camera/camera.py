@@ -200,7 +200,6 @@ def get_segmap_from_bbox_with_depth(rgb_image, depth_image, bbox):
     @param depth_image (numpy_array): Depth image used for filtering 
     @param bbox (BBox): Contains bounding box coordinates
 
-    
     @return numpy array: of size rgb_image and having value as 255 for pixels with depth less than average depth of pixels 
                     inside the pointcloud
     """

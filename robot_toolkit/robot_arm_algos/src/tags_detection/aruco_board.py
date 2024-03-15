@@ -22,7 +22,7 @@ class ArucoBoardData:
     marker_separation: float 
     n_rows: int
     n_cols: int
-    ids: Optional[np.ndarray] = None
+    ids: Optional[list] = None
 
 class ArucoBoard(Fiducial):
     """! Implementation of the abstract Fiducial Class for ArucoBoard pattern
@@ -32,7 +32,7 @@ class ArucoBoard(Fiducial):
 
         @param    aruco_board_data (ArucoBoardData): ArucoBoardData data class object that defines the parameters of the arucoboard pattern
         """
-        Fiducial.__init__(self, "aruco_board")
+        Fiducial.__init__(self, "aruco_board", aruco_board_data)
         self.create_aruco_board_detector(aruco_board_data)
 
     def create_aruco_board_detector(self, aruco_board_data):
@@ -48,14 +48,23 @@ class ArucoBoard(Fiducial):
             logger.error(f"{aruco_board_data.dictionary} is unknown dictionary.")
 
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary)
-        self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
-                                        aruco_board_data.marker_length, 
-                                        aruco_board_data.marker_separation, 
-                                        self.aruco_dict,
-                                        ids = aruco_board_data.ids)
+        
+        if aruco_board_data.ids is not None:
+            logger.info("IDs:", np.array(aruco_board_data.ids))
+            self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
+                                            aruco_board_data.marker_length, 
+                                            aruco_board_data.marker_separation, 
+                                            self.aruco_dict,
+                                            ids = np.array(aruco_board_data.ids))
+        else:
+            self.board = cv2.aruco.GridBoard((aruco_board_data.n_rows, aruco_board_data.n_cols), 
+                                            aruco_board_data.marker_length, 
+                                            aruco_board_data.marker_separation, 
+                                            self.aruco_dict)            
         self.aruco_params = cv2.aruco.DetectorParameters()
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, 
                                                 self.aruco_params)
+        self.fiducial_data = aruco_board_data
     
     def refine_corners(self, image, corners):
         """! Performs subpixel refinement of the detected corners in the image. Refined subpixel values are stored in 'corners' variable. 

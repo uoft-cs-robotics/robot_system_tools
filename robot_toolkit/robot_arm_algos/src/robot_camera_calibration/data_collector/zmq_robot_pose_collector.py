@@ -3,6 +3,7 @@ import cv2
 import zmq
 from ._data_collector import RobotPoseCollector
 
+from wrapt_timeout_decorator import *
 
 class ZmqRobotPoseCollector(RobotPoseCollector):
     """! RobotPoseCollector Class Abstract implementation based on zmq server. This class expects a zmq server to run on the realtime computer connected to the robot. 
@@ -21,6 +22,7 @@ class ZmqRobotPoseCollector(RobotPoseCollector):
         socket_address = "tcp://" + zmq_ip + ":" + zmq_port 
         self.socket.connect(socket_address)
     
+    @timeout(5.0)
     def get_ee_frame(self,):
         """! Returns the robot's end-effector pose measured in the robot's base frame 
 

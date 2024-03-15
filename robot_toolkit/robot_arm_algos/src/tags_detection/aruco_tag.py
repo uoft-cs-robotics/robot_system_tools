@@ -22,7 +22,7 @@ class ArucoTag(Fiducial):
 
         @param    aruco_tag_data (ArucoTagData): ArucoTagData data class object that defines the parameters of the arucotag pattern.
         """
-        Fiducial.__init__(self, "aruco_tag")
+        Fiducial.__init__(self, "aruco_tag", aruco_tag_data)
         self.create_aruco_tag_detector(aruco_tag_data)
         self.marker_length = aruco_tag_data.marker_length
         self.tag_id = aruco_tag_data.tag_id
