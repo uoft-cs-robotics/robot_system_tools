@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import zmq
 from ._data_collector import RobotPoseCollector
-
+from wrapt_timeout_decorator import *
 """
 queries a zmq server located in the realtime machine to get ee frame. 
 Useful to move Franka manually when status LED is white. TF tree maybe corrupted when light is white
@@ -18,6 +18,7 @@ class ZmqRobotPoseCollector(RobotPoseCollector):
     """
     todo: see if blocking call takes long and throws error that not getting reply from server
     """
+    @timeout(5.0)
     def get_ee_frame(self,):
         self.socket.send_string("data")#even an empty message would do
         message = self.socket.recv()# receives EE pose 

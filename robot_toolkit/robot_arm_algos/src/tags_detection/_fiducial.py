@@ -12,8 +12,9 @@ class TagDetection:
     matched_img_pts: np.ndarray
 
 class Fiducial(ABC):
-    def __init__(self, marker_type):
+    def __init__(self, marker_type, fiducial_data):
         self.fiducial_type = marker_type
+        self.fiducial_data = fiducial_data
     
     @abstractmethod
     def detect_markers(self, color_image):

@@ -3,18 +3,21 @@ import rospy
 from robot_arm_algos.src.robot_camera_calibration.robot_camera_calibrator import RobotCameraCalibrator 
 from robot_arm_algos.src.robot_arm.robot_frankapy import RobotFrankaPy
 from robot_arm_algos.src.logger import logger
-from robot_arm_algos.src.config_reader import get_robot_camera_calib_config, read_yaml_file
+from robot_arm_algos.src.config_reader import get_robot_camera_calib_objects, read_yaml_file
 
 def main(args):
-    rospy.init_node("robot_camera_calibration")
-
-    tag_pose_collector, robot_pose_collector, camera, config_dict = get_robot_camera_calib_config(args.config_file) 
+    
+    config_dict = read_yaml_file(args.config_file)
+    if (config_dict["move_robot_automatically"] or config_dict["camera"]=="ros_camera"):
+        rospy.init_node("robot_camera_calibration")
+        
+    tag_pose_collector, robot_pose_collector, camera = get_robot_camera_calib_objects(config_dict)
 
     robot_arm_object = None
+
     if(config_dict["move_robot_automatically"]):
         robot_arm_object = robot_arm_object = RobotFrankaPy(init_node = False, 
                                                             with_franka_gripper = config_dict["with_gripper"])   
-        # robot_arm_object.fpy_object.reset_joints() 
 
     robot_camera_calibrator = RobotCameraCalibrator(robot_pose_collector,
                                                     tag_pose_collector,

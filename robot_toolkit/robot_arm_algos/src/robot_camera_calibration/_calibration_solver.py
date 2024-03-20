@@ -1,14 +1,10 @@
 import numpy as np
 import cv2
 import tf.transformations as tf_utils
-from ._calibration_data_utils import read_calibration_data_from_file, tf_from_rvectvec, error_rot_trans
+from ._calibration_data_utils import read_calibration_data_from_file, tf_from_rvectvec, error_rot_trans, solvers
 from ..logger import logger
 
-solvers = {"HAND_EYE_ANDREFF": cv2.CALIB_HAND_EYE_ANDREFF,
-            "HAND_EYE_DANIILIDIS": cv2.CALIB_HAND_EYE_DANIILIDIS,
-            "HAND_EYE_HORAUD" : cv2.CALIB_HAND_EYE_HORAUD,  
-            "HAND_EYE_PARK" : cv2.CALIB_HAND_EYE_PARK,
-            "HAND_EYE_TSAI" : cv2.CALIB_HAND_EYE_TSAI}     
+
 
 class CalibrationSolver:
     def __init__(self, calib_data_file_name, flag_camera_in_hand=True):

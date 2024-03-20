@@ -14,3 +14,14 @@ franka_control_suite/build/
 !robot_toolkit/calibration_board/target_US_letter.pdf
 !robot_toolkit/tests/data/*.png 
 !robot_toolkit/tests/data/*.pdf
+
+*.mtl
+*.dae
+*.mtl 
+*.obj 
+*.ply
+*.tgz
+
+!robot_toolkit/robot_arm_algos/src/inference/objects/**/*.dae
+!robot_toolkit/robot_arm_algos/src/inference/objects/**/*.mtl
+!robot_toolkit/robot_arm_algos/src/inference/objects/**/*.obj

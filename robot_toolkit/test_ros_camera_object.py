@@ -15,7 +15,7 @@ def main():
                                     marker_separation = 0.0025,
                                     n_rows = 2,
                                     n_cols = 2,
-                                    ids = np.array([16,17,18,19]))  
+                                    ids = [16,17,18,19])  
     aruco_board_tag = ArucoBoard(aruco_board_data) 
     object2tag_offset = np.eye(4)
     object2tag_offset[0:3, -1] = np.array([aruco_board_data.marker_length + aruco_board_data.marker_separation/2.0,

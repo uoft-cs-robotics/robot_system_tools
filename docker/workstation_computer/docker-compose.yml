@@ -1,4 +1,4 @@
-version: "2.2"
+version: "2.4"
 services:
   docker_workstation_computer:
     build:
@@ -8,6 +8,8 @@ services:
     tty: true
     cap_add:
       - SYS_NICE
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
     ulimits:
       rtprio: 99
       rttime: -1
@@ -16,6 +18,7 @@ services:
     privileged: true
     devices:
     - /dev:/dev
+    runtime: nvidia
     volumes:
       # - ../../calibration:/root/git/calibration
       - ../../frankapy_control_test_scripts:/root/git/frankapy_control_test_scripts

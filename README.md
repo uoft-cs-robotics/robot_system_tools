@@ -14,7 +14,8 @@ This repository contains scripts and off-the-shelf starter scripts for developpi
 - docker 
 - git 
 - openssh-server
-
+- nvidia-container-toolkit (look at [robot_toolkit/docs/nvidia-container-toolkit.md](robot_toolkit/docs/nvidia-container-toolkit.md) )
+- GPU with necessary Nvidia drivers (if using workstation docker)
 ```
 sudo apt-get install docker.io docker-compose git 
 ```
@@ -59,14 +60,22 @@ make
 ```
 
 ## [Workstation Computer](#workstation)
-Build docker container for the workstation computer that has GPU/nvidia drivers 
+Build, create, and start the docker container for the workstation computer that has GPU/nvidia drivers 
 
 **Note: it is important to pass the workstation IP address as seen by the Realtime computer here**
 ```
 docker-compose -f docker/workstation_computer/docker-compose-gui.yml build \
-                            --build-arg workstation_ip=<workstation_ip address>
+                            --build-arg workstation_ip=<workstation_ip address> \ 
+                            --build-arg use_robotiq=1 \
+                            --build-arg build_dope=1 \
+                            --build-arg build_contactgraspnet=1 \ 
+                            --build-arg build_megapose=1
+                                        
 docker-compose -f docker/workstation_computer/docker-compose-gui.yml create
+docker-compose -f docker/workstation_computer/docker-compose-gui.yml start
+                                                        
 ```
+**Note:** The default CUDA version is 11.3 and Ubuntu version is 20.04, if you would like to change these, please aquire an appropriate docker image and use `--build-arg image=<your image>`.
 **Note:** if you want to use [roboiq gripper](https://robotiq.com/products), please set `--build-arg use_robotiq=1` in the previous command for building workstation docker.
 
 Note: While building the docker container, the above command might print warnings in red color, don't be alarmed and let the process run. If it stops building, that's when there is an error. 
@@ -205,8 +214,11 @@ python3 docker_frankapy_test.py
 
 ## Using calibration
 
-Please checkout [robot_toolkit/docs](robot_toolkit/docs) for documentations of robot camera extrinsic calibration, usage of this tool. 
+Please checkout [robot_toolkit/docs](robot_toolkit/docs) for documentations of robot camera extrinsic calibration, usage of this tool. We also have a video showing how to use our tool [here](https://drive.google.com/file/d/1VMregvZZmWaFMxj7J3FgXDaWfS2ae4tQ/view?usp=sharing)
 
+## Using Deeplearning based prediciton models 
+
+Please checkout [robot_toolkit/docs/deep_learning_models.md](robot_toolkit/docs/deep_learning_models.md) and [robot_toolkit/docs/nvidia-container-toolkit.md](robot_toolkit/docs/nvidia-container-toolkit.md) for running Neural network models with GPUs.
 
 ## Test robotiq gripper
 To run the robotiq device, first in a terminal do
