@@ -1,14 +1,14 @@
-only_calibration: False 
-n_data: 20
-move_robot_automatically: True
+only_calibration: False
+n_data: 25
+move_robot_automatically: False
 debug_image: True
-with_gripper: False 
-camera_in_hand: True
+with_gripper: True 
+camera_in_hand: False    
 output_file: "robot_arm_algos/robot_camera_extrinsics.yaml"
 calib_data_file_name: "robot_arm_algos/src/robot_camera_calibration/data/file.txt"
 fg_optim_data_file_name: "robot_arm_algos/src/robot_camera_calibration/data/fg/"  
 tag_pose_collector: aruco_board #["aruco_board", "aruco_tag", "april_board", "april_tag"]
-robot_pose_collector: ros_tf #["ros_tf", "zmq"]
+robot_pose_collector: zmq #["ros_tf", "zmq"]
 camera: ros_camera #[ros_camera, realsense_camera]
 
 ros_tf:
@@ -17,14 +17,14 @@ ros_tf:
 
 aruco_board:
   dictionary: "DICT_6X6_1000"
-  marker_length: 0.0397
-  marker_separation: 0.0056
-  n_rows: 4
-  n_cols: 5
+  marker_length: 0.0265
+  marker_separation: 0.0057
+  n_rows: 5
+  n_cols: 7
 
 zmq:
-  zmq_server_ip: 192.168.0.3 #same as realtime pc's IP
-  zmq_server_port: 2000
+  zmq_server_ip: "192.168.0.3" #same as realtime pc's IP
+  zmq_server_port: "2000"
 
 ros_camera:
   image_topic_name: "/camera/color/image_raw"

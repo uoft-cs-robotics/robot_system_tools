@@ -86,13 +86,15 @@ def get_robot_pose_collector(config_dict):
 
     return robot_pose_collector
 
-def get_robot_camera_calib_config(file_path):
+def get_robot_camera_calib_objects(config_dict):
 
-    config_dict = read_yaml_file(file_path)
     if(config_dict["only_calibration"]):
-        return None, None, None, config_dict
+        return None, None, None
     
     camera = get_camera(config_dict)
     tag_pose_collector = get_tag_pose_collector(config_dict)
     robot_pose_collector = get_robot_pose_collector(config_dict)
-    return tag_pose_collector, robot_pose_collector, camera, config_dict
+    return tag_pose_collector, robot_pose_collector, camera
+
+
+    

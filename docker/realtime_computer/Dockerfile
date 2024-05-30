@@ -59,11 +59,7 @@ RUN cd \
     && sudo ldconfig 
 
 # Dependencies for franka-interface and protobuf
-RUN apt-get install -y \
-    ros-noetic-libfranka \
-    ros-noetic-franka-ros \
-    ros-noetic-franka-gripper \
-    ros-noetic-realsense2-camera
+RUN apt-get install -y  ros-noetic-realsense2-camera ros-noetic-combined-robot-hw
 
 RUN cd ~/git \ 
     && git clone --recurse-submodules https://github.com/Ruthrash/franka-interface \
@@ -82,7 +78,10 @@ RUN cd ~/git/franka-interface \
     && bash ./bash_scripts/make_franka_interface.sh
 
 RUN echo "making ROS catkin workspace for franka-interface"
-RUN cd ~/git/franka-interface \
+RUN cd ~/git/franka-interface/catkin_ws/src \
+    && git clone https://github.com/frankaemika/franka_ros && cd franka_ros && git switch noetic-devel \
+    && rm -r franka_gazebo \ 
+    && cd ~/git/franka-interface \
     && source /opt/ros/noetic/setup.bash \
     && bash ./bash_scripts/make_catkin.sh 
 
